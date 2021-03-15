@@ -85,7 +85,7 @@ namespace GBEmu.Core
                     case 0x01: SB = value; break;
                     case 0x02: SC = value; break;
                     case 0x04: DIV = 0; break;
-                    case 0x05: break; // TODO: Effects of writing here? Ignoring for now
+                    case 0x05: TIMA = value; break;
                     case 0x06: TMA = value; break;
                     case 0x07: TAC = value; break;
                     case 0x0F: IF = value; break;
