@@ -1,5 +1,5 @@
-﻿using ImGuiNET;
-using GBEmu.Core;
+﻿using GBEmu.Core;
+using ImGuiNET;
 
 namespace GBEmu.UI
 {
@@ -7,7 +7,6 @@ namespace GBEmu.UI
     {
         readonly Window window;
         readonly Settings settings;
-        //readonly GameBoy chip8;
 
         readonly FileBrowserUI fileBrowserUI;
         readonly AboutWindowUI aboutWindowUI;
@@ -19,9 +18,6 @@ namespace GBEmu.UI
         {
             this.window = window;
             this.settings = settings;
-            //this.chip8 = chip8;
-
-            GetSettings();
 
             fileBrowserUI = new FileBrowserUI("Open ROM", settings.Data.LastRomDirectory, ".gb|.zip", false, window.OpenROM);
             aboutWindowUI = new AboutWindowUI();
@@ -55,12 +51,12 @@ namespace GBEmu.UI
 
                 if (ImGui.BeginMenu("Emulation"))
                 {
-                    if (ImGui.MenuItem("Run", "F1"/*, chip8.EmulationState == EmulationStates.Running*/))
+                    if (ImGui.MenuItem("Run", "F1", window.IsGameBoyRunning))
                     {
                         window.RunEmulation();
                     }
 
-                    if (ImGui.MenuItem("Stop", "F2"/*, chip8.EmulationState == EmulationStates.Stopped*/))
+                    if (ImGui.MenuItem("Stop", "F2", !window.IsGameBoyRunning))
                     {
                         window.StopEmulation();
                     }
@@ -69,12 +65,12 @@ namespace GBEmu.UI
 
                     if (ImGui.MenuItem("Save State", "F5"))
                     {
-                        //chip8.SaveState();
+                        window.SaveState();
                     }
 
                     if (ImGui.MenuItem("Load State", "F7"))
                     {
-                        //chip8.LoadState();
+                        window.LoadState();
                     }
 
                     //ImGui.Separator();
@@ -108,22 +104,6 @@ namespace GBEmu.UI
         public void OpenFileBrowser()
         {
             fileBrowserUI.IsVisible = true;
-        }
-
-        void SetSettings()
-        {
-            //settings.Data.Alternative8xy6Opcode = alt8xy6Opcode;
-            //settings.Data.AlternativeFx55Opcode = altFx55Opcode;
-
-            //chip8.SetSettings(alt8xy6Opcode, altFx55Opcode);
-        }
-
-        void GetSettings()
-        {
-            //alt8xy6Opcode = settings.Data.Alternative8xy6Opcode;
-            //altFx55Opcode = settings.Data.AlternativeFx55Opcode;
-
-            //chip8.SetSettings(alt8xy6Opcode, altFx55Opcode);
         }
     }
 }

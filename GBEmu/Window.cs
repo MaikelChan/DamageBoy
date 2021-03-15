@@ -21,6 +21,8 @@ namespace GBEmu
 
         readonly MainUI mainUI;
 
+        public bool IsGameBoyRunning => gameBoy != null;
+
         GameBoy gameBoy;
 
         string selectedRomFile = string.Empty;
@@ -79,6 +81,8 @@ namespace GBEmu
             StopEmulation();
             RunEmulation();
         }
+
+        #region GameBoy
 
         public void RunEmulation()
         {
@@ -158,6 +162,20 @@ namespace GBEmu
             gameBoy.Stop();
             gameBoy = null;
         }
+
+        public void SaveState()
+        {
+            if (gameBoy == null) return;
+            gameBoy.SaveState();
+        }
+
+        public void LoadState()
+        {
+            if (gameBoy == null) return;
+            gameBoy.LoadState();
+        }
+
+        #endregion
 
         #region GameBoy Callbacks
 

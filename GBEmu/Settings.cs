@@ -50,14 +50,10 @@ namespace GBEmu
     class SettingsData
     {
         public string LastRomDirectory { get; set; }
-        public bool Alternative8xy6Opcode { get; set; }
-        public bool AlternativeFx55Opcode { get; set; }
 
         public SettingsData()
         {
             LastRomDirectory = Environment.CurrentDirectory;
-            Alternative8xy6Opcode = false;
-            AlternativeFx55Opcode = false;
         }
     }
 }
