@@ -711,10 +711,6 @@ namespace GBEmu.Core
 
             set
             {
-                SoundChannel1Enabled = Helpers.GetBit(value, 0);
-                SoundChannel2Enabled = Helpers.GetBit(value, 1);
-                SoundChannel3Enabled = Helpers.GetBit(value, 2);
-                SoundChannel4Enabled = Helpers.GetBit(value, 3);
                 AllSoundEnabled = Helpers.GetBit(value, 7);
             }
         }
@@ -760,7 +756,7 @@ namespace GBEmu.Core
             {
                 if (LCDDisplayEnable && !Helpers.GetBit(value, 7) && LCDStatusMode != PPU.Modes.VerticalBlank)
                 {
-                    throw new InvalidOperationException("Even if original GameBoy allows to disable LCD outside of VBlank period, that can cause damages to the system and it was prohibited by Nintendo. This operation shouldn't be happening.");
+                    Utils.Log(LogType.Error, "Even if original GameBoy allows to disable LCD outside of VBlank period, that can cause damages to the system and it was prohibited by Nintendo. This operation shouldn't be happening.");
                 }
 
                 BGDisplayEnable = Helpers.GetBit(value, 0);
@@ -806,8 +802,6 @@ namespace GBEmu.Core
 
             set
             {
-                LCDStatusMode = (PPU.Modes)(value & 0b0000_0011);
-                LCDStatusCoincidenceFlag = Helpers.GetBit(value, 2) ? PPU.CoincidenceFlagModes.Equals : PPU.CoincidenceFlagModes.Different;
                 LCDStatusHorizontalBlankInterrupt = Helpers.GetBit(value, 3);
                 LCDStatusVerticalBlankInterrupt = Helpers.GetBit(value, 4);
                 LCDStatusOAMSearchInterrupt = Helpers.GetBit(value, 5);
