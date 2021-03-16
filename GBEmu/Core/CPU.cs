@@ -1865,9 +1865,9 @@ namespace GBEmu.Core
         /// </summary>
         void CALL_A16()
         {
-            mmu[SP - 1] = (byte)((PC + 3) >> 8);
-            mmu[SP - 2] = (byte)((PC + 3) & 0xFF);
             SP -= 2;
+            mmu[SP + 1] = (byte)((PC + 3) >> 8);
+            mmu[SP + 0] = (byte)((PC + 3) & 0xFF);
 
             PC = (ushort)((mmu[PC + 2] << 8) | mmu[PC + 1]);
             clocksToWait = 24;
@@ -2034,9 +2034,9 @@ namespace GBEmu.Core
         /// </summary>
         void RST(byte offset)
         {
-            mmu[SP - 1] = (byte)((PC + 1) >> 8);
-            mmu[SP - 2] = (byte)((PC + 1) & 0xFF);
             SP -= 2;
+            mmu[SP + 1] = (byte)((PC + 1) >> 8);
+            mmu[SP + 0] = (byte)((PC + 1) & 0xFF);
 
             PC = offset;
             clocksToWait = 16;
@@ -2315,9 +2315,9 @@ namespace GBEmu.Core
         /// </summary>
         void PUSH(ushort register)
         {
-            mmu[SP - 1] = (byte)(register >> 8);
-            mmu[SP - 2] = (byte)(register & 0xFF);
             SP -= 2;
+            mmu[SP + 1] = (byte)(register >> 8);
+            mmu[SP + 0] = (byte)(register & 0xFF);
 
             PC += 1;
             clocksToWait = 16;
@@ -2328,8 +2328,8 @@ namespace GBEmu.Core
         /// </summary>
         ushort POP()
         {
-            ushort register = (ushort)((mmu[SP + 1] << 8) | mmu[SP]);
             SP += 2;
+            ushort register = (ushort)((mmu[SP - 1] << 8) | mmu[SP - 2]);
 
             PC += 1;
             clocksToWait = 12;
@@ -3481,9 +3481,9 @@ namespace GBEmu.Core
 
         void JumpVector(byte offset)
         {
-            mmu[SP - 1] = (byte)((PC) >> 8);
-            mmu[SP - 2] = (byte)((PC) & 0xFF);
             SP -= 2;
+            mmu[SP + 1] = (byte)((PC) >> 8);
+            mmu[SP + 0] = (byte)((PC) & 0xFF);
 
             PC = offset;
             clocksToWait = 24; // TODO: Don't know how many clocks. Is it the same as CALL?
