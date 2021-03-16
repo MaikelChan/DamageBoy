@@ -8,6 +8,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.IO;
 using System.IO.Compression;
+using Sound = GBEmu.Audio.Sound;
 
 namespace GBEmu
 {
@@ -149,7 +150,7 @@ namespace GBEmu
                 }
 
                 Utils.Log(LogType.Info, $"ROM file successfully loaded: {selectedRomFile}");
-                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SaveUpdate);
+                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
                 gameBoy.Run();
             }
         }
@@ -158,7 +159,7 @@ namespace GBEmu
         {
             if (gameBoy == null) return;
 
-            //sound.Stop();
+            sound.Stop();
             gameBoy.Stop();
             gameBoy = null;
         }
@@ -184,6 +185,11 @@ namespace GBEmu
             if (IsExiting) return;
 
             renderer.ScreenUpdate(pixels);
+        }
+
+        void SoundUpdate(SoundState soundState)
+        {
+            sound.Update(soundState);
         }
 
         void SaveUpdate(byte[] data)

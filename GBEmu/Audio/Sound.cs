@@ -1,4 +1,5 @@
-﻿using OpenTK.Audio.OpenAL;
+﻿using GBEmu.Core;
+using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.Generic;
 
@@ -66,10 +67,10 @@ namespace GBEmu.Audio
                 AL.Listener(ALListenerf.Gain, 0.1f);
 
                 AL.GenSource(out alSource);
-                AL.Source(alSource, ALSourcef.Gain, 0f);
+                AL.Source(alSource, ALSourcef.Gain, 1f);
                 AL.Source(alSource, ALSourcei.Buffer, alBuffer);
                 AL.Source(alSource, ALSourceb.Looping, true);
-                AL.SourcePlay(alSource);
+                //AL.SourcePlay(alSource);
 
                 isInitialized = true;
             }
@@ -95,6 +96,11 @@ namespace GBEmu.Audio
             ALC.CloseDevice(device);
         }
 
+        public void Update(SoundState soundState)
+        {
+
+        }
+
         public void Play()
         {
             if (!isInitialized) return;
@@ -102,8 +108,8 @@ namespace GBEmu.Audio
             if (isPlaying) return;
             isPlaying = true;
 
-            //AL.SourcePlay(alSource);
-            AL.Source(alSource, ALSourcef.Gain, 1f);
+            AL.SourcePlay(alSource);
+            //AL.Source(alSource, ALSourcef.Gain, 1f);
         }
 
         public void Stop()
@@ -113,8 +119,8 @@ namespace GBEmu.Audio
             if (!isPlaying) return;
             isPlaying = false;
 
-            //AL.SourceStop(alSource);
-            AL.Source(alSource, ALSourcef.Gain, 0f);
+            AL.SourceStop(alSource);
+            //AL.Source(alSource, ALSourcef.Gain, 0f);
         }
 
         static void CheckALError(string str)

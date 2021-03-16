@@ -18,6 +18,7 @@ namespace GBEmu.Core
         readonly InterruptHandler interruptHandler;
         readonly DMA dma;
         readonly Timer timer;
+        readonly Sound sound;
         readonly PPU ppu;
         readonly IO io;
         readonly MMU mmu;
@@ -31,7 +32,7 @@ namespace GBEmu.Core
 
         bool finishedFrame;
 
-        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<byte[]> saveUpdateCallback)
+        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<SoundState> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
         {
             cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
 
@@ -40,6 +41,7 @@ namespace GBEmu.Core
             interruptHandler = new InterruptHandler();
             dma = new DMA(cartridge, ram, vram);
             timer = new Timer(interruptHandler);
+            sound = new Sound(soundUpdateCallback);
             ppu = new PPU(interruptHandler, vram, ScreenUpdate);
             io = new IO(ppu, dma, timer, interruptHandler);
             mmu = new MMU(io, ram, ppu, bootRom, cartridge);
@@ -91,6 +93,7 @@ namespace GBEmu.Core
                 {
 #endif
                 timer.Update();
+                sound.Update();
                 ppu.Update();
                 cpu.Update();
                 dma.Update();
