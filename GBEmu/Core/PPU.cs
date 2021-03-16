@@ -5,13 +5,49 @@ namespace GBEmu.Core
 {
     class PPU
     {
-        readonly IO io;
+        readonly InterruptHandler interruptHandler;
         readonly VRAM vram;
         readonly Action<byte[]> screenUpdateCallback;
 
         readonly byte[] lcdPixels;
         readonly byte[] spriteIndicesInCurrentLine;
         byte spritesAmountInCurrentLine;
+
+        // LCD Control
+
+        public bool LCDDisplayEnable { get; set; }
+        public bool WindowTileMapDisplaySelect { get; set; }
+        public bool WindowDisplayEnable { get; set; }
+        public bool BGAndWindowTileDataSelect { get; set; }
+        public bool BGTileMapDisplaySelect { get; set; }
+        public bool OBJSize { get; set; }
+        public bool OBJDisplayEnable { get; set; }
+        public bool BGDisplayEnable { get; set; }
+
+        // LCD Status
+
+        public PPU.Modes LCDStatusMode { get; set; }
+        public PPU.CoincidenceFlagModes LCDStatusCoincidenceFlag { get; set; }
+        public bool LCDStatusHorizontalBlankInterrupt { get; set; }
+        public bool LCDStatusVerticalBlankInterrupt { get; set; }
+        public bool LCDStatusOAMSearchInterrupt { get; set; }
+        public bool LCDStatusCoincidenceInterrupt { get; set; }
+
+        // LCD Position and Scrolling
+
+        public byte ScrollY { get; set; }
+        public byte ScrollX { get; set; }
+        public byte LY { get; set; }
+        public byte LYC { get; set; }
+        public byte WindowY { get; set; }
+        public byte WindowX { get; set; }
+
+        // LCD Monochrome Palettes
+
+        public byte BackgroundPalette { get; set; }
+        public byte ObjectPalette0 { get; set; }
+        public byte ObjectPalette1 { get; set; }
+
 
         public const int RES_X = 160;
         public const int RES_Y = 144;
@@ -44,9 +80,9 @@ namespace GBEmu.Core
 
         int clocksToWait;
 
-        public PPU(IO io, VRAM vram, Action<byte[]> screenUpdateCallback)
+        public PPU(InterruptHandler interruptHandler, VRAM vram, Action<byte[]> screenUpdateCallback)
         {
-            this.io = io;
+            this.interruptHandler = interruptHandler;
             this.vram = vram;
             this.screenUpdateCallback = screenUpdateCallback;
 
@@ -68,7 +104,7 @@ namespace GBEmu.Core
                     }
                     else
                     {
-                        Utils.Log(LogType.Warning, $"Tried to read from VRAM while in {io.LCDStatusMode} mode.");
+                        Utils.Log(LogType.Warning, $"Tried to read from VRAM while in {LCDStatusMode} mode.");
                         return 0xFF;
                     }
                 }
@@ -80,7 +116,7 @@ namespace GBEmu.Core
                     }
                     else
                     {
-                        Utils.Log(LogType.Warning, $"Tried to read from OAM while in {io.LCDStatusMode} mode.");
+                        Utils.Log(LogType.Warning, $"Tried to read from OAM while in {LCDStatusMode} mode.");
                         return 0xFF;
                     }
                 }
@@ -97,14 +133,14 @@ namespace GBEmu.Core
                     if (CanCPUAccessVRAM())
                         vram.VRam[index - VRAM.VRAM_START_ADDRESS] = value;
                     else
-                        Utils.Log(LogType.Warning, $"Tried to write to VRAM while in {io.LCDStatusMode} mode.");
+                        Utils.Log(LogType.Warning, $"Tried to write to VRAM while in {LCDStatusMode} mode.");
                 }
                 else if (index >= VRAM.OAM_START_ADDRESS && index < VRAM.OAM_END_ADDRESS)
                 {
                     if (CanCPUAccessOAM())
                         vram.Oam[index - VRAM.OAM_START_ADDRESS] = value;
                     else
-                        Utils.Log(LogType.Warning, $"Tried to write to OAM while in {io.LCDStatusMode} mode.");
+                        Utils.Log(LogType.Warning, $"Tried to write to OAM while in {LCDStatusMode} mode.");
                 }
                 else
                 {
@@ -115,12 +151,12 @@ namespace GBEmu.Core
 
         public void Update()
         {
-            if (!io.LCDDisplayEnable) return;
+            if (!LCDDisplayEnable) return;
 
             clocksToWait -= 4;
             if (clocksToWait > 0) return;
 
-            switch (io.LCDStatusMode)
+            switch (LCDStatusMode)
             {
                 case Modes.OamSearch:
 
@@ -136,10 +172,10 @@ namespace GBEmu.Core
 
                 case Modes.HorizontalBlank:
 
-                    io.LY++;
+                    LY++;
                     CheckLYC();
 
-                    if (io.LY >= RES_Y)
+                    if (LY >= RES_Y)
                     {
                         DoVerticalBlank();
                     }
@@ -152,19 +188,19 @@ namespace GBEmu.Core
 
                 case Modes.VerticalBlank:
 
-                    io.LY++;
+                    LY++;
 
-                    if (io.LY >= RES_Y + VERTICAL_BLANK_LINES)
+                    if (LY >= RES_Y + VERTICAL_BLANK_LINES)
                     {
                         screenUpdateCallback?.Invoke(lcdPixels);
-                        io.LY = 0;
+                        LY = 0;
                         CheckLYC();
                         DoOAMSearch();
                     }
                     else
                     {
                         CheckLYC();
-                        io.LCDStatusMode = Modes.VerticalBlank;
+                        LCDStatusMode = Modes.VerticalBlank;
                         clocksToWait = VERTICAL_BLANK_CLOCKS;
                     }
 
@@ -174,32 +210,32 @@ namespace GBEmu.Core
 
         void DoOAMSearch()
         {
-            io.LCDStatusMode = Modes.OamSearch;
+            LCDStatusMode = Modes.OamSearch;
             clocksToWait = OAM_SEARCH_CLOCKS;
 
-            if (io.LCDStatusOAMSearchInterrupt)
+            if (LCDStatusOAMSearchInterrupt)
             {
-                io.InterruptRequestLCDCSTAT = true;
+                interruptHandler.RequestLCDCSTAT = true;
             }
 
             spritesAmountInCurrentLine = 0;
 
-            byte spriteHeight = io.OBJSize ? SPRITE_MAX_HEIGHT : SPRITE_HEIGHT;
+            byte spriteHeight = OBJSize ? SPRITE_MAX_HEIGHT : SPRITE_HEIGHT;
 
             for (byte s = 0; s < MAX_SPRITES; s++)
             {
                 int spriteEntryAddress = s * OAM_ENTRY_SIZE;
 
                 int spriteY = vram.Oam[spriteEntryAddress + 0] - SPRITE_MAX_HEIGHT;
-                if (io.LY >= spriteY + spriteHeight) continue;
-                if (io.LY < spriteY) continue;
+                if (LY >= spriteY + spriteHeight) continue;
+                if (LY < spriteY) continue;
 
                 //byte spriteX = vram.Oam[spriteEntryAddress + 1];
                 //if (spriteX == 0) continue;
 
                 // TODO: Check more conditions?
 
-                //if (io.LY >= 0x88)
+                //if (LY >= 0x88)
                 //{
                 //    int a = 0;
                 //}
@@ -214,30 +250,30 @@ namespace GBEmu.Core
 
         void DoPixelTransfer()
         {
-            io.LCDStatusMode = Modes.PixelTransfer;
+            LCDStatusMode = Modes.PixelTransfer;
             clocksToWait = PIXEL_TRANSFER_CLOCKS;
 
-            if (io.BGDisplayEnable)
+            if (BGDisplayEnable)
             {
-                ushort tileMapAddress = (ushort)((io.BGTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.VRAM_START_ADDRESS);
-                ushort tileDataAddress = (ushort)((io.BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.VRAM_START_ADDRESS);
+                ushort tileMapAddress = (ushort)((BGTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.VRAM_START_ADDRESS);
+                ushort tileDataAddress = (ushort)((BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.VRAM_START_ADDRESS);
 
-                int sY = (io.LY + io.SCY) & 0xFF;
+                int sY = (LY + ScrollY) & 0xFF;
 
                 for (int x = 0; x < RES_X; x++)
                 {
-                    int sX = (x + io.SCX) & 0xFF;
+                    int sX = (x + ScrollX) & 0xFF;
 
                     ushort currentTileMapAddress = tileMapAddress;
                     currentTileMapAddress += (ushort)((sY >> 3) * BG_TILES_X + (sX >> 3));
 
                     byte tile = vram.VRam[currentTileMapAddress];
-                    if (!io.BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
+                    if (!BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
 
                     ushort currentTileDataAddress = tileDataAddress;
                     currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + ((sY & 0x7) << 1));
 
-                    int currentLCDPixel = io.LY * RES_X + (x);
+                    int currentLCDPixel = LY * RES_X + (x);
 
                     byte bit = (byte)(7 - (sX & 0x7));
                     currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bit);
@@ -252,33 +288,33 @@ namespace GBEmu.Core
                 }
             }
 
-            if (io.WindowDisplayEnable)
+            if (WindowDisplayEnable)
             {
-                ushort tileMapAddress = (ushort)((io.WindowTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.VRAM_START_ADDRESS);
-                ushort tileDataAddress = (ushort)((io.BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.VRAM_START_ADDRESS);
+                ushort tileMapAddress = (ushort)((WindowTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.VRAM_START_ADDRESS);
+                ushort tileDataAddress = (ushort)((BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.VRAM_START_ADDRESS);
 
-                int sY = (io.LY - io.WY) & 0xFF;
+                int sY = (LY - WindowY) & 0xFF;
 
                 for (int x = 0; x < RES_X; x++)
                 {
-                    if (io.LY >= io.WY + RES_Y) break;
-                    if (io.LY < io.WY) break;
+                    if (LY >= WindowY + RES_Y) break;
+                    if (LY < WindowY) break;
 
-                    if (x >= io.WX - 7 + RES_X) continue;
-                    if (x < io.WX - 7) continue;
+                    if (x >= WindowX - 7 + RES_X) continue;
+                    if (x < WindowX - 7) continue;
 
-                    int sX = (x - io.WX + 7) & 0xFF;
+                    int sX = (x - WindowX + 7) & 0xFF;
 
                     ushort currentTileMapAddress = tileMapAddress;
                     currentTileMapAddress += (ushort)((sY >> 3) * BG_TILES_X + (sX >> 3));
 
                     byte tile = vram.VRam[currentTileMapAddress];
-                    if (!io.BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
+                    if (!BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
 
                     ushort currentTileDataAddress = tileDataAddress;
                     currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + ((sY & 0x7) << 1));
 
-                    int currentLCDPixel = io.LY * RES_X + x;
+                    int currentLCDPixel = LY * RES_X + x;
 
                     byte bit = (byte)(7 - (sX & 0x7));
                     currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bit);
@@ -286,9 +322,9 @@ namespace GBEmu.Core
                 }
             }
 
-            if (io.OBJDisplayEnable)
+            if (OBJDisplayEnable)
             {
-                byte spriteHeight = io.OBJSize ? SPRITE_MAX_HEIGHT : SPRITE_HEIGHT;
+                byte spriteHeight = OBJSize ? SPRITE_MAX_HEIGHT : SPRITE_HEIGHT;
 
                 for (byte x = 0; x < RES_X; x++)
                 {
@@ -314,10 +350,10 @@ namespace GBEmu.Core
                         bool spritePriority = Helpers.GetBit(vram.Oam[spriteEntryAddress + 3], 7);
 
                         byte spriteTile = vram.Oam[spriteEntryAddress + 2];
-                        int spriteRow = (spriteInvY ? ((spriteHeight - 1) - (io.LY - spriteY)) : (io.LY - spriteY)) << 1;
+                        int spriteRow = (spriteInvY ? ((spriteHeight - 1) - (LY - spriteY)) : (LY - spriteY)) << 1;
                         ushort tileDataAddress = (ushort)(spriteTile * TILE_BYTES_SIZE + spriteRow);
 
-                        int currentLCDPixel = io.LY * RES_X + (x);
+                        int currentLCDPixel = LY * RES_X + (x);
                         byte bit = (byte)(spriteInvX ? x - spriteX : (SPRITE_WIDTH - 1) - (x - spriteX));
                         byte colorIndex = GetColorIndex(tileDataAddress, bit);
                         if (colorIndex != 0)
@@ -338,41 +374,41 @@ namespace GBEmu.Core
 
         void DoHorizontalBlank()
         {
-            io.LCDStatusMode = Modes.HorizontalBlank;
+            LCDStatusMode = Modes.HorizontalBlank;
             clocksToWait = HORIZONTAL_BLANK_CLOCKS;
 
-            if (io.LCDStatusHorizontalBlankInterrupt)
+            if (LCDStatusHorizontalBlankInterrupt)
             {
-                io.InterruptRequestLCDCSTAT = true;
+                interruptHandler.RequestLCDCSTAT = true;
             }
         }
 
         void DoVerticalBlank()
         {
-            io.LCDStatusMode = Modes.VerticalBlank;
-            io.InterruptRequestVerticalBlanking = true;
+            LCDStatusMode = Modes.VerticalBlank;
+            interruptHandler.RequestVerticalBlanking = true;
             clocksToWait = VERTICAL_BLANK_CLOCKS;
 
-            if (io.LCDStatusVerticalBlankInterrupt)
+            if (LCDStatusVerticalBlankInterrupt)
             {
-                io.InterruptRequestLCDCSTAT = true;
+                interruptHandler.RequestLCDCSTAT = true;
             }
         }
 
         void CheckLYC()
         {
-            if (io.LY == io.LYC)
+            if (LY == LYC)
             {
-                io.LCDStatusCoincidenceFlag = CoincidenceFlagModes.Equals;
+                LCDStatusCoincidenceFlag = CoincidenceFlagModes.Equals;
 
-                if (io.LCDStatusCoincidenceInterrupt)
+                if (LCDStatusCoincidenceInterrupt)
                 {
-                    io.InterruptRequestLCDCSTAT = true;
+                    interruptHandler.RequestLCDCSTAT = true;
                 }
             }
             else
             {
-                io.LCDStatusCoincidenceFlag = CoincidenceFlagModes.Different;
+                LCDStatusCoincidenceFlag = CoincidenceFlagModes.Different;
             }
         }
 
@@ -387,7 +423,7 @@ namespace GBEmu.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         byte GetBGColor(byte colorIndex)
         {
-            switch (io.GetBGPaletteColor(colorIndex))
+            switch (GetBGPaletteColor(colorIndex))
             {
                 case 0: return COLOR_WHITE;
                 case 1: return COLOR_LIGHT_GRAY;
@@ -400,7 +436,7 @@ namespace GBEmu.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         byte GetSpriteColor(byte colorIndex, bool palette)
         {
-            byte color = palette ? io.GetObjPalette1Color(colorIndex) : io.GetObjPalette0Color(colorIndex);
+            byte color = palette ? GetObjPalette1Color(colorIndex) : GetObjPalette0Color(colorIndex);
 
             switch (color)
             {
@@ -412,18 +448,36 @@ namespace GBEmu.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        byte GetBGPaletteColor(byte colorIndex)
+        {
+            return (byte)((BackgroundPalette >> (colorIndex << 1)) & 0x3);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        byte GetObjPalette0Color(byte colorIndex)
+        {
+            return (byte)((ObjectPalette0 >> (colorIndex << 1)) & 0x3);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        byte GetObjPalette1Color(byte colorIndex)
+        {
+            return (byte)((ObjectPalette1 >> (colorIndex << 1)) & 0x3);
+        }
+
         bool CanCPUAccessVRAM()
         {
-            if (!io.LCDDisplayEnable) return true;
-            if (io.LCDStatusMode != Modes.PixelTransfer) return true;
+            if (!LCDDisplayEnable) return true;
+            if (LCDStatusMode != Modes.PixelTransfer) return true;
             return false;
         }
 
         bool CanCPUAccessOAM()
         {
-            if (!io.LCDDisplayEnable) return true;
-            if (io.LCDStatusMode == Modes.HorizontalBlank) return true;
-            if (io.LCDStatusMode == Modes.VerticalBlank) return true;
+            if (!LCDDisplayEnable) return true;
+            if (LCDStatusMode == Modes.HorizontalBlank) return true;
+            if (LCDStatusMode == Modes.VerticalBlank) return true;
             return false;
         }
     }

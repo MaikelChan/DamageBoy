@@ -15,10 +15,11 @@ namespace GBEmu.Core
     {
         readonly RAM ram;
         readonly VRAM vram;
+        readonly InterruptHandler interruptHandler;
         readonly DMA dma;
-        readonly IO io;
         readonly Timer timer;
         readonly PPU ppu;
+        readonly IO io;
         readonly MMU mmu;
         readonly CPU cpu;
 
@@ -36,10 +37,11 @@ namespace GBEmu.Core
 
             ram = new RAM();
             vram = new VRAM();
+            interruptHandler = new InterruptHandler();
             dma = new DMA(cartridge, ram, vram);
-            io = new IO(dma);
-            timer = new Timer(io);
-            ppu = new PPU(io, vram, ScreenUpdate);
+            timer = new Timer(interruptHandler);
+            ppu = new PPU(interruptHandler, vram, ScreenUpdate);
+            io = new IO(ppu, dma, timer, interruptHandler);
             mmu = new MMU(io, ram, ppu, bootRom, cartridge);
             cpu = new CPU(mmu, bootRom != null);
 

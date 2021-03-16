@@ -2,9 +2,15 @@
 {
     class Timer
     {
-        readonly IO io;
+        readonly InterruptHandler interruptHandler;
 
-        public enum TimerControlSpeeds : byte { Hz4096, Hz262144, Hz65536, Hz16384 }
+        public enum TimerClockSpeeds : byte { Hz4096, Hz262144, Hz65536, Hz16384 }
+
+        public byte Divider { get; set; }
+        public bool TimerEnable { get; set; }
+        public TimerClockSpeeds TimerClockSpeed { get; set; }
+        public byte TimerCounter { get; set; }
+        public byte TimerModulo { get; set; }
 
         int dividerClocksToWait;
         int timerClocksToWait;
@@ -12,9 +18,9 @@
         bool timerHasOverflown;
         int timerOverflowWaitCycles;
 
-        public Timer(IO io)
+        public Timer(InterruptHandler interruptHandler)
         {
-            this.io = io;
+            this.interruptHandler = interruptHandler;
         }
 
         public void Update()
@@ -23,34 +29,34 @@
             if (dividerClocksToWait <= 0)
             {
                 dividerClocksToWait = 256;
-                io.DIV++;
+                Divider++;
                 //Utils.Log("Divider: " + io.DividerRegister);
             }
 
-            if (io.TACTimerEnable)
+            if (TimerEnable)
             {
                 timerClocksToWait -= 4;
                 if (timerClocksToWait <= 0)
                 {
-                    switch (io.TACInputClockSelect)
+                    switch (TimerClockSpeed)
                     {
                         default:
-                        case TimerControlSpeeds.Hz4096:
+                        case TimerClockSpeeds.Hz4096:
                             timerClocksToWait = 1024;
                             break;
-                        case TimerControlSpeeds.Hz262144:
+                        case TimerClockSpeeds.Hz262144:
                             timerClocksToWait = 16;
                             break;
-                        case TimerControlSpeeds.Hz65536:
+                        case TimerClockSpeeds.Hz65536:
                             timerClocksToWait = 64;
                             break;
-                        case TimerControlSpeeds.Hz16384:
+                        case TimerClockSpeeds.Hz16384:
                             timerClocksToWait = 256;
                             break;
                     }
 
-                    io.TIMA++;
-                    if (io.TIMA == 0)
+                    TimerCounter++;
+                    if (TimerCounter == 0)
                     {
                         timerOverflowWaitCycles = 8;
                         timerHasOverflown = true;
@@ -65,8 +71,8 @@
                 {
                     timerHasOverflown = false;
 
-                    io.TIMA = io.TMA;
-                    io.InterruptRequestTimerOverflow = true;
+                    TimerCounter = TimerModulo;
+                    interruptHandler.RequestTimerOverflow = true;
                 }
             }
         }

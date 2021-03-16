@@ -4,7 +4,10 @@ namespace GBEmu.Core
 {
     class IO
     {
+        readonly PPU ppu;
         readonly DMA dma;
+        readonly Timer timer;
+        readonly InterruptHandler interruptHandler;
 
         public const ushort IO_PORTS_START_ADDRESS = 0xFF00;
         public const ushort IO_PORTS_END_ADDRESS = 0xFF80;
@@ -12,9 +15,12 @@ namespace GBEmu.Core
 
         public const ushort INTERRUPT_ENABLE_REGISTER_ADDRESS = 0xFFFF;
 
-        public IO(DMA dma)
+        public IO(PPU ppu, DMA dma, Timer timer, InterruptHandler interruptHandler)
         {
+            this.ppu = ppu;
             this.dma = dma;
+            this.timer = timer;
+            this.interruptHandler = interruptHandler;
 
             buttons = new bool[8];
 
@@ -188,7 +194,7 @@ namespace GBEmu.Core
         public void SetInput(Buttons button, bool isPressed)
         {
             buttons[(int)button] = isPressed;
-            if (isPressed) InterruptRequestJoypad = true; // TODO: Revise the conditions where this is set
+            if (isPressed) interruptHandler.RequestJoypad = true; // TODO: Revise the conditions where this is set
         }
 
         #endregion
@@ -240,44 +246,32 @@ namespace GBEmu.Core
 
         #region Timers
 
-        byte div;
-
         /// <summary>
         /// FF04 - DIV - Divider Register (R/W)
         /// </summary>
         public byte DIV
         {
-            get => div;
-            set => div = value;
+            get => timer.Divider;
+            set => timer.Divider = value;
         }
-
-        byte tima;
 
         /// <summary>
         /// FF05 - TIMA - Timer counter (R/W)
         /// </summary>
         public byte TIMA
         {
-            get => tima;
-            set => tima = value;
+            get => timer.TimerCounter;
+            set => timer.TimerCounter = value;
         }
-
-        byte tma;
 
         /// <summary>
         /// FF06 - TMA - Timer Modulo (R/W)
         /// </summary>
         public byte TMA
         {
-            get => tma;
-            set => tma = value;
+            get => timer.TimerModulo;
+            set => timer.TimerModulo = value;
         }
-
-        public Timer.TimerControlSpeeds TACInputClockSelect => tacInputClockSelect;
-        Timer.TimerControlSpeeds tacInputClockSelect;
-
-        public bool TACTimerEnable => tacTimerEnable;
-        bool tacTimerEnable;
 
         /// <summary>
         /// FF07 - TAC - Timer Control (R/W)
@@ -287,27 +281,21 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1111_1000;
-                register |= (byte)tacInputClockSelect;
-                Helpers.SetBit(ref register, 2, tacTimerEnable);
+                register |= (byte)timer.TimerClockSpeed;
+                Helpers.SetBit(ref register, 2, timer.TimerEnable);
                 return register;
             }
 
             set
             {
-                tacInputClockSelect = (Timer.TimerControlSpeeds)(value & 0b0000_0011);
-                tacTimerEnable = Helpers.GetBit(value, 2);
+                timer.TimerClockSpeed = (Timer.TimerClockSpeeds)(value & 0b0000_0011);
+                timer.TimerEnable = Helpers.GetBit(value, 2);
             }
         }
 
         #endregion
 
         #region Interrupts
-
-        public bool InterruptRequestVerticalBlanking { get; set; }
-        public bool InterruptRequestLCDCSTAT { get; set; }
-        public bool InterruptRequestTimerOverflow { get; set; }
-        public bool InterruptRequestSerialTransferCompletion { get; set; }
-        public bool InterruptRequestJoypad { get; set; }
 
         /// <summary>
         /// FF0F - IF - Interrupt Flag (R/W)
@@ -317,30 +305,23 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1110_0000;
-                Helpers.SetBit(ref register, 0, InterruptRequestVerticalBlanking);
-                Helpers.SetBit(ref register, 1, InterruptRequestLCDCSTAT);
-                Helpers.SetBit(ref register, 2, InterruptRequestTimerOverflow);
-                Helpers.SetBit(ref register, 3, InterruptRequestSerialTransferCompletion);
-                Helpers.SetBit(ref register, 4, InterruptRequestJoypad);
+                Helpers.SetBit(ref register, 0, interruptHandler.RequestVerticalBlanking);
+                Helpers.SetBit(ref register, 1, interruptHandler.RequestLCDCSTAT);
+                Helpers.SetBit(ref register, 2, interruptHandler.RequestTimerOverflow);
+                Helpers.SetBit(ref register, 3, interruptHandler.RequestSerialTransferCompletion);
+                Helpers.SetBit(ref register, 4, interruptHandler.RequestJoypad);
                 return register;
             }
 
             set
             {
-                InterruptRequestVerticalBlanking = Helpers.GetBit(value, 0);
-                InterruptRequestLCDCSTAT = Helpers.GetBit(value, 1);
-                InterruptRequestTimerOverflow = Helpers.GetBit(value, 2);
-                InterruptRequestSerialTransferCompletion = Helpers.GetBit(value, 3);
-                InterruptRequestJoypad = Helpers.GetBit(value, 4);
+                interruptHandler.RequestVerticalBlanking = Helpers.GetBit(value, 0);
+                interruptHandler.RequestLCDCSTAT = Helpers.GetBit(value, 1);
+                interruptHandler.RequestTimerOverflow = Helpers.GetBit(value, 2);
+                interruptHandler.RequestSerialTransferCompletion = Helpers.GetBit(value, 3);
+                interruptHandler.RequestJoypad = Helpers.GetBit(value, 4);
             }
         }
-
-        bool interruptEnableVerticalBlanking;
-        bool interruptEnableLCDCSTAT;
-        bool interruptEnableTimerOverflow;
-        bool interruptEnableSerialTransferCompletion;
-        bool interruptEnableJoypad;
-        byte interruptEnableUnusedBits; // In this case, unused bits are actually writable and readable
 
         /// <summary>
         /// FFFF - IE - Interrupt Enable (R/W)
@@ -350,23 +331,23 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b0000_0000;
-                Helpers.SetBit(ref register, 0, interruptEnableVerticalBlanking);
-                Helpers.SetBit(ref register, 1, interruptEnableLCDCSTAT);
-                Helpers.SetBit(ref register, 2, interruptEnableTimerOverflow);
-                Helpers.SetBit(ref register, 3, interruptEnableSerialTransferCompletion);
-                Helpers.SetBit(ref register, 4, interruptEnableJoypad);
-                register |= (byte)(interruptEnableUnusedBits << 5);
+                Helpers.SetBit(ref register, 0, interruptHandler.EnableVerticalBlanking);
+                Helpers.SetBit(ref register, 1, interruptHandler.EnableLCDCSTAT);
+                Helpers.SetBit(ref register, 2, interruptHandler.EnableTimerOverflow);
+                Helpers.SetBit(ref register, 3, interruptHandler.EnableSerialTransferCompletion);
+                Helpers.SetBit(ref register, 4, interruptHandler.EnableJoypad);
+                register |= (byte)(interruptHandler.EnableUnusedBits << 5);
                 return register;
             }
 
             set
             {
-                interruptEnableVerticalBlanking = Helpers.GetBit(value, 0);
-                interruptEnableLCDCSTAT = Helpers.GetBit(value, 1);
-                interruptEnableTimerOverflow = Helpers.GetBit(value, 2);
-                interruptEnableSerialTransferCompletion = Helpers.GetBit(value, 3);
-                interruptEnableJoypad = Helpers.GetBit(value, 4);
-                interruptEnableUnusedBits = (byte)(value >> 5);
+                interruptHandler.EnableVerticalBlanking = Helpers.GetBit(value, 0);
+                interruptHandler.EnableLCDCSTAT = Helpers.GetBit(value, 1);
+                interruptHandler.EnableTimerOverflow = Helpers.GetBit(value, 2);
+                interruptHandler.EnableSerialTransferCompletion = Helpers.GetBit(value, 3);
+                interruptHandler.EnableJoypad = Helpers.GetBit(value, 4);
+                interruptHandler.EnableUnusedBits = (byte)(value >> 5);
             }
         }
 
@@ -376,10 +357,8 @@ namespace GBEmu.Core
 
         #region Sound Channel 1 - Tone & Sweep
 
-        enum SweepTypes : byte { Increase, Decrease }
-
         byte soundChannel1NumberOfSweepShift;
-        SweepTypes soundChannel1SweepType;
+        Sound.SweepTypes soundChannel1SweepType;
         byte soundChannel1SweepTime;
 
         /// <summary>
@@ -391,7 +370,7 @@ namespace GBEmu.Core
             {
                 byte register = 0b1000_0000;
                 register |= (byte)(soundChannel1NumberOfSweepShift & 0b0000_0111);
-                Helpers.SetBit(ref register, 3, soundChannel1SweepType == SweepTypes.Decrease);
+                Helpers.SetBit(ref register, 3, soundChannel1SweepType == Sound.SweepTypes.Decrease);
                 register |= (byte)((soundChannel1SweepTime & 0b0000_0111) << 4);
                 return register;
             }
@@ -399,7 +378,7 @@ namespace GBEmu.Core
             set
             {
                 soundChannel1NumberOfSweepShift = (byte)(value & 0b0000_0111);
-                soundChannel1SweepType = (value & 0b0000_1000) == 0 ? SweepTypes.Increase : SweepTypes.Decrease;
+                soundChannel1SweepType = (value & 0b0000_1000) == 0 ? Sound.SweepTypes.Increase : Sound.SweepTypes.Decrease;
                 soundChannel1SweepTime = (byte)((value & 0b0111_0000) >> 4);
             }
         }
@@ -741,43 +720,34 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0;
-                Helpers.SetBit(ref register, 0, BGDisplayEnable);
-                Helpers.SetBit(ref register, 1, OBJDisplayEnable);
-                Helpers.SetBit(ref register, 2, OBJSize);
-                Helpers.SetBit(ref register, 3, BGTileMapDisplaySelect);
-                Helpers.SetBit(ref register, 4, BGAndWindowTileDataSelect);
-                Helpers.SetBit(ref register, 5, WindowDisplayEnable);
-                Helpers.SetBit(ref register, 6, WindowTileMapDisplaySelect);
-                Helpers.SetBit(ref register, 7, LCDDisplayEnable);
+                Helpers.SetBit(ref register, 0, ppu.BGDisplayEnable);
+                Helpers.SetBit(ref register, 1, ppu.OBJDisplayEnable);
+                Helpers.SetBit(ref register, 2, ppu.OBJSize);
+                Helpers.SetBit(ref register, 3, ppu.BGTileMapDisplaySelect);
+                Helpers.SetBit(ref register, 4, ppu.BGAndWindowTileDataSelect);
+                Helpers.SetBit(ref register, 5, ppu.WindowDisplayEnable);
+                Helpers.SetBit(ref register, 6, ppu.WindowTileMapDisplaySelect);
+                Helpers.SetBit(ref register, 7, ppu.LCDDisplayEnable);
                 return register;
             }
 
             set
             {
-                if (LCDDisplayEnable && !Helpers.GetBit(value, 7) && LCDStatusMode != PPU.Modes.VerticalBlank)
+                if (ppu.LCDDisplayEnable && !Helpers.GetBit(value, 7) && ppu.LCDStatusMode != PPU.Modes.VerticalBlank)
                 {
                     Utils.Log(LogType.Error, "Even if original GameBoy allows to disable LCD outside of VBlank period, that can cause damages to the system and it was prohibited by Nintendo. This operation shouldn't be happening.");
                 }
 
-                BGDisplayEnable = Helpers.GetBit(value, 0);
-                OBJDisplayEnable = Helpers.GetBit(value, 1);
-                OBJSize = Helpers.GetBit(value, 2);
-                BGTileMapDisplaySelect = Helpers.GetBit(value, 3);
-                BGAndWindowTileDataSelect = Helpers.GetBit(value, 4);
-                WindowDisplayEnable = Helpers.GetBit(value, 5);
-                WindowTileMapDisplaySelect = Helpers.GetBit(value, 6);
-                LCDDisplayEnable = Helpers.GetBit(value, 7);
+                ppu.BGDisplayEnable = Helpers.GetBit(value, 0);
+                ppu.OBJDisplayEnable = Helpers.GetBit(value, 1);
+                ppu.OBJSize = Helpers.GetBit(value, 2);
+                ppu.BGTileMapDisplaySelect = Helpers.GetBit(value, 3);
+                ppu.BGAndWindowTileDataSelect = Helpers.GetBit(value, 4);
+                ppu.WindowDisplayEnable = Helpers.GetBit(value, 5);
+                ppu.WindowTileMapDisplaySelect = Helpers.GetBit(value, 6);
+                ppu.LCDDisplayEnable = Helpers.GetBit(value, 7);
             }
         }
-
-        public bool LCDDisplayEnable { get; set; }
-        public bool WindowTileMapDisplaySelect { get; set; }
-        public bool WindowDisplayEnable { get; set; }
-        public bool BGAndWindowTileDataSelect { get; set; }
-        public bool BGTileMapDisplaySelect { get; set; }
-        public bool OBJSize { get; set; }
-        public bool OBJDisplayEnable { get; set; }
-        public bool BGDisplayEnable { get; set; }
 
         #endregion
 
@@ -791,151 +761,111 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1000_0000;
-                register |= (byte)LCDStatusMode;
-                Helpers.SetBit(ref register, 2, LCDStatusCoincidenceFlag == PPU.CoincidenceFlagModes.Equals);
-                Helpers.SetBit(ref register, 3, LCDStatusHorizontalBlankInterrupt);
-                Helpers.SetBit(ref register, 4, LCDStatusVerticalBlankInterrupt);
-                Helpers.SetBit(ref register, 5, LCDStatusOAMSearchInterrupt);
-                Helpers.SetBit(ref register, 6, LCDStatusCoincidenceInterrupt);
+                register |= (byte)ppu.LCDStatusMode;
+                Helpers.SetBit(ref register, 2, ppu.LCDStatusCoincidenceFlag == PPU.CoincidenceFlagModes.Equals);
+                Helpers.SetBit(ref register, 3, ppu.LCDStatusHorizontalBlankInterrupt);
+                Helpers.SetBit(ref register, 4, ppu.LCDStatusVerticalBlankInterrupt);
+                Helpers.SetBit(ref register, 5, ppu.LCDStatusOAMSearchInterrupt);
+                Helpers.SetBit(ref register, 6, ppu.LCDStatusCoincidenceInterrupt);
                 return register;
             }
 
             set
             {
-                LCDStatusHorizontalBlankInterrupt = Helpers.GetBit(value, 3);
-                LCDStatusVerticalBlankInterrupt = Helpers.GetBit(value, 4);
-                LCDStatusOAMSearchInterrupt = Helpers.GetBit(value, 5);
-                LCDStatusCoincidenceInterrupt = Helpers.GetBit(value, 6);
+                ppu.LCDStatusHorizontalBlankInterrupt = Helpers.GetBit(value, 3);
+                ppu.LCDStatusVerticalBlankInterrupt = Helpers.GetBit(value, 4);
+                ppu.LCDStatusOAMSearchInterrupt = Helpers.GetBit(value, 5);
+                ppu.LCDStatusCoincidenceInterrupt = Helpers.GetBit(value, 6);
             }
         }
-
-        public PPU.Modes LCDStatusMode { get; set; }
-        public PPU.CoincidenceFlagModes LCDStatusCoincidenceFlag { get; set; }
-        public bool LCDStatusHorizontalBlankInterrupt { get; set; }
-        public bool LCDStatusVerticalBlankInterrupt { get; set; }
-        public bool LCDStatusOAMSearchInterrupt { get; set; }
-        public bool LCDStatusCoincidenceInterrupt { get; set; }
 
         #endregion
 
         #region LCD Position and Scrolling
-
-        byte scy;
 
         /// <summary>
         /// FF42 - SCY (Scroll Y) (R/W)
         /// </summary>
         public byte SCY
         {
-            get => scy;
-            set => scy = value;
+            get => ppu.ScrollY;
+            set => ppu.ScrollY = value;
         }
-
-        byte scx;
 
         /// <summary>
         /// FF43 - SCX (Scroll X) (R/W)
         /// </summary>
         public byte SCX
         {
-            get => scx;
-            set => scx = value;
+            get => ppu.ScrollX;
+            set => ppu.ScrollX = value;
         }
-
-        byte ly;
 
         /// <summary>
         /// FF44 - LY (LCDC Y-Coordinate) (R)
         /// </summary>
         public byte LY
         {
-            get => ly;
-            set => ly = value;
+            get => ppu.LY;
+            set => ppu.LY = value;
         }
-
-        byte lyc;
 
         /// <summary>
         /// FF45 - LYC (LY Compare) (R/W)
         /// </summary>
         public byte LYC
         {
-            get => lyc;
-            set => lyc = value;
+            get => ppu.LYC;
+            set => ppu.LYC = value;
         }
-
-        byte wy;
 
         /// <summary>
         /// FF4A - WY (Window Y Position) (R/W)
         /// </summary>
         public byte WY
         {
-            get => wy;
-            set => wy = value;
+            get => ppu.WindowY;
+            set => ppu.WindowY = value;
         }
-
-        byte wx;
 
         /// <summary>
         /// FF4B - WX (Window X Position + 7) (R/W)
         /// </summary>
         public byte WX
         {
-            get => wx;
-            set => wx = value;
+            get => ppu.WindowX;
+            set => ppu.WindowX = value;
         }
 
         #endregion
 
         #region LCD Monochrome Palettes
 
-        byte bgp;
-
         /// <summary>
         /// FF47 - BGP (BG Palette Data) (R/W) - Non CGB Mode Only
         /// </summary>
         byte BGP
         {
-            get => bgp;
-            set => bgp = value;
+            get => ppu.BackgroundPalette;
+            set => ppu.BackgroundPalette = value;
         }
-
-        byte obp0;
 
         /// <summary>
         /// FF48 - OBP0 (Object Palette 0 Data) (R/W) - Non CGB Mode Only
         /// </summary>
         byte OBP0
         {
-            get => obp0;
-            set => obp0 = value;
+            get => ppu.ObjectPalette0;
+            set => ppu.ObjectPalette0 = value;
         }
-
-        byte obp1;
 
         /// <summary>
         /// FF49 - OBP1 (Object Palette 1 Data) (R/W) - Non CGB Mode Only
         /// </summary>
         byte OBP1
         {
-            get => obp1;
-            set => obp1 = value;
-        }
-
-        public byte GetBGPaletteColor(byte colorIndex)
-        {
-            return (byte)((bgp >> (colorIndex << 1)) & 0x3);
-        }
-
-        public byte GetObjPalette0Color(byte colorIndex)
-        {
-            return (byte)((obp0 >> (colorIndex << 1)) & 0x3);
-        }
-
-        public byte GetObjPalette1Color(byte colorIndex)
-        {
-            return (byte)((obp1 >> (colorIndex << 1)) & 0x3);
+            get => ppu.ObjectPalette1;
+            set => ppu.ObjectPalette1 = value;
         }
 
         #endregion
@@ -944,19 +874,13 @@ namespace GBEmu.Core
 
         #region DMA
 
-        byte _dma;
-
         /// <summary>
         /// FF46 - DMA (DMA Transfer and Start Address) (R/W)
         /// </summary>
         byte DMA
         {
-            get => _dma;
-            set
-            {
-                _dma = value;
-                dma.Begin(value);
-            }
+            get => dma.SourceBaseAddress;
+            set => dma.SourceBaseAddress = value;
         }
 
         #endregion
