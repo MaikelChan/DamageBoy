@@ -49,20 +49,20 @@ namespace GBEmu.Core
         public byte ObjectPalette1 { get; set; }
 
 
-        public const int RES_X = 160;
-        public const int RES_Y = 144;
-        const int BG_TILES_X = 32;
-        const int BG_TILES_Y = 32;
-        const int LCD_TILES_X = RES_X >> 3;
-        const int LCD_TILES_Y = RES_Y >> 3;
-        const int TILE_BYTES_SIZE = 16;
+        public const byte RES_X = 160;
+        public const byte RES_Y = 144;
+        const byte BG_TILES_X = 32;
+        const byte BG_TILES_Y = 32;
+        const byte LCD_TILES_X = RES_X >> 3;
+        const byte LCD_TILES_Y = RES_Y >> 3;
+        const byte TILE_BYTES_SIZE = 16;
 
-        const int MAX_SPRITES = 40;
-        const int MAX_SPRITES_PER_LINE = 10;
-        const int OAM_ENTRY_SIZE = 4;
-        const int SPRITE_WIDTH = 8;
-        const int SPRITE_HEIGHT = 8;
-        const int SPRITE_MAX_HEIGHT = 16;
+        const byte MAX_SPRITES = 40;
+        const byte MAX_SPRITES_PER_LINE = 10;
+        const byte OAM_ENTRY_SIZE = 4;
+        const byte SPRITE_WIDTH = 8;
+        const byte SPRITE_HEIGHT = 8;
+        const byte SPRITE_MAX_HEIGHT = 16;
 
         const int OAM_SEARCH_CLOCKS = 80;
         const int PIXEL_TRANSFER_CLOCKS = 172;

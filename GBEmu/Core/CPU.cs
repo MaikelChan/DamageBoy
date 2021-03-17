@@ -3049,7 +3049,7 @@ namespace GBEmu.Core
         {
             byte bit7 = (byte)(A >> 7);
             A <<= 1;
-            A |= CarryFlag ? 1 : 0;
+            A |= (byte)(CarryFlag ? 1 : 0);
 
             ZeroFlag = false;
             NegationFlag = false;
@@ -3067,7 +3067,7 @@ namespace GBEmu.Core
         {
             byte bit0 = (byte)(A & 0x1);
             A >>= 1;
-            A |= CarryFlag ? 0b1000_0000 : 0;
+            A |= (byte)(CarryFlag ? 0b1000_0000 : 0);
 
             ZeroFlag = false;
             NegationFlag = false;
@@ -3085,7 +3085,7 @@ namespace GBEmu.Core
         {
             byte bit7 = (byte)(register >> 7);
             byte result = (byte)(register << 1);
-            result |= CarryFlag ? 1 : 0;
+            result |= (byte)(CarryFlag ? 1 : 0);
 
             ZeroFlag = result == 0;
             NegationFlag = false;
@@ -3105,7 +3105,7 @@ namespace GBEmu.Core
         {
             byte bit7 = (byte)(mmu[register] >> 7);
             mmu[register] <<= 1;
-            mmu[register] |= CarryFlag ? 1 : 0;
+            mmu[register] |= (byte)(CarryFlag ? 1 : 0);
 
             ZeroFlag = mmu[register] == 0;
             NegationFlag = false;
@@ -3123,7 +3123,7 @@ namespace GBEmu.Core
         {
             byte bit0 = (byte)(register & 0x1);
             byte result = (byte)(register >> 1);
-            result |= CarryFlag ? 0b1000_0000 : 0;
+            result |= (byte)(CarryFlag ? 0b1000_0000 : 0);
 
             ZeroFlag = result == 0;
             NegationFlag = false;
@@ -3143,7 +3143,7 @@ namespace GBEmu.Core
         {
             byte bit0 = (byte)(mmu[register] & 0x1);
             mmu[register] >>= 1;
-            mmu[register] |= CarryFlag ? 0b1000_0000 : 0;
+            mmu[register] |= (byte)(CarryFlag ? 0b1000_0000 : 0);
 
             ZeroFlag = mmu[register] == 0;
             NegationFlag = false;
