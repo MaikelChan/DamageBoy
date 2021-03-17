@@ -44,7 +44,7 @@ namespace GBEmu.Core
             sound = new Sound(soundUpdateCallback);
             ppu = new PPU(interruptHandler, vram, ScreenUpdate);
             io = new IO(ppu, dma, timer, interruptHandler);
-            mmu = new MMU(io, ram, ppu, bootRom, cartridge);
+            mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
             cpu = new CPU(mmu, bootRom != null);
 
             this.screenUpdateCallback = screenUpdateCallback;
