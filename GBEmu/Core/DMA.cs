@@ -59,15 +59,12 @@ namespace GBEmu.Core
 
             if (currentOffset < 0)
             {
-                currentOffset += 4;
+                currentOffset++;
                 return;
             }
 
-            this[VRAM.OAM_START_ADDRESS + currentOffset + 0] = this[sourceAddress + currentOffset + 0];
-            this[VRAM.OAM_START_ADDRESS + currentOffset + 1] = this[sourceAddress + currentOffset + 1];
-            this[VRAM.OAM_START_ADDRESS + currentOffset + 2] = this[sourceAddress + currentOffset + 2];
-            this[VRAM.OAM_START_ADDRESS + currentOffset + 3] = this[sourceAddress + currentOffset + 3];
-            currentOffset += 4;
+            this[VRAM.OAM_START_ADDRESS + currentOffset] = this[sourceAddress + currentOffset];
+            currentOffset++;
         }
 
         void Begin()
@@ -79,9 +76,10 @@ namespace GBEmu.Core
                 throw new InvalidOperationException($"Tried to execute a DMA transfer from an invalid address: {sourceAddress}.");
             }
 
-            // DMA transfer doesn't start right away, but after one CPU cycle
-            // So set this to -4 to ignore one cycle in Update().
-            currentOffset = -4;
+            // DMA transfer doesn't start right away.
+            // Setting this to -3 gives enough delay to be able to pass Mooneye's oam_dma_timing test.
+            // Probably this is a bit of a hack?
+            currentOffset = -3;
         }
     }
 }

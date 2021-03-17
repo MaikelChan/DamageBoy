@@ -33,7 +33,7 @@ namespace GBEmu.Core
         {
             get
             {
-                if (dma.IsBusy && index < VRAM.OAM_START_ADDRESS)
+                if (dma.IsBusy && index < IO.IO_PORTS_START_ADDRESS)
                 {
                     Utils.Log(LogType.Warning, $"Tried to read from 0x{index:X4} during OAM transfer.");
                     return 0xFF;
@@ -58,7 +58,7 @@ namespace GBEmu.Core
 
             set
             {
-                if (dma.IsBusy && index < VRAM.OAM_START_ADDRESS)
+                if (dma.IsBusy && index < IO.IO_PORTS_START_ADDRESS)
                 {
                     Utils.Log(LogType.Warning, $"Tried to write to 0x{index:X4} during OAM transfer.");
                     return;
