@@ -9,10 +9,10 @@ namespace GBEmu.Core.MemoryBankControllers
         readonly byte[] ram;
 
         byte romBankHi, romBankLo;
-        int RomBank => (((romBankHi & 0b0000_0001) << 8) | romBankLo) & ((cartridge.RomSize >> 14) - 1);
+        int RomBank => ((romBankHi << 8) | romBankLo) & ((cartridge.RomSize >> 14) - 1);
 
         byte ramBank;
-        int RamBank => (ramBank & 0b0000_1111) & ((cartridge.RamSize >> 13) - 1);
+        int RamBank => ramBank & ((cartridge.RamSize >> 13) - 1);
 
         public MBC5(Cartridge cartridge, byte[] rom, byte[] ram)
         {

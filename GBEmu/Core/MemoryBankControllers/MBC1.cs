@@ -10,9 +10,18 @@ namespace GBEmu.Core.MemoryBankControllers
 
         enum BankingModes : byte { RomMode, RamMode_AdvancedRomMode }
 
-        byte romBank = 1;
-        byte upperRomOrRamBank = 0;
+        byte romBank;
+        byte upperRomOrRamBank;
         BankingModes bankingMode = BankingModes.RomMode;
+
+        int RamBank
+        {
+            get
+            {
+                if (bankingMode == BankingModes.RomMode) return 0;
+                else return upperRomOrRamBank & ((cartridge.RamSize >> 13) - 1);
+            }
+        }
 
         const int CART_1_MEGABYTE_SIZE = 1 * 1024 * 1024;
 
@@ -21,6 +30,9 @@ namespace GBEmu.Core.MemoryBankControllers
             this.cartridge = cartridge;
             this.rom = rom;
             this.ram = ram;
+
+            romBank = 1;
+            upperRomOrRamBank = 0;
         }
 
         public byte this[int index]
@@ -74,20 +86,8 @@ namespace GBEmu.Core.MemoryBankControllers
 
                     case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS:
                     {
-                        if (cartridge.IsRamEnabled)
-                        {
-                            int bank;
-                            if (bankingMode == BankingModes.RomMode) bank = 0;
-                            else bank = upperRomOrRamBank;
-
-                            bank &= (cartridge.RamSize >> 13) - 1;
-
-                            return ram[(bank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS];
-                        }
-                        else
-                        {
-                            return 0xFF;
-                        }
+                        if (!cartridge.IsRamEnabled) return 0xFF;
+                        return ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS];
                     }
 
                     default:
@@ -130,14 +130,7 @@ namespace GBEmu.Core.MemoryBankControllers
                     case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS:
                     {
                         if (!cartridge.IsRamEnabled) break;
-
-                        int bank;
-                        if (bankingMode == BankingModes.RomMode) bank = 0;
-                        else bank = upperRomOrRamBank;
-
-                        bank &= (cartridge.RamSize >> 13) - 1;
-
-                        ram[(bank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
+                        ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
                         break;
                     }
 
