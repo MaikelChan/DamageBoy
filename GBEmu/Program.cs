@@ -1,4 +1,6 @@
-﻿using OpenTK.Mathematics;
+﻿using GBEmu.Core;
+using GBEmu.UI;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using System;
@@ -7,7 +9,7 @@ namespace GBEmu
 {
     class Program
     {
-        const int INITIAL_WIDTH = 1920;
+        const int INITIAL_WIDTH = (int)((INITIAL_HEIGHT - MainUI.MAIN_MENU_DEFAULT_HEIGHT) * PPU.ASPECT_RATIO);
         const int INITIAL_HEIGHT = 1080;
         const string APP_TITLE = "GBEmu";
 

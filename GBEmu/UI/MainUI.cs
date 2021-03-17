@@ -12,12 +12,16 @@ namespace GBEmu.UI
         readonly AboutWindowUI aboutWindowUI;
         //readonly DebugWindowUI debugWindowUI;
 
+        public const int MAIN_MENU_DEFAULT_HEIGHT = 19;
+
         public int MainMenuHeight { get; private set; }
 
         public MainUI(Window window, Settings settings)
         {
             this.window = window;
             this.settings = settings;
+
+            MainMenuHeight = MAIN_MENU_DEFAULT_HEIGHT;
 
             fileBrowserUI = new FileBrowserUI("Open ROM", settings.Data.LastRomDirectory, ".gb|.zip", false, window.OpenROM);
             aboutWindowUI = new AboutWindowUI();

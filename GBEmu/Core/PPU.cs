@@ -51,6 +51,7 @@ namespace GBEmu.Core
 
         public const byte RES_X = 160;
         public const byte RES_Y = 144;
+        public const float ASPECT_RATIO = (float)RES_X / RES_Y;
         const byte BG_TILES_X = 32;
         const byte BG_TILES_Y = 32;
         const byte LCD_TILES_X = RES_X >> 3;
