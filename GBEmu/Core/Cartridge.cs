@@ -81,42 +81,29 @@ namespace GBEmu.Core
 
             switch (romData[0x147])
             {
-                case 0:
+                case 0x0:
                     mbc = new NullMBC(romData);
                     break;
 
-                case 1:
-                case 2:
-                case 3:
-                    int ramSize = RamSize;
-                    if (ramSize == 0)
-                    {
-                        ram = null;
-                    }
-                    else
-                    {
-                        if (saveData == null)
-                        {
-                            ram = new byte[ramSize];
-                        }
-                        else
-                        {
-                            if (saveData.Length != ramSize)
-                            {
-                                Utils.Log(LogType.Warning, $"Save data is {saveData.Length} bytes of size but the game expects {ramSize} bytes.");
-                                ram = new byte[ramSize];
-                            }
-                            else
-                            {
-                                ram = saveData;
-                            }
-                        }
-                    }
+                case 0x1:
+                case 0x2:
+                case 0x3:
+                    ram = GetInitializedRam(saveData);
                     mbc = new MBC1(this, romData, ram);
                     break;
 
+                case 0x19:
+                case 0x1A:
+                case 0x1B:
+                case 0x1C:
+                case 0x1D:
+                case 0x1E:
+                    ram = GetInitializedRam(saveData);
+                    mbc = new MBC5(this, romData, ram);
+                    break;
+
                 default:
-                    throw new NotImplementedException($"MBC with ID: {romData[0x147]} is not implemented");
+                    throw new NotImplementedException($"MBC with ID: 0x{romData[0x147]:X4} is not implemented");
             }
 
             int romSize = RomSize;
@@ -134,6 +121,35 @@ namespace GBEmu.Core
             if (ram != null)
             {
                 saveUpdateCallback?.Invoke(ram);
+            }
+        }
+
+        byte[] GetInitializedRam(byte[] saveData)
+        {
+            int ramSize = RamSize;
+
+            if (ramSize == 0)
+            {
+                return null;
+            }
+            else
+            {
+                if (saveData == null)
+                {
+                    return new byte[ramSize];
+                }
+                else
+                {
+                    if (saveData.Length != ramSize)
+                    {
+                        Utils.Log(LogType.Warning, $"Save data is {saveData.Length} bytes of size but the game expects {ramSize} bytes.");
+                        return new byte[ramSize];
+                    }
+                    else
+                    {
+                        return saveData;
+                    }
+                }
             }
         }
     }
