@@ -14,9 +14,10 @@ It requires [.NET 5.0 Runtime](https://dotnet.microsoft.com/download), [OpenAL 1
 
 ## Screenshots
 
-![Screenshot 00](/00.png)
-![Screenshot 01](/01.png)
-![Screenshot 02](/02.png)
-![Screenshot 03](/03.png)
-![Screenshot 04](/04.png)
-![Screenshot 05](/05.png)
+![Tetris - Screenshot](/00.png)
+![Super Mario Land - Screenshot](/01.png)
+![Wario Land - Screenshot](/02.png)
+![Zelda Link's Awakening - Screenshot](/03.png)
+![Wario Land II - Screenshot](/04.png)
+![Pokemon Red - Screenshot](/05.png)
+![Pokemon Red - Screenshot](/05.png)

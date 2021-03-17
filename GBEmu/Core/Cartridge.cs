@@ -92,6 +92,13 @@ namespace GBEmu.Core
                     mbc = new MBC1(this, romData, ram);
                     break;
 
+                case 0x11:
+                case 0x12:
+                case 0x13:
+                    ram = GetInitializedRam(saveData);
+                    mbc = new MBC3(this, romData, ram);
+                    break;
+
                 case 0x19:
                 case 0x1A:
                 case 0x1B:
