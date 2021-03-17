@@ -142,1510 +142,510 @@ namespace GBEmu.Core
 
             switch (mmu[PC])
             {
-                case 0x00:
-                    NOP();
-                    break;
-                case 0x01:
-                    BC = LD_Reg_D16();
-                    break;
-                case 0x02:
-                    LD_AddressReg1_Reg2(BC, A);
-                    break;
-                case 0x03:
-                    BC = INC(BC);
-                    break;
-                case 0x04:
-                    B = INC_Reg(B);
-                    break;
-                case 0x05:
-                    B = DEC_Reg(B);
-                    break;
-                case 0x06:
-                    B = LD_Reg_D8();
-                    break;
-                case 0x07:
-                    RLCA();
-                    break;
-                case 0x08:
-                    LD_A16_SP();
-                    break;
-                case 0x09:
-                    ADD_HL_Reg(BC);
-                    break;
-                case 0x0A:
-                    A = LD_Reg1_AddressReg2(BC);
-                    break;
-                case 0x0B:
-                    BC = DEC(BC);
-                    break;
-                case 0x0C:
-                    C = INC_Reg(C);
-                    break;
-                case 0x0D:
-                    C = DEC_Reg(C);
-                    break;
-                case 0x0E:
-                    C = LD_Reg_D8();
-                    break;
-                case 0x0F:
-                    RRCA();
-                    break;
-                case 0x11:
-                    DE = LD_Reg_D16();
-                    break;
-                case 0x12:
-                    LD_AddressReg1_Reg2(DE, A);
-                    break;
-                case 0x13:
-                    DE = INC(DE);
-                    break;
-                case 0x14:
-                    D = INC_Reg(D);
-                    break;
-                case 0x15:
-                    D = DEC_Reg(D);
-                    break;
-                case 0x16:
-                    D = LD_Reg_D8();
-                    break;
-                case 0x17:
-                    RLA();
-                    break;
-                case 0x18:
-                    JR_R8();
-                    break;
-                case 0x19:
-                    ADD_HL_Reg(DE);
-                    break;
-                case 0x1A:
-                    A = LD_Reg1_AddressReg2(DE);
-                    break;
-                case 0x1B:
-                    DE = DEC(DE);
-                    break;
-                case 0x1C:
-                    E = INC_Reg(E);
-                    break;
-                case 0x1D:
-                    E = DEC_Reg(E);
-                    break;
-                case 0x1E:
-                    E = LD_Reg_D8();
-                    break;
-                case 0x1F:
-                    RRA();
-                    break;
-                case 0x20:
-                    JR_NZ_R8();
-                    break;
-                case 0x21:
-                    HL = LD_Reg_D16();
-                    break;
-                case 0x22:
-                    LDI_AddressHL_A();
-                    break;
-                case 0x23:
-                    HL = INC(HL);
-                    break;
-                case 0x24:
-                    H = INC_Reg(H);
-                    break;
-                case 0x25:
-                    H = DEC_Reg(H);
-                    break;
-                case 0x26:
-                    H = LD_Reg_D8();
-                    break;
-                case 0x27:
-                    DAA();
-                    break;
-                case 0x28:
-                    JR_Z_R8();
-                    break;
-                case 0x29:
-                    ADD_HL_Reg(HL);
-                    break;
-                case 0x2A:
-                    LDI_A_AddressHL();
-                    break;
-                case 0x2B:
-                    HL = DEC(HL);
-                    break;
-                case 0x2C:
-                    L = INC_Reg(L);
-                    break;
-                case 0x2D:
-                    L = DEC_Reg(L);
-                    break;
-                case 0x2E:
-                    L = LD_Reg_D8();
-                    break;
-                case 0x2F:
-                    CPL();
-                    break;
-                case 0x30:
-                    JR_NC_R8();
-                    break;
-                case 0x31:
-                    LD_SP_D16();
-                    break;
-                case 0x32:
-                    LDD_AddressHL_A();
-                    break;
-                case 0x33:
-                    SP = INC(SP);
-                    break;
-                case 0x34:
-                    INC_AddressReg(HL);
-                    break;
-                case 0x35:
-                    DEC_AddressReg(HL);
-                    break;
-                case 0x36:
-                    LD_Reg_D8(HL);
-                    break;
-                case 0x37:
-                    SCF();
-                    break;
-                case 0x38:
-                    JR_C_R8();
-                    break;
-                case 0x39:
-                    ADD_HL_Reg(SP);
-                    break;
-                case 0x3A:
-                    LDD_A_AddressHL();
-                    break;
-                case 0x3B:
-                    SP = DEC(SP);
-                    break;
-                case 0x3C:
-                    A = INC_Reg(A);
-                    break;
-                case 0x3D:
-                    A = DEC_Reg(A);
-                    break;
-                case 0x3E:
-                    A = LD_Reg_D8();
-                    break;
-                case 0x3F:
-                    CCF();
-                    break;
-                case 0x40:
-                    B = LD_Reg1_Reg2(B);
-                    break;
-                case 0x41:
-                    B = LD_Reg1_Reg2(C);
-                    break;
-                case 0x42:
-                    B = LD_Reg1_Reg2(D);
-                    break;
-                case 0x43:
-                    B = LD_Reg1_Reg2(E);
-                    break;
-                case 0x44:
-                    B = LD_Reg1_Reg2(H);
-                    break;
-                case 0x45:
-                    B = LD_Reg1_Reg2(L);
-                    break;
-                case 0x46:
-                    B = LD_Reg1_AddressReg2(HL);
-                    break;
-                case 0x47:
-                    B = LD_Reg1_Reg2(A);
-                    break;
-                case 0x48:
-                    C = LD_Reg1_Reg2(B);
-                    break;
-                case 0x49:
-                    C = LD_Reg1_Reg2(C);
-                    break;
-                case 0x4A:
-                    C = LD_Reg1_Reg2(D);
-                    break;
-                case 0x4B:
-                    C = LD_Reg1_Reg2(E);
-                    break;
-                case 0x4C:
-                    C = LD_Reg1_Reg2(H);
-                    break;
-                case 0x4D:
-                    C = LD_Reg1_Reg2(L);
-                    break;
-                case 0x4E:
-                    C = LD_Reg1_AddressReg2(HL);
-                    break;
-                case 0x4F:
-                    C = LD_Reg1_Reg2(A);
-                    break;
-                case 0x50:
-                    D = LD_Reg1_Reg2(B);
-                    break;
-                case 0x51:
-                    D = LD_Reg1_Reg2(C);
-                    break;
-                case 0x52:
-                    D = LD_Reg1_Reg2(D);
-                    break;
-                case 0x53:
-                    D = LD_Reg1_Reg2(E);
-                    break;
-                case 0x54:
-                    D = LD_Reg1_Reg2(H);
-                    break;
-                case 0x55:
-                    D = LD_Reg1_Reg2(L);
-                    break;
-                case 0x56:
-                    D = LD_Reg1_AddressReg2(HL);
-                    break;
-                case 0x57:
-                    D = LD_Reg1_Reg2(A);
-                    break;
-                case 0x58:
-                    E = LD_Reg1_Reg2(B);
-                    break;
-                case 0x59:
-                    E = LD_Reg1_Reg2(C);
-                    break;
-                case 0x5A:
-                    E = LD_Reg1_Reg2(D);
-                    break;
-                case 0x5B:
-                    E = LD_Reg1_Reg2(E);
-                    break;
-                case 0x5C:
-                    E = LD_Reg1_Reg2(H);
-                    break;
-                case 0x5D:
-                    E = LD_Reg1_Reg2(L);
-                    break;
-                case 0x5E:
-                    E = LD_Reg1_AddressReg2(HL);
-                    break;
-                case 0x5F:
-                    E = LD_Reg1_Reg2(A);
-                    break;
-                case 0x60:
-                    H = LD_Reg1_Reg2(B);
-                    break;
-                case 0x61:
-                    H = LD_Reg1_Reg2(C);
-                    break;
-                case 0x62:
-                    H = LD_Reg1_Reg2(D);
-                    break;
-                case 0x63:
-                    H = LD_Reg1_Reg2(E);
-                    break;
-                case 0x64:
-                    H = LD_Reg1_Reg2(H);
-                    break;
-                case 0x65:
-                    H = LD_Reg1_Reg2(L);
-                    break;
-                case 0x66:
-                    H = LD_Reg1_AddressReg2(HL);
-                    break;
-                case 0x67:
-                    H = LD_Reg1_Reg2(A);
-                    break;
-                case 0x68:
-                    L = LD_Reg1_Reg2(B);
-                    break;
-                case 0x69:
-                    L = LD_Reg1_Reg2(C);
-                    break;
-                case 0x6A:
-                    L = LD_Reg1_Reg2(D);
-                    break;
-                case 0x6B:
-                    L = LD_Reg1_Reg2(E);
-                    break;
-                case 0x6C:
-                    L = LD_Reg1_Reg2(H);
-                    break;
-                case 0x6D:
-                    L = LD_Reg1_Reg2(L);
-                    break;
-                case 0x6E:
-                    L = LD_Reg1_AddressReg2(HL);
-                    break;
-                case 0x6F:
-                    L = LD_Reg1_Reg2(A);
-                    break;
-                case 0x70:
-                    LD_AddressReg1_Reg2(HL, B);
-                    break;
-                case 0x71:
-                    LD_AddressReg1_Reg2(HL, C);
-                    break;
-                case 0x72:
-                    LD_AddressReg1_Reg2(HL, D);
-                    break;
-                case 0x73:
-                    LD_AddressReg1_Reg2(HL, E);
-                    break;
-                case 0x74:
-                    LD_AddressReg1_Reg2(HL, H);
-                    break;
-                case 0x75:
-                    LD_AddressReg1_Reg2(HL, L);
-                    break;
-                case 0x76:
-                    HALT();
-                    break;
-                case 0x77:
-                    LD_AddressReg1_Reg2(HL, A);
-                    break;
-                case 0x78:
-                    A = LD_Reg1_Reg2(B);
-                    break;
-                case 0x79:
-                    A = LD_Reg1_Reg2(C);
-                    break;
-                case 0x7A:
-                    A = LD_Reg1_Reg2(D);
-                    break;
-                case 0x7B:
-                    A = LD_Reg1_Reg2(E);
-                    break;
-                case 0x7C:
-                    A = LD_Reg1_Reg2(H);
-                    break;
-                case 0x7D:
-                    A = LD_Reg1_Reg2(L);
-                    break;
-                case 0x7E:
-                    A = LD_Reg1_AddressReg2(HL);
-                    break;
-                case 0x7F:
-                    A = LD_Reg1_Reg2(A);
-                    break;
-                case 0x80:
-                    ADD_Reg(B);
-                    break;
-                case 0x81:
-                    ADD_Reg(C);
-                    break;
-                case 0x82:
-                    ADD_Reg(D);
-                    break;
-                case 0x83:
-                    ADD_Reg(E);
-                    break;
-                case 0x84:
-                    ADD_Reg(H);
-                    break;
-                case 0x85:
-                    ADD_Reg(L);
-                    break;
-                case 0x86:
-                    ADD_AddressReg(HL);
-                    break;
-                case 0x87:
-                    ADD_Reg(A);
-                    break;
-                case 0x88:
-                    ADC_A_Reg(B);
-                    break;
-                case 0x89:
-                    ADC_A_Reg(C);
-                    break;
-                case 0x8A:
-                    ADC_A_Reg(D);
-                    break;
-                case 0x8B:
-                    ADC_A_Reg(E);
-                    break;
-                case 0x8C:
-                    ADC_A_Reg(H);
-                    break;
-                case 0x8D:
-                    ADC_A_Reg(L);
-                    break;
-                case 0x8E:
-                    ADC_A_AddressReg(HL);
-                    break;
-                case 0x8F:
-                    ADC_A_Reg(A);
-                    break;
-                case 0x90:
-                    SUB_Reg(B);
-                    break;
-                case 0x91:
-                    SUB_Reg(C);
-                    break;
-                case 0x92:
-                    SUB_Reg(D);
-                    break;
-                case 0x93:
-                    SUB_Reg(E);
-                    break;
-                case 0x94:
-                    SUB_Reg(H);
-                    break;
-                case 0x95:
-                    SUB_Reg(L);
-                    break;
-                case 0x96:
-                    SUB_AddressReg(HL);
-                    break;
-                case 0x97:
-                    SUB_Reg(A);
-                    break;
-                case 0x98:
-                    SBC_A_Reg(B);
-                    break;
-                case 0x99:
-                    SBC_A_Reg(C);
-                    break;
-                case 0x9A:
-                    SBC_A_Reg(D);
-                    break;
-                case 0x9B:
-                    SBC_A_Reg(E);
-                    break;
-                case 0x9C:
-                    SBC_A_Reg(H);
-                    break;
-                case 0x9D:
-                    SBC_A_Reg(L);
-                    break;
-                case 0x9E:
-                    SBC_A_AddressReg(HL);
-                    break;
-                case 0x9F:
-                    SBC_A_Reg(A);
-                    break;
-                case 0xA0:
-                    AND_Reg(B);
-                    break;
-                case 0xA1:
-                    AND_Reg(C);
-                    break;
-                case 0xA2:
-                    AND_Reg(D);
-                    break;
-                case 0xA3:
-                    AND_Reg(E);
-                    break;
-                case 0xA4:
-                    AND_Reg(H);
-                    break;
-                case 0xA5:
-                    AND_Reg(L);
-                    break;
-                case 0xA6:
-                    AND_AddressReg(HL);
-                    break;
-                case 0xA7:
-                    AND_Reg(A);
-                    break;
-                case 0xA8:
-                    XOR_Reg(B);
-                    break;
-                case 0xA9:
-                    XOR_Reg(C);
-                    break;
-                case 0xAA:
-                    XOR_Reg(D);
-                    break;
-                case 0xAB:
-                    XOR_Reg(E);
-                    break;
-                case 0xAC:
-                    XOR_Reg(H);
-                    break;
-                case 0xAD:
-                    XOR_Reg(L);
-                    break;
-                case 0xAE:
-                    XOR_AddressReg(HL);
-                    break;
-                case 0xAF:
-                    XOR_Reg(A);
-                    break;
-                case 0xB0:
-                    OR_Reg(B);
-                    break;
-                case 0xB1:
-                    OR_Reg(C);
-                    break;
-                case 0xB2:
-                    OR_Reg(D);
-                    break;
-                case 0xB3:
-                    OR_Reg(E);
-                    break;
-                case 0xB4:
-                    OR_Reg(H);
-                    break;
-                case 0xB5:
-                    OR_Reg(L);
-                    break;
-                case 0xB6:
-                    OR_AddressReg(HL);
-                    break;
-                case 0xB7:
-                    OR_Reg(A);
-                    break;
-                case 0xB8:
-                    CP_Reg(B);
-                    break;
-                case 0xB9:
-                    CP_Reg(C);
-                    break;
-                case 0xBA:
-                    CP_Reg(D);
-                    break;
-                case 0xBB:
-                    CP_Reg(E);
-                    break;
-                case 0xBC:
-                    CP_Reg(H);
-                    break;
-                case 0xBD:
-                    CP_Reg(L);
-                    break;
-                case 0xBE:
-                    CP_AddressReg(HL);
-                    break;
-                case 0xBF:
-                    CP_Reg(A);
-                    break;
-                case 0xC0:
-                    RET_NZ();
-                    break;
-                case 0xC1:
-                    BC = POP();
-                    break;
-                case 0xC2:
-                    JP_NZ_A16();
-                    break;
-                case 0xC3:
-                    JP_A16();
-                    break;
-                case 0xC4:
-                    CALL_NZ_A16();
-                    break;
-                case 0xC5:
-                    PUSH(BC);
-                    break;
-                case 0xC6:
-                    ADD_A_D8();
-                    break;
-                case 0xC7:
-                    RST(0x00);
-                    break;
-                case 0xC8:
-                    RET_Z();
-                    break;
-                case 0xC9:
-                    RET();
-                    break;
-                case 0xCA:
-                    JP_Z_A16();
-                    break;
-                case 0xCC:
-                    CALL_Z_A16();
-                    break;
-                case 0xCD:
-                    CALL_A16();
-                    break;
-                case 0xCE:
-                    ADC_A_D8();
-                    break;
-                case 0xCF:
-                    RST(0x08);
-                    break;
-                case 0xD0:
-                    RET_NC();
-                    break;
-                case 0xD1:
-                    DE = POP();
-                    break;
-                case 0xD2:
-                    JP_NC_A16();
-                    break;
-                case 0xD4:
-                    CALL_NC_A16();
-                    break;
-                case 0xD5:
-                    PUSH(DE);
-                    break;
-                case 0xD6:
-                    SUB_A_D8();
-                    break;
-                case 0xD7:
-                    RST(0x10);
-                    break;
-                case 0xD8:
-                    RET_C();
-                    break;
-                case 0xD9:
-                    RETI();
-                    break;
-                case 0xDA:
-                    JP_C_A16();
-                    break;
-                case 0xDC:
-                    CALL_C_A16();
-                    break;
-                case 0xDE:
-                    SBC_A_D8();
-                    break;
-                case 0xDF:
-                    RST(0x18);
-                    break;
-                case 0xE0:
-                    LDH_A8_A();
-                    break;
-                case 0xE1:
-                    HL = POP();
-                    break;
-                case 0xE2:
-                    LD_AddressC_A();
-                    break;
-                case 0xE5:
-                    PUSH(HL);
-                    break;
-                case 0xE6:
-                    AND_D8();
-                    break;
-                case 0xE7:
-                    RST(0x20);
-                    break;
-                case 0xE8:
-                    ADD_SP_R8();
-                    break;
-                case 0xE9:
-                    JP_HL();
-                    break;
-                case 0xEA:
-                    LDH_A16_A();
-                    break;
-                case 0xEE:
-                    XOR_A_D8();
-                    break;
-                case 0xEF:
-                    RST(0x28);
-                    break;
-                case 0xF0:
-                    LDH_A_A8();
-                    break;
-                case 0xF1:
-                    AF = POP();
-                    break;
-                case 0xF2:
-                    LD_A_AddressC();
-                    break;
-                case 0xF3:
-                    DI();
-                    break;
-                case 0xF5:
-                    PUSH(AF);
-                    break;
-                case 0xF6:
-                    OR_D8();
-                    break;
-                case 0xF7:
-                    RST(0x30);
-                    break;
-                case 0xF8:
-                    LD_HL_SP();
-                    break;
-                case 0xF9:
-                    LD_SP_HL();
-                    break;
-                case 0xFA:
-                    LDH_A_A16();
-                    break;
-                case 0xFB:
-                    EI();
-                    break;
-                case 0xFE:
-                    CP_D8();
-                    break;
-                case 0xFF:
-                    RST(0x38);
-                    break;
+                case 0x00: NOP(); break;
+                case 0x01: BC = LD_Reg_D16(); break;
+                case 0x02: LD_AddressReg1_Reg2(BC, A); break;
+                case 0x03: BC = INC(BC); break;
+                case 0x04: B = INC_Reg(B); break;
+                case 0x05: B = DEC_Reg(B); break;
+                case 0x06: B = LD_Reg_D8(); break;
+                case 0x07: RLCA(); break;
+                case 0x08: LD_A16_SP(); break;
+                case 0x09: ADD_HL_Reg(BC); break;
+                case 0x0A: A = LD_Reg1_AddressReg2(BC); break;
+                case 0x0B: BC = DEC(BC); break;
+                case 0x0C: C = INC_Reg(C); break;
+                case 0x0D: C = DEC_Reg(C); break;
+                case 0x0E: C = LD_Reg_D8(); break;
+                case 0x0F: RRCA(); break;
+                case 0x11: DE = LD_Reg_D16(); break;
+                case 0x12: LD_AddressReg1_Reg2(DE, A); break;
+                case 0x13: DE = INC(DE); break;
+                case 0x14: D = INC_Reg(D); break;
+                case 0x15: D = DEC_Reg(D); break;
+                case 0x16: D = LD_Reg_D8(); break;
+                case 0x17: RLA(); break;
+                case 0x18: JR_R8(); break;
+                case 0x19: ADD_HL_Reg(DE); break;
+                case 0x1A: A = LD_Reg1_AddressReg2(DE); break;
+                case 0x1B: DE = DEC(DE); break;
+                case 0x1C: E = INC_Reg(E); break;
+                case 0x1D: E = DEC_Reg(E); break;
+                case 0x1E: E = LD_Reg_D8(); break;
+                case 0x1F: RRA(); break;
+                case 0x20: JR_NZ_R8(); break;
+                case 0x21: HL = LD_Reg_D16(); break;
+                case 0x22: LDI_AddressHL_A(); break;
+                case 0x23: HL = INC(HL); break;
+                case 0x24: H = INC_Reg(H); break;
+                case 0x25: H = DEC_Reg(H); break;
+                case 0x26: H = LD_Reg_D8(); break;
+                case 0x27: DAA(); break;
+                case 0x28: JR_Z_R8(); break;
+                case 0x29: ADD_HL_Reg(HL); break;
+                case 0x2A: LDI_A_AddressHL(); break;
+                case 0x2B: HL = DEC(HL); break;
+                case 0x2C: L = INC_Reg(L); break;
+                case 0x2D: L = DEC_Reg(L); break;
+                case 0x2E: L = LD_Reg_D8(); break;
+                case 0x2F: CPL(); break;
+                case 0x30: JR_NC_R8(); break;
+                case 0x31: LD_SP_D16(); break;
+                case 0x32: LDD_AddressHL_A(); break;
+                case 0x33: SP = INC(SP); break;
+                case 0x34: INC_AddressReg(HL); break;
+                case 0x35: DEC_AddressReg(HL); break;
+                case 0x36: LD_Reg_D8(HL); break;
+                case 0x37: SCF(); break;
+                case 0x38: JR_C_R8(); break;
+                case 0x39: ADD_HL_Reg(SP); break;
+                case 0x3A: LDD_A_AddressHL(); break;
+                case 0x3B: SP = DEC(SP); break;
+                case 0x3C: A = INC_Reg(A); break;
+                case 0x3D: A = DEC_Reg(A); break;
+                case 0x3E: A = LD_Reg_D8(); break;
+                case 0x3F: CCF(); break;
+                case 0x40: B = LD_Reg1_Reg2(B); break;
+                case 0x41: B = LD_Reg1_Reg2(C); break;
+                case 0x42: B = LD_Reg1_Reg2(D); break;
+                case 0x43: B = LD_Reg1_Reg2(E); break;
+                case 0x44: B = LD_Reg1_Reg2(H); break;
+                case 0x45: B = LD_Reg1_Reg2(L); break;
+                case 0x46: B = LD_Reg1_AddressReg2(HL); break;
+                case 0x47: B = LD_Reg1_Reg2(A); break;
+                case 0x48: C = LD_Reg1_Reg2(B); break;
+                case 0x49: C = LD_Reg1_Reg2(C); break;
+                case 0x4A: C = LD_Reg1_Reg2(D); break;
+                case 0x4B: C = LD_Reg1_Reg2(E); break;
+                case 0x4C: C = LD_Reg1_Reg2(H); break;
+                case 0x4D: C = LD_Reg1_Reg2(L); break;
+                case 0x4E: C = LD_Reg1_AddressReg2(HL); break;
+                case 0x4F: C = LD_Reg1_Reg2(A); break;
+                case 0x50: D = LD_Reg1_Reg2(B); break;
+                case 0x51: D = LD_Reg1_Reg2(C); break;
+                case 0x52: D = LD_Reg1_Reg2(D); break;
+                case 0x53: D = LD_Reg1_Reg2(E); break;
+                case 0x54: D = LD_Reg1_Reg2(H); break;
+                case 0x55: D = LD_Reg1_Reg2(L); break;
+                case 0x56: D = LD_Reg1_AddressReg2(HL); break;
+                case 0x57: D = LD_Reg1_Reg2(A); break;
+                case 0x58: E = LD_Reg1_Reg2(B); break;
+                case 0x59: E = LD_Reg1_Reg2(C); break;
+                case 0x5A: E = LD_Reg1_Reg2(D); break;
+                case 0x5B: E = LD_Reg1_Reg2(E); break;
+                case 0x5C: E = LD_Reg1_Reg2(H); break;
+                case 0x5D: E = LD_Reg1_Reg2(L); break;
+                case 0x5E: E = LD_Reg1_AddressReg2(HL); break;
+                case 0x5F: E = LD_Reg1_Reg2(A); break;
+                case 0x60: H = LD_Reg1_Reg2(B); break;
+                case 0x61: H = LD_Reg1_Reg2(C); break;
+                case 0x62: H = LD_Reg1_Reg2(D); break;
+                case 0x63: H = LD_Reg1_Reg2(E); break;
+                case 0x64: H = LD_Reg1_Reg2(H); break;
+                case 0x65: H = LD_Reg1_Reg2(L); break;
+                case 0x66: H = LD_Reg1_AddressReg2(HL); break;
+                case 0x67: H = LD_Reg1_Reg2(A); break;
+                case 0x68: L = LD_Reg1_Reg2(B); break;
+                case 0x69: L = LD_Reg1_Reg2(C); break;
+                case 0x6A: L = LD_Reg1_Reg2(D); break;
+                case 0x6B: L = LD_Reg1_Reg2(E); break;
+                case 0x6C: L = LD_Reg1_Reg2(H); break;
+                case 0x6D: L = LD_Reg1_Reg2(L); break;
+                case 0x6E: L = LD_Reg1_AddressReg2(HL); break;
+                case 0x6F: L = LD_Reg1_Reg2(A); break;
+                case 0x70: LD_AddressReg1_Reg2(HL, B); break;
+                case 0x71: LD_AddressReg1_Reg2(HL, C); break;
+                case 0x72: LD_AddressReg1_Reg2(HL, D); break;
+                case 0x73: LD_AddressReg1_Reg2(HL, E); break;
+                case 0x74: LD_AddressReg1_Reg2(HL, H); break;
+                case 0x75: LD_AddressReg1_Reg2(HL, L); break;
+                case 0x76: HALT(); break;
+                case 0x77: LD_AddressReg1_Reg2(HL, A); break;
+                case 0x78: A = LD_Reg1_Reg2(B); break;
+                case 0x79: A = LD_Reg1_Reg2(C); break;
+                case 0x7A: A = LD_Reg1_Reg2(D); break;
+                case 0x7B: A = LD_Reg1_Reg2(E); break;
+                case 0x7C: A = LD_Reg1_Reg2(H); break;
+                case 0x7D: A = LD_Reg1_Reg2(L); break;
+                case 0x7E: A = LD_Reg1_AddressReg2(HL); break;
+                case 0x7F: A = LD_Reg1_Reg2(A); break;
+                case 0x80: ADD_Reg(B); break;
+                case 0x81: ADD_Reg(C); break;
+                case 0x82: ADD_Reg(D); break;
+                case 0x83: ADD_Reg(E); break;
+                case 0x84: ADD_Reg(H); break;
+                case 0x85: ADD_Reg(L); break;
+                case 0x86: ADD_AddressReg(HL); break;
+                case 0x87: ADD_Reg(A); break;
+                case 0x88: ADC_A_Reg(B); break;
+                case 0x89: ADC_A_Reg(C); break;
+                case 0x8A: ADC_A_Reg(D); break;
+                case 0x8B: ADC_A_Reg(E); break;
+                case 0x8C: ADC_A_Reg(H); break;
+                case 0x8D: ADC_A_Reg(L); break;
+                case 0x8E: ADC_A_AddressReg(HL); break;
+                case 0x8F: ADC_A_Reg(A); break;
+                case 0x90: SUB_Reg(B); break;
+                case 0x91: SUB_Reg(C); break;
+                case 0x92: SUB_Reg(D); break;
+                case 0x93: SUB_Reg(E); break;
+                case 0x94: SUB_Reg(H); break;
+                case 0x95: SUB_Reg(L); break;
+                case 0x96: SUB_AddressReg(HL); break;
+                case 0x97: SUB_Reg(A); break;
+                case 0x98: SBC_A_Reg(B); break;
+                case 0x99: SBC_A_Reg(C); break;
+                case 0x9A: SBC_A_Reg(D); break;
+                case 0x9B: SBC_A_Reg(E); break;
+                case 0x9C: SBC_A_Reg(H); break;
+                case 0x9D: SBC_A_Reg(L); break;
+                case 0x9E: SBC_A_AddressReg(HL); break;
+                case 0x9F: SBC_A_Reg(A); break;
+                case 0xA0: AND_Reg(B); break;
+                case 0xA1: AND_Reg(C); break;
+                case 0xA2: AND_Reg(D); break;
+                case 0xA3: AND_Reg(E); break;
+                case 0xA4: AND_Reg(H); break;
+                case 0xA5: AND_Reg(L); break;
+                case 0xA6: AND_AddressReg(HL); break;
+                case 0xA7: AND_Reg(A); break;
+                case 0xA8: XOR_Reg(B); break;
+                case 0xA9: XOR_Reg(C); break;
+                case 0xAA: XOR_Reg(D); break;
+                case 0xAB: XOR_Reg(E); break;
+                case 0xAC: XOR_Reg(H); break;
+                case 0xAD: XOR_Reg(L); break;
+                case 0xAE: XOR_AddressReg(HL); break;
+                case 0xAF: XOR_Reg(A); break;
+                case 0xB0: OR_Reg(B); break;
+                case 0xB1: OR_Reg(C); break;
+                case 0xB2: OR_Reg(D); break;
+                case 0xB3: OR_Reg(E); break;
+                case 0xB4: OR_Reg(H); break;
+                case 0xB5: OR_Reg(L); break;
+                case 0xB6: OR_AddressReg(HL); break;
+                case 0xB7: OR_Reg(A); break;
+                case 0xB8: CP_Reg(B); break;
+                case 0xB9: CP_Reg(C); break;
+                case 0xBA: CP_Reg(D); break;
+                case 0xBB: CP_Reg(E); break;
+                case 0xBC: CP_Reg(H); break;
+                case 0xBD: CP_Reg(L); break;
+                case 0xBE: CP_AddressReg(HL); break;
+                case 0xBF: CP_Reg(A); break;
+                case 0xC0: RET_NZ(); break;
+                case 0xC1: BC = POP(); break;
+                case 0xC2: JP_NZ_A16(); break;
+                case 0xC3: JP_A16(); break;
+                case 0xC4: CALL_NZ_A16(); break;
+                case 0xC5: PUSH(BC); break;
+                case 0xC6: ADD_A_D8(); break;
+                case 0xC7: RST(0x00); break;
+                case 0xC8: RET_Z(); break;
+                case 0xC9: RET(); break;
+                case 0xCA: JP_Z_A16(); break;
+                case 0xCC: CALL_Z_A16(); break;
+                case 0xCD: CALL_A16(); break;
+                case 0xCE: ADC_A_D8(); break;
+                case 0xCF: RST(0x08); break;
+                case 0xD0: RET_NC(); break;
+                case 0xD1: DE = POP(); break;
+                case 0xD2: JP_NC_A16(); break;
+                case 0xD4: CALL_NC_A16(); break;
+                case 0xD5: PUSH(DE); break;
+                case 0xD6: SUB_A_D8(); break;
+                case 0xD7: RST(0x10); break;
+                case 0xD8: RET_C(); break;
+                case 0xD9: RETI(); break;
+                case 0xDA: JP_C_A16(); break;
+                case 0xDC: CALL_C_A16(); break;
+                case 0xDE: SBC_A_D8(); break;
+                case 0xDF: RST(0x18); break;
+                case 0xE0: LDH_A8_A(); break;
+                case 0xE1: HL = POP(); break;
+                case 0xE2: LD_AddressC_A(); break;
+                case 0xE5: PUSH(HL); break;
+                case 0xE6: AND_D8(); break;
+                case 0xE7: RST(0x20); break;
+                case 0xE8: ADD_SP_R8(); break;
+                case 0xE9: JP_HL(); break;
+                case 0xEA: LDH_A16_A(); break;
+                case 0xEE: XOR_A_D8(); break;
+                case 0xEF: RST(0x28); break;
+                case 0xF0: LDH_A_A8(); break;
+                case 0xF1: AF = POP(); break;
+                case 0xF2: LD_A_AddressC(); break;
+                case 0xF3: DI(); break;
+                case 0xF5: PUSH(AF); break;
+                case 0xF6: OR_D8(); break;
+                case 0xF7: RST(0x30); break;
+                case 0xF8: LD_HL_SP(); break;
+                case 0xF9: LD_SP_HL(); break;
+                case 0xFA: LDH_A_A16(); break;
+                case 0xFB: EI(); break;
+                case 0xFE: CP_D8(); break;
+                case 0xFF: RST(0x38); break;
 
                 case 0xCB:
 
                     switch (mmu[PC + 1])
                     {
-                        case 0x00:
-                            B = RLC_Reg(B);
-                            break;
-                        case 0x01:
-                            C = RLC_Reg(C);
-                            break;
-                        case 0x02:
-                            D = RLC_Reg(D);
-                            break;
-                        case 0x03:
-                            E = RLC_Reg(E);
-                            break;
-                        case 0x04:
-                            H = RLC_Reg(H);
-                            break;
-                        case 0x05:
-                            L = RLC_Reg(L);
-                            break;
-                        case 0x06:
-                            RLC_AddressReg(HL);
-                            break;
-                        case 0x07:
-                            A = RLC_Reg(A);
-                            break;
-                        case 0x08:
-                            B = RRC_Reg(B);
-                            break;
-                        case 0x09:
-                            C = RRC_Reg(C);
-                            break;
-                        case 0x0A:
-                            D = RRC_Reg(D);
-                            break;
-                        case 0x0B:
-                            E = RRC_Reg(E);
-                            break;
-                        case 0x0C:
-                            H = RRC_Reg(H);
-                            break;
-                        case 0x0D:
-                            L = RRC_Reg(L);
-                            break;
-                        case 0x0E:
-                            RRC_AddressReg(HL);
-                            break;
-                        case 0x0F:
-                            A = RRC_Reg(A);
-                            break;
-                        case 0x10:
-                            B = RL_Reg(B);
-                            break;
-                        case 0x11:
-                            C = RL_Reg(C);
-                            break;
-                        case 0x12:
-                            D = RL_Reg(D);
-                            break;
-                        case 0x13:
-                            E = RL_Reg(E);
-                            break;
-                        case 0x14:
-                            H = RL_Reg(H);
-                            break;
-                        case 0x15:
-                            L = RL_Reg(L);
-                            break;
-                        case 0x16:
-                            RL_AddressReg(HL);
-                            break;
-                        case 0x17:
-                            A = RL_Reg(A);
-                            break;
-                        case 0x18:
-                            B = RR_Reg(B);
-                            break;
-                        case 0x19:
-                            C = RR_Reg(C);
-                            break;
-                        case 0x1A:
-                            D = RR_Reg(D);
-                            break;
-                        case 0x1B:
-                            E = RR_Reg(E);
-                            break;
-                        case 0x1C:
-                            H = RR_Reg(H);
-                            break;
-                        case 0x1D:
-                            L = RR_Reg(L);
-                            break;
-                        case 0x1E:
-                            RR_AddressReg(HL);
-                            break;
-                        case 0x1F:
-                            A = RR_Reg(A);
-                            break;
-                        case 0x20:
-                            B = SLA_Reg(B);
-                            break;
-                        case 0x21:
-                            C = SLA_Reg(C);
-                            break;
-                        case 0x22:
-                            D = SLA_Reg(D);
-                            break;
-                        case 0x23:
-                            E = SLA_Reg(E);
-                            break;
-                        case 0x24:
-                            H = SLA_Reg(H);
-                            break;
-                        case 0x25:
-                            L = SLA_Reg(L);
-                            break;
-                        case 0x26:
-                            SLA_AddressReg(HL);
-                            break;
-                        case 0x27:
-                            A = SLA_Reg(A);
-                            break;
-                        case 0x28:
-                            B = SRA_Reg(B);
-                            break;
-                        case 0x29:
-                            C = SRA_Reg(C);
-                            break;
-                        case 0x2A:
-                            D = SRA_Reg(D);
-                            break;
-                        case 0x2B:
-                            E = SRA_Reg(E);
-                            break;
-                        case 0x2C:
-                            H = SRA_Reg(H);
-                            break;
-                        case 0x2D:
-                            L = SRA_Reg(L);
-                            break;
-                        case 0x2E:
-                            SRA_AddressReg(HL);
-                            break;
-                        case 0x2F:
-                            A = SRA_Reg(A);
-                            break;
-                        case 0x30:
-                            B = SWAP_Reg(B);
-                            break;
-                        case 0x31:
-                            C = SWAP_Reg(C);
-                            break;
-                        case 0x32:
-                            D = SWAP_Reg(D);
-                            break;
-                        case 0x33:
-                            E = SWAP_Reg(E);
-                            break;
-                        case 0x34:
-                            H = SWAP_Reg(H);
-                            break;
-                        case 0x35:
-                            L = SWAP_Reg(L);
-                            break;
-                        case 0x36:
-                            SWAP_AddressReg(HL);
-                            break;
-                        case 0x37:
-                            A = SWAP_Reg(A);
-                            break;
-                        case 0x38:
-                            B = SRL_Reg(B);
-                            break;
-                        case 0x39:
-                            C = SRL_Reg(C);
-                            break;
-                        case 0x3A:
-                            D = SRL_Reg(D);
-                            break;
-                        case 0x3B:
-                            E = SRL_Reg(E);
-                            break;
-                        case 0x3C:
-                            H = SRL_Reg(H);
-                            break;
-                        case 0x3D:
-                            L = SRL_Reg(L);
-                            break;
-                        case 0x3E:
-                            SRL_AddressReg(HL);
-                            break;
-                        case 0x3F:
-                            A = SRL_Reg(A);
-                            break;
-                        case 0x40:
-                            BIT(0, B);
-                            break;
-                        case 0x41:
-                            BIT(0, C);
-                            break;
-                        case 0x42:
-                            BIT(0, D);
-                            break;
-                        case 0x43:
-                            BIT(0, E);
-                            break;
-                        case 0x44:
-                            BIT(0, H);
-                            break;
-                        case 0x45:
-                            BIT(0, L);
-                            break;
-                        case 0x46:
-                            BIT(0, HL);
-                            break;
-                        case 0x47:
-                            BIT(0, A);
-                            break;
-                        case 0x48:
-                            BIT(1, B);
-                            break;
-                        case 0x49:
-                            BIT(1, C);
-                            break;
-                        case 0x4A:
-                            BIT(1, D);
-                            break;
-                        case 0x4B:
-                            BIT(1, E);
-                            break;
-                        case 0x4C:
-                            BIT(1, H);
-                            break;
-                        case 0x4D:
-                            BIT(1, L);
-                            break;
-                        case 0x4E:
-                            BIT(1, HL);
-                            break;
-                        case 0x4F:
-                            BIT(1, A);
-                            break;
-                        case 0x50:
-                            BIT(2, B);
-                            break;
-                        case 0x51:
-                            BIT(2, C);
-                            break;
-                        case 0x52:
-                            BIT(2, D);
-                            break;
-                        case 0x53:
-                            BIT(2, E);
-                            break;
-                        case 0x54:
-                            BIT(2, H);
-                            break;
-                        case 0x55:
-                            BIT(2, L);
-                            break;
-                        case 0x56:
-                            BIT(2, HL);
-                            break;
-                        case 0x57:
-                            BIT(2, A);
-                            break;
-                        case 0x58:
-                            BIT(3, B);
-                            break;
-                        case 0x59:
-                            BIT(3, C);
-                            break;
-                        case 0x5A:
-                            BIT(3, D);
-                            break;
-                        case 0x5B:
-                            BIT(3, E);
-                            break;
-                        case 0x5C:
-                            BIT(3, H);
-                            break;
-                        case 0x5D:
-                            BIT(3, L);
-                            break;
-                        case 0x5E:
-                            BIT(3, HL);
-                            break;
-                        case 0x5F:
-                            BIT(3, A);
-                            break;
-                        case 0x60:
-                            BIT(4, B);
-                            break;
-                        case 0x61:
-                            BIT(4, C);
-                            break;
-                        case 0x62:
-                            BIT(4, D);
-                            break;
-                        case 0x63:
-                            BIT(4, E);
-                            break;
-                        case 0x64:
-                            BIT(4, H);
-                            break;
-                        case 0x65:
-                            BIT(4, L);
-                            break;
-                        case 0x66:
-                            BIT(4, HL);
-                            break;
-                        case 0x67:
-                            BIT(4, A);
-                            break;
-                        case 0x68:
-                            BIT(5, B);
-                            break;
-                        case 0x69:
-                            BIT(5, C);
-                            break;
-                        case 0x6A:
-                            BIT(5, D);
-                            break;
-                        case 0x6B:
-                            BIT(5, E);
-                            break;
-                        case 0x6C:
-                            BIT(5, H);
-                            break;
-                        case 0x6D:
-                            BIT(5, L);
-                            break;
-                        case 0x6E:
-                            BIT(5, HL);
-                            break;
-                        case 0x6F:
-                            BIT(5, A);
-                            break;
-                        case 0x70:
-                            BIT(6, B);
-                            break;
-                        case 0x71:
-                            BIT(6, C);
-                            break;
-                        case 0x72:
-                            BIT(6, D);
-                            break;
-                        case 0x73:
-                            BIT(6, E);
-                            break;
-                        case 0x74:
-                            BIT(6, H);
-                            break;
-                        case 0x75:
-                            BIT(6, L);
-                            break;
-                        case 0x76:
-                            BIT(6, HL);
-                            break;
-                        case 0x77:
-                            BIT(6, A);
-                            break;
-                        case 0x78:
-                            BIT(7, B);
-                            break;
-                        case 0x79:
-                            BIT(7, C);
-                            break;
-                        case 0x7A:
-                            BIT(7, D);
-                            break;
-                        case 0x7B:
-                            BIT(7, E);
-                            break;
-                        case 0x7C:
-                            BIT(7, H);
-                            break;
-                        case 0x7D:
-                            BIT(7, L);
-                            break;
-                        case 0x7E:
-                            BIT(7, HL);
-                            break;
-                        case 0x7F:
-                            BIT(7, A);
-                            break;
-
-                        case 0x80:
-                            B = RES(0, B);
-                            break;
-                        case 0x81:
-                            C = RES(0, C);
-                            break;
-                        case 0x82:
-                            D = RES(0, D);
-                            break;
-                        case 0x83:
-                            E = RES(0, E);
-                            break;
-                        case 0x84:
-                            H = RES(0, H);
-                            break;
-                        case 0x85:
-                            L = RES(0, L);
-                            break;
-                        case 0x86:
-                            RES(0, HL);
-                            break;
-                        case 0x87:
-                            A = RES(0, A);
-                            break;
-                        case 0x88:
-                            B = RES(1, B);
-                            break;
-                        case 0x89:
-                            C = RES(1, C);
-                            break;
-                        case 0x8A:
-                            D = RES(1, D);
-                            break;
-                        case 0x8B:
-                            E = RES(1, E);
-                            break;
-                        case 0x8C:
-                            H = RES(1, H);
-                            break;
-                        case 0x8D:
-                            L = RES(1, L);
-                            break;
-                        case 0x8E:
-                            RES(1, HL);
-                            break;
-                        case 0x8F:
-                            A = RES(1, A);
-                            break;
-                        case 0x90:
-                            B = RES(2, B);
-                            break;
-                        case 0x91:
-                            C = RES(2, C);
-                            break;
-                        case 0x92:
-                            D = RES(2, D);
-                            break;
-                        case 0x93:
-                            E = RES(2, E);
-                            break;
-                        case 0x94:
-                            H = RES(2, H);
-                            break;
-                        case 0x95:
-                            L = RES(2, L);
-                            break;
-                        case 0x96:
-                            RES(2, HL);
-                            break;
-                        case 0x97:
-                            A = RES(2, A);
-                            break;
-                        case 0x98:
-                            B = RES(3, B);
-                            break;
-                        case 0x99:
-                            C = RES(3, C);
-                            break;
-                        case 0x9A:
-                            D = RES(3, D);
-                            break;
-                        case 0x9B:
-                            E = RES(3, E);
-                            break;
-                        case 0x9C:
-                            H = RES(3, H);
-                            break;
-                        case 0x9D:
-                            L = RES(3, L);
-                            break;
-                        case 0x9E:
-                            RES(3, HL);
-                            break;
-                        case 0x9F:
-                            A = RES(3, A);
-                            break;
-                        case 0xA0:
-                            B = RES(4, B);
-                            break;
-                        case 0xA1:
-                            C = RES(4, C);
-                            break;
-                        case 0xA2:
-                            D = RES(4, D);
-                            break;
-                        case 0xA3:
-                            E = RES(4, E);
-                            break;
-                        case 0xA4:
-                            H = RES(4, H);
-                            break;
-                        case 0xA5:
-                            L = RES(4, L);
-                            break;
-                        case 0xA6:
-                            RES(4, HL);
-                            break;
-                        case 0xA7:
-                            A = RES(4, A);
-                            break;
-                        case 0xA8:
-                            B = RES(5, B);
-                            break;
-                        case 0xA9:
-                            C = RES(5, C);
-                            break;
-                        case 0xAA:
-                            D = RES(5, D);
-                            break;
-                        case 0xAB:
-                            E = RES(5, E);
-                            break;
-                        case 0xAC:
-                            H = RES(5, H);
-                            break;
-                        case 0xAD:
-                            L = RES(5, L);
-                            break;
-                        case 0xAE:
-                            RES(5, HL);
-                            break;
-                        case 0xAF:
-                            A = RES(5, A);
-                            break;
-                        case 0xB0:
-                            B = RES(6, B);
-                            break;
-                        case 0xB1:
-                            C = RES(6, C);
-                            break;
-                        case 0xB2:
-                            D = RES(6, D);
-                            break;
-                        case 0xB3:
-                            E = RES(6, E);
-                            break;
-                        case 0xB4:
-                            H = RES(6, H);
-                            break;
-                        case 0xB5:
-                            L = RES(6, L);
-                            break;
-                        case 0xB6:
-                            RES(6, HL);
-                            break;
-                        case 0xB7:
-                            A = RES(6, A);
-                            break;
-                        case 0xB8:
-                            B = RES(7, B);
-                            break;
-                        case 0xB9:
-                            C = RES(7, C);
-                            break;
-                        case 0xBA:
-                            D = RES(7, D);
-                            break;
-                        case 0xBB:
-                            E = RES(7, E);
-                            break;
-                        case 0xBC:
-                            H = RES(7, H);
-                            break;
-                        case 0xBD:
-                            L = RES(7, L);
-                            break;
-                        case 0xBE:
-                            RES(7, HL);
-                            break;
-                        case 0xBF:
-                            A = RES(7, A);
-                            break;
-
-                        case 0xC0:
-                            B = SET(0, B);
-                            break;
-                        case 0xC1:
-                            C = SET(0, C);
-                            break;
-                        case 0xC2:
-                            D = SET(0, D);
-                            break;
-                        case 0xC3:
-                            E = SET(0, E);
-                            break;
-                        case 0xC4:
-                            H = SET(0, H);
-                            break;
-                        case 0xC5:
-                            L = SET(0, L);
-                            break;
-                        case 0xC6:
-                            SET(0, HL);
-                            break;
-                        case 0xC7:
-                            A = SET(0, A);
-                            break;
-                        case 0xC8:
-                            B = SET(1, B);
-                            break;
-                        case 0xC9:
-                            C = SET(1, C);
-                            break;
-                        case 0xCA:
-                            D = SET(1, D);
-                            break;
-                        case 0xCB:
-                            E = SET(1, E);
-                            break;
-                        case 0xCC:
-                            H = SET(1, H);
-                            break;
-                        case 0xCD:
-                            L = SET(1, L);
-                            break;
-                        case 0xCE:
-                            SET(1, HL);
-                            break;
-                        case 0xCF:
-                            A = SET(1, A);
-                            break;
-                        case 0xD0:
-                            B = SET(2, B);
-                            break;
-                        case 0xD1:
-                            C = SET(2, C);
-                            break;
-                        case 0xD2:
-                            D = SET(2, D);
-                            break;
-                        case 0xD3:
-                            E = SET(2, E);
-                            break;
-                        case 0xD4:
-                            H = SET(2, H);
-                            break;
-                        case 0xD5:
-                            L = SET(2, L);
-                            break;
-                        case 0xD6:
-                            SET(2, HL);
-                            break;
-                        case 0xD7:
-                            A = SET(2, A);
-                            break;
-                        case 0xD8:
-                            B = SET(3, B);
-                            break;
-                        case 0xD9:
-                            C = SET(3, C);
-                            break;
-                        case 0xDA:
-                            D = SET(3, D);
-                            break;
-                        case 0xDB:
-                            E = SET(3, E);
-                            break;
-                        case 0xDC:
-                            H = SET(3, H);
-                            break;
-                        case 0xDD:
-                            L = SET(3, L);
-                            break;
-                        case 0xDE:
-                            SET(3, HL);
-                            break;
-                        case 0xDF:
-                            A = SET(3, A);
-                            break;
-                        case 0xE0:
-                            B = SET(4, B);
-                            break;
-                        case 0xE1:
-                            C = SET(4, C);
-                            break;
-                        case 0xE2:
-                            D = SET(4, D);
-                            break;
-                        case 0xE3:
-                            E = SET(4, E);
-                            break;
-                        case 0xE4:
-                            H = SET(4, H);
-                            break;
-                        case 0xE5:
-                            L = SET(4, L);
-                            break;
-                        case 0xE6:
-                            SET(4, HL);
-                            break;
-                        case 0xE7:
-                            A = SET(4, A);
-                            break;
-                        case 0xE8:
-                            B = SET(5, B);
-                            break;
-                        case 0xE9:
-                            C = SET(5, C);
-                            break;
-                        case 0xEA:
-                            D = SET(5, D);
-                            break;
-                        case 0xEB:
-                            E = SET(5, E);
-                            break;
-                        case 0xEC:
-                            H = SET(5, H);
-                            break;
-                        case 0xED:
-                            L = SET(5, L);
-                            break;
-                        case 0xEE:
-                            SET(5, HL);
-                            break;
-                        case 0xEF:
-                            A = SET(5, A);
-                            break;
-                        case 0xF0:
-                            B = SET(6, B);
-                            break;
-                        case 0xF1:
-                            C = SET(6, C);
-                            break;
-                        case 0xF2:
-                            D = SET(6, D);
-                            break;
-                        case 0xF3:
-                            E = SET(6, E);
-                            break;
-                        case 0xF4:
-                            H = SET(6, H);
-                            break;
-                        case 0xF5:
-                            L = SET(6, L);
-                            break;
-                        case 0xF6:
-                            SET(6, HL);
-                            break;
-                        case 0xF7:
-                            A = SET(6, A);
-                            break;
-                        case 0xF8:
-                            B = SET(7, B);
-                            break;
-                        case 0xF9:
-                            C = SET(7, C);
-                            break;
-                        case 0xFA:
-                            D = SET(7, D);
-                            break;
-                        case 0xFB:
-                            E = SET(7, E);
-                            break;
-                        case 0xFC:
-                            H = SET(7, H);
-                            break;
-                        case 0xFD:
-                            L = SET(7, L);
-                            break;
-                        case 0xFE:
-                            SET(7, HL);
-                            break;
-                        case 0xFF:
-                            A = SET(7, A);
-                            break;
+                        case 0x00: B = RLC_Reg(B); break;
+                        case 0x01: C = RLC_Reg(C); break;
+                        case 0x02: D = RLC_Reg(D); break;
+                        case 0x03: E = RLC_Reg(E); break;
+                        case 0x04: H = RLC_Reg(H); break;
+                        case 0x05: L = RLC_Reg(L); break;
+                        case 0x06: RLC_AddressReg(HL); break;
+                        case 0x07: A = RLC_Reg(A); break;
+                        case 0x08: B = RRC_Reg(B); break;
+                        case 0x09: C = RRC_Reg(C); break;
+                        case 0x0A: D = RRC_Reg(D); break;
+                        case 0x0B: E = RRC_Reg(E); break;
+                        case 0x0C: H = RRC_Reg(H); break;
+                        case 0x0D: L = RRC_Reg(L); break;
+                        case 0x0E: RRC_AddressReg(HL); break;
+                        case 0x0F: A = RRC_Reg(A); break;
+                        case 0x10: B = RL_Reg(B); break;
+                        case 0x11: C = RL_Reg(C); break;
+                        case 0x12: D = RL_Reg(D); break;
+                        case 0x13: E = RL_Reg(E); break;
+                        case 0x14: H = RL_Reg(H); break;
+                        case 0x15: L = RL_Reg(L); break;
+                        case 0x16: RL_AddressReg(HL); break;
+                        case 0x17: A = RL_Reg(A); break;
+                        case 0x18: B = RR_Reg(B); break;
+                        case 0x19: C = RR_Reg(C); break;
+                        case 0x1A: D = RR_Reg(D); break;
+                        case 0x1B: E = RR_Reg(E); break;
+                        case 0x1C: H = RR_Reg(H); break;
+                        case 0x1D: L = RR_Reg(L); break;
+                        case 0x1E: RR_AddressReg(HL); break;
+                        case 0x1F: A = RR_Reg(A); break;
+                        case 0x20: B = SLA_Reg(B); break;
+                        case 0x21: C = SLA_Reg(C); break;
+                        case 0x22: D = SLA_Reg(D); break;
+                        case 0x23: E = SLA_Reg(E); break;
+                        case 0x24: H = SLA_Reg(H); break;
+                        case 0x25: L = SLA_Reg(L); break;
+                        case 0x26: SLA_AddressReg(HL); break;
+                        case 0x27: A = SLA_Reg(A); break;
+                        case 0x28: B = SRA_Reg(B); break;
+                        case 0x29: C = SRA_Reg(C); break;
+                        case 0x2A: D = SRA_Reg(D); break;
+                        case 0x2B: E = SRA_Reg(E); break;
+                        case 0x2C: H = SRA_Reg(H); break;
+                        case 0x2D: L = SRA_Reg(L); break;
+                        case 0x2E: SRA_AddressReg(HL); break;
+                        case 0x2F: A = SRA_Reg(A); break;
+                        case 0x30: B = SWAP_Reg(B); break;
+                        case 0x31: C = SWAP_Reg(C); break;
+                        case 0x32: D = SWAP_Reg(D); break;
+                        case 0x33: E = SWAP_Reg(E); break;
+                        case 0x34: H = SWAP_Reg(H); break;
+                        case 0x35: L = SWAP_Reg(L); break;
+                        case 0x36: SWAP_AddressReg(HL); break;
+                        case 0x37: A = SWAP_Reg(A); break;
+                        case 0x38: B = SRL_Reg(B); break;
+                        case 0x39: C = SRL_Reg(C); break;
+                        case 0x3A: D = SRL_Reg(D); break;
+                        case 0x3B: E = SRL_Reg(E); break;
+                        case 0x3C: H = SRL_Reg(H); break;
+                        case 0x3D: L = SRL_Reg(L); break;
+                        case 0x3E: SRL_AddressReg(HL); break;
+                        case 0x3F: A = SRL_Reg(A); break;
+                        case 0x40: BIT(0, B); break;
+                        case 0x41: BIT(0, C); break;
+                        case 0x42: BIT(0, D); break;
+                        case 0x43: BIT(0, E); break;
+                        case 0x44: BIT(0, H); break;
+                        case 0x45: BIT(0, L); break;
+                        case 0x46: BIT(0, HL); break;
+                        case 0x47: BIT(0, A); break;
+                        case 0x48: BIT(1, B); break;
+                        case 0x49: BIT(1, C); break;
+                        case 0x4A: BIT(1, D); break;
+                        case 0x4B: BIT(1, E); break;
+                        case 0x4C: BIT(1, H); break;
+                        case 0x4D: BIT(1, L); break;
+                        case 0x4E: BIT(1, HL); break;
+                        case 0x4F: BIT(1, A); break;
+                        case 0x50: BIT(2, B); break;
+                        case 0x51: BIT(2, C); break;
+                        case 0x52: BIT(2, D); break;
+                        case 0x53: BIT(2, E); break;
+                        case 0x54: BIT(2, H); break;
+                        case 0x55: BIT(2, L); break;
+                        case 0x56: BIT(2, HL); break;
+                        case 0x57: BIT(2, A); break;
+                        case 0x58: BIT(3, B); break;
+                        case 0x59: BIT(3, C); break;
+                        case 0x5A: BIT(3, D); break;
+                        case 0x5B: BIT(3, E); break;
+                        case 0x5C: BIT(3, H); break;
+                        case 0x5D: BIT(3, L); break;
+                        case 0x5E: BIT(3, HL); break;
+                        case 0x5F: BIT(3, A); break;
+                        case 0x60: BIT(4, B); break;
+                        case 0x61: BIT(4, C); break;
+                        case 0x62: BIT(4, D); break;
+                        case 0x63: BIT(4, E); break;
+                        case 0x64: BIT(4, H); break;
+                        case 0x65: BIT(4, L); break;
+                        case 0x66: BIT(4, HL); break;
+                        case 0x67: BIT(4, A); break;
+                        case 0x68: BIT(5, B); break;
+                        case 0x69: BIT(5, C); break;
+                        case 0x6A: BIT(5, D); break;
+                        case 0x6B: BIT(5, E); break;
+                        case 0x6C: BIT(5, H); break;
+                        case 0x6D: BIT(5, L); break;
+                        case 0x6E: BIT(5, HL); break;
+                        case 0x6F: BIT(5, A); break;
+                        case 0x70: BIT(6, B); break;
+                        case 0x71: BIT(6, C); break;
+                        case 0x72: BIT(6, D); break;
+                        case 0x73: BIT(6, E); break;
+                        case 0x74: BIT(6, H); break;
+                        case 0x75: BIT(6, L); break;
+                        case 0x76: BIT(6, HL); break;
+                        case 0x77: BIT(6, A); break;
+                        case 0x78: BIT(7, B); break;
+                        case 0x79: BIT(7, C); break;
+                        case 0x7A: BIT(7, D); break;
+                        case 0x7B: BIT(7, E); break;
+                        case 0x7C: BIT(7, H); break;
+                        case 0x7D: BIT(7, L); break;
+                        case 0x7E: BIT(7, HL); break;
+                        case 0x7F: BIT(7, A); break;
+                        case 0x80: B = RES(0, B); break;
+                        case 0x81: C = RES(0, C); break;
+                        case 0x82: D = RES(0, D); break;
+                        case 0x83: E = RES(0, E); break;
+                        case 0x84: H = RES(0, H); break;
+                        case 0x85: L = RES(0, L); break;
+                        case 0x86: RES(0, HL); break;
+                        case 0x87: A = RES(0, A); break;
+                        case 0x88: B = RES(1, B); break;
+                        case 0x89: C = RES(1, C); break;
+                        case 0x8A: D = RES(1, D); break;
+                        case 0x8B: E = RES(1, E); break;
+                        case 0x8C: H = RES(1, H); break;
+                        case 0x8D: L = RES(1, L); break;
+                        case 0x8E: RES(1, HL); break;
+                        case 0x8F: A = RES(1, A); break;
+                        case 0x90: B = RES(2, B); break;
+                        case 0x91: C = RES(2, C); break;
+                        case 0x92: D = RES(2, D); break;
+                        case 0x93: E = RES(2, E); break;
+                        case 0x94: H = RES(2, H); break;
+                        case 0x95: L = RES(2, L); break;
+                        case 0x96: RES(2, HL); break;
+                        case 0x97: A = RES(2, A); break;
+                        case 0x98: B = RES(3, B); break;
+                        case 0x99: C = RES(3, C); break;
+                        case 0x9A: D = RES(3, D); break;
+                        case 0x9B: E = RES(3, E); break;
+                        case 0x9C: H = RES(3, H); break;
+                        case 0x9D: L = RES(3, L); break;
+                        case 0x9E: RES(3, HL); break;
+                        case 0x9F: A = RES(3, A); break;
+                        case 0xA0: B = RES(4, B); break;
+                        case 0xA1: C = RES(4, C); break;
+                        case 0xA2: D = RES(4, D); break;
+                        case 0xA3: E = RES(4, E); break;
+                        case 0xA4: H = RES(4, H); break;
+                        case 0xA5: L = RES(4, L); break;
+                        case 0xA6: RES(4, HL); break;
+                        case 0xA7: A = RES(4, A); break;
+                        case 0xA8: B = RES(5, B); break;
+                        case 0xA9: C = RES(5, C); break;
+                        case 0xAA: D = RES(5, D); break;
+                        case 0xAB: E = RES(5, E); break;
+                        case 0xAC: H = RES(5, H); break;
+                        case 0xAD: L = RES(5, L); break;
+                        case 0xAE: RES(5, HL); break;
+                        case 0xAF: A = RES(5, A); break;
+                        case 0xB0: B = RES(6, B); break;
+                        case 0xB1: C = RES(6, C); break;
+                        case 0xB2: D = RES(6, D); break;
+                        case 0xB3: E = RES(6, E); break;
+                        case 0xB4: H = RES(6, H); break;
+                        case 0xB5: L = RES(6, L); break;
+                        case 0xB6: RES(6, HL); break;
+                        case 0xB7: A = RES(6, A); break;
+                        case 0xB8: B = RES(7, B); break;
+                        case 0xB9: C = RES(7, C); break;
+                        case 0xBA: D = RES(7, D); break;
+                        case 0xBB: E = RES(7, E); break;
+                        case 0xBC: H = RES(7, H); break;
+                        case 0xBD: L = RES(7, L); break;
+                        case 0xBE: RES(7, HL); break;
+                        case 0xBF: A = RES(7, A); break;
+                        case 0xC0: B = SET(0, B); break;
+                        case 0xC1: C = SET(0, C); break;
+                        case 0xC2: D = SET(0, D); break;
+                        case 0xC3: E = SET(0, E); break;
+                        case 0xC4: H = SET(0, H); break;
+                        case 0xC5: L = SET(0, L); break;
+                        case 0xC6: SET(0, HL); break;
+                        case 0xC7: A = SET(0, A); break;
+                        case 0xC8: B = SET(1, B); break;
+                        case 0xC9: C = SET(1, C); break;
+                        case 0xCA: D = SET(1, D); break;
+                        case 0xCB: E = SET(1, E); break;
+                        case 0xCC: H = SET(1, H); break;
+                        case 0xCD: L = SET(1, L); break;
+                        case 0xCE: SET(1, HL); break;
+                        case 0xCF: A = SET(1, A); break;
+                        case 0xD0: B = SET(2, B); break;
+                        case 0xD1: C = SET(2, C); break;
+                        case 0xD2: D = SET(2, D); break;
+                        case 0xD3: E = SET(2, E); break;
+                        case 0xD4: H = SET(2, H); break;
+                        case 0xD5: L = SET(2, L); break;
+                        case 0xD6: SET(2, HL); break;
+                        case 0xD7: A = SET(2, A); break;
+                        case 0xD8: B = SET(3, B); break;
+                        case 0xD9: C = SET(3, C); break;
+                        case 0xDA: D = SET(3, D); break;
+                        case 0xDB: E = SET(3, E); break;
+                        case 0xDC: H = SET(3, H); break;
+                        case 0xDD: L = SET(3, L); break;
+                        case 0xDE: SET(3, HL); break;
+                        case 0xDF: A = SET(3, A); break;
+                        case 0xE0: B = SET(4, B); break;
+                        case 0xE1: C = SET(4, C); break;
+                        case 0xE2: D = SET(4, D); break;
+                        case 0xE3: E = SET(4, E); break;
+                        case 0xE4: H = SET(4, H); break;
+                        case 0xE5: L = SET(4, L); break;
+                        case 0xE6: SET(4, HL); break;
+                        case 0xE7: A = SET(4, A); break;
+                        case 0xE8: B = SET(5, B); break;
+                        case 0xE9: C = SET(5, C); break;
+                        case 0xEA: D = SET(5, D); break;
+                        case 0xEB: E = SET(5, E); break;
+                        case 0xEC: H = SET(5, H); break;
+                        case 0xED: L = SET(5, L); break;
+                        case 0xEE: SET(5, HL); break;
+                        case 0xEF: A = SET(5, A); break;
+                        case 0xF0: B = SET(6, B); break;
+                        case 0xF1: C = SET(6, C); break;
+                        case 0xF2: D = SET(6, D); break;
+                        case 0xF3: E = SET(6, E); break;
+                        case 0xF4: H = SET(6, H); break;
+                        case 0xF5: L = SET(6, L); break;
+                        case 0xF6: SET(6, HL); break;
+                        case 0xF7: A = SET(6, A); break;
+                        case 0xF8: B = SET(7, B); break;
+                        case 0xF9: C = SET(7, C); break;
+                        case 0xFA: D = SET(7, D); break;
+                        case 0xFB: E = SET(7, E); break;
+                        case 0xFC: H = SET(7, H); break;
+                        case 0xFD: L = SET(7, L); break;
+                        case 0xFE: SET(7, HL); break;
+                        case 0xFF: A = SET(7, A); break;
                     }
 
                     break;
