@@ -76,21 +76,46 @@ namespace GBEmu.Core
 
             // If there's no boot ROM, the emulator will initialize some stuff.
             // If there is, the boot ROM itself will do the initialization.
+            // Initial register values depend on each hardware (GB, GBC, Super GB, and some others)
+            // These are for the normal GB. Most games check A and B to detect hardware.
 
             if (!isThereBootRom)
             {
-                PC = 0x100;
+                AF = 0x01B0;
+                BC = 0x0013;
+                DE = 0x00D8;
+                HL = 0x014D;
                 SP = 0xFFFE;
+                PC = 0x0100;
+
+                // Timers
+
+                mmu[0xFF04] = 0xAB;
+                mmu[0xFF05] = 0x00;
+                mmu[0xFF06] = 0x00;
+                mmu[0xFF07] = 0xF8;
+
+                // LCD Registers
+
+                mmu[0xFF40] = 0x91;
+                mmu[0xFF41] = 0x85;
+                mmu[0xFF42] = 0x00;
+                mmu[0xFF43] = 0x00;
+                mmu[0xFF45] = 0x00;
+                mmu[0xFF47] = 0xFC;
+                mmu[0xFF48] = 0xFF;
+                mmu[0xFF49] = 0xFF;
+                mmu[0xFF4A] = 0x00;
+                mmu[0xFF4B] = 0x00;
+
+                // Interrupts
+
+                mmu[0xFF0F] = 0xE1;
+                mmu[0xFFFF] = 0x00;
+
+                // Disable the Boot ROM in the corresponding IO register
+                mmu[0xFF50] = 0x01;
             }
-
-            // Initial register values depend on each hardware (GB, GBC, Super GB, and some others)
-            // These are for the normal GB. Most games check A and B to detect hardware.
-            // TODO: Check if they need to be always initialized manually with or without boot ROM.
-
-            //AF = 0x01b0;
-            //BC = 0x0013;
-            //DE = 0x00d8;
-            //HL = 0x014d;
         }
 
         public void Update()

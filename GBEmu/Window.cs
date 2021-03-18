@@ -95,13 +95,18 @@ namespace GBEmu
             }
             else
             {
-                if (!File.Exists(BOOT_ROM_FILE_NAME))
-                {
-                    Utils.Log(LogType.Error, $"A boot ROM is needed. Place it in the same folder as the emulator and call it \"{BOOT_ROM_FILE_NAME}\"");
-                    return;
-                }
+                byte[] bootRom = null;
 
-                byte[] bootRom = File.ReadAllBytes(BOOT_ROM_FILE_NAME);
+                if (File.Exists(BOOT_ROM_FILE_NAME))
+                {
+                    bootRom = File.ReadAllBytes(BOOT_ROM_FILE_NAME);
+
+                    if (bootRom.Length != 256)
+                    {
+                        Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be 256. Ignoring it.");
+                        bootRom = null;
+                    }
+                }
 
                 byte[] romData = null;
 

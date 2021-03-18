@@ -73,7 +73,7 @@ namespace GBEmu.Core
 
             if (/*sourceAddress < VRAM.VRAM_START_ADDRESS || */sourceAddress >= RAM.INTERNAL_RAM_END_ADDRESS)
             {
-                throw new InvalidOperationException($"Tried to execute a DMA transfer from an invalid address: {sourceAddress}.");
+                throw new InvalidOperationException($"Tried to execute a DMA transfer from an invalid address: 0x{sourceAddress:X4}.");
             }
 
             // DMA transfer doesn't start right away.
