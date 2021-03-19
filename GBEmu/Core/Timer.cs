@@ -42,16 +42,16 @@
                     {
                         default:
                         case TimerClockSpeeds.Hz4096:
-                            timerClocksToWait = 1024;
+                            timerClocksToWait = CPU.CPU_CLOCKS / 4096;
                             break;
                         case TimerClockSpeeds.Hz262144:
-                            timerClocksToWait = 16;
+                            timerClocksToWait = CPU.CPU_CLOCKS / 262144;
                             break;
                         case TimerClockSpeeds.Hz65536:
-                            timerClocksToWait = 64;
+                            timerClocksToWait = CPU.CPU_CLOCKS / 65536;
                             break;
                         case TimerClockSpeeds.Hz16384:
-                            timerClocksToWait = 256;
+                            timerClocksToWait = CPU.CPU_CLOCKS / 16384;
                             break;
                     }
 

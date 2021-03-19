@@ -11,6 +11,8 @@ namespace GBEmu.Core
         int clocksToWait;
         bool isHalted;
 
+        public const int CPU_CLOCKS = 4 * 1024 * 1024; // 4MHz
+
         // Registers
 
         byte a, b, c, d, e, f, h, l;

@@ -70,6 +70,7 @@ namespace GBEmu.Core
         const int HORIZONTAL_BLANK_CLOCKS = 204;
         const int VERTICAL_BLANK_CLOCKS = OAM_SEARCH_CLOCKS + PIXEL_TRANSFER_CLOCKS + HORIZONTAL_BLANK_CLOCKS;
         const int VERTICAL_BLANK_LINES = 10;
+        public const int SCREEN_CLOCKS = VERTICAL_BLANK_CLOCKS * (RES_Y + VERTICAL_BLANK_LINES);
 
         const byte COLOR_BLACK = 0;
         const byte COLOR_DARK_GRAY = 85;
