@@ -10,14 +10,16 @@ namespace GBEmu.Audio
         readonly ALDevice device;
         readonly ALContext context;
 
-        readonly int alBuffer;
-        readonly int alSource;
+        readonly int[] alBuffers;
+        readonly int[] alSources;
+        //readonly bool[] sourcesPlaying;
 
         bool isInitialized;
-        bool isPlaying;
+        SoundState previousState;
+
+        const int SOUND_CHANNELS = 4;
 
         const float SAMPLE_RATE = 44100;
-        const float FREQUENCY = 440;
 
         public Sound()
         {
@@ -58,19 +60,25 @@ namespace GBEmu.Audio
 
                 CheckALError("Before generating buffer");
 
-                AL.GenBuffer(out alBuffer);
-                short[] wave = GenerateSquareWave(FREQUENCY, SAMPLE_RATE);
-                AL.BufferData(alBuffer, ALFormat.Mono16, ref wave[0], wave.Length * sizeof(short), (int)SAMPLE_RATE);
+                alBuffers = new int[SOUND_CHANNELS];
+                AL.GenBuffers(SOUND_CHANNELS, alBuffers);
 
                 CheckALError("After generating buffer");
 
                 AL.Listener(ALListenerf.Gain, 0.1f);
 
-                AL.GenSource(out alSource);
-                AL.Source(alSource, ALSourcef.Gain, 1f);
-                AL.Source(alSource, ALSourcei.Buffer, alBuffer);
-                AL.Source(alSource, ALSourceb.Looping, true);
-                //AL.SourcePlay(alSource);
+                alSources = new int[SOUND_CHANNELS];
+                //sourcesPlaying = new bool[SOUND_CHANNELS];
+
+                AL.GenSources(SOUND_CHANNELS, alSources);
+                AL.Source(alSources[0], ALSourcef.Gain, 1f);
+                AL.Source(alSources[0], ALSourceb.Looping, true);
+                AL.Source(alSources[1], ALSourcef.Gain, 1f);
+                AL.Source(alSources[1], ALSourceb.Looping, true);
+                AL.Source(alSources[2], ALSourcef.Gain, 1f);
+                AL.Source(alSources[2], ALSourceb.Looping, true);
+                AL.Source(alSources[3], ALSourcef.Gain, 1f);
+                AL.Source(alSources[3], ALSourceb.Looping, true);
 
                 isInitialized = true;
             }
@@ -86,41 +94,83 @@ namespace GBEmu.Audio
             if (!isInitialized) return;
             isInitialized = false;
 
-            AL.SourceStop(alSource);
+            Stop();
 
-            AL.DeleteSource(alSource);
-            AL.DeleteBuffer(alBuffer);
+            AL.DeleteSources(alSources);
+            AL.DeleteBuffers(alBuffers);
 
             ALC.MakeContextCurrent(ALContext.Null);
             ALC.DestroyContext(context);
             ALC.CloseDevice(device);
         }
 
-        public void Update(SoundState soundState)
-        {
-
-        }
-
-        public void Play()
+        public void Update(SoundState state)
         {
             if (!isInitialized) return;
 
-            if (isPlaying) return;
-            isPlaying = true;
+            // Channel 1
 
-            AL.SourcePlay(alSource);
-            //AL.Source(alSource, ALSourcef.Gain, 1f);
+            if (previousState.Channel1Frequency != state.Channel1Frequency)
+            {
+                AL.SourceStop(alSources[0]);
+                //sourcesPlaying[0] = false;
+
+                AL.Source(alSources[0], ALSourcei.Buffer, 0);
+
+                byte[] wave = GenerateSquareWave(state.Channel1Frequency, state.Channel1WavePattern, SAMPLE_RATE);
+                AL.BufferData(alBuffers[0], ALFormat.Mono8, ref wave[0], wave.Length * sizeof(byte), (int)SAMPLE_RATE);
+
+                AL.Source(alSources[0], ALSourcei.Buffer, alBuffers[0]);
+
+                if (state.Channel1Enabled) AL.SourcePlay(alSources[0]);
+            }
+
+            if (previousState.Channel1Enabled != state.Channel1Enabled)
+            {
+                if (state.Channel1Enabled) AL.SourcePlay(alSources[0]);
+                else AL.SourceStop(alSources[0]);
+            }
+
+            AL.Source(alSources[0], ALSourcef.Gain, state.Channel1Volume);
+
+            // Channel 2
+
+            if (previousState.Channel2Frequency != state.Channel2Frequency)
+            {
+                AL.SourceStop(alSources[1]);
+                //sourcesPlaying[1] = false;
+
+                AL.Source(alSources[1], ALSourcei.Buffer, 0);
+
+                byte[] wave = GenerateSquareWave(state.Channel2Frequency, state.Channel2WavePattern, SAMPLE_RATE);
+                AL.BufferData(alBuffers[1], ALFormat.Mono8, ref wave[1], wave.Length * sizeof(byte), (int)SAMPLE_RATE);
+
+                AL.Source(alSources[1], ALSourcei.Buffer, alBuffers[1]);
+
+                if (state.Channel2Enabled) AL.SourcePlay(alSources[1]);
+            }
+
+            if (previousState.Channel2Enabled != state.Channel2Enabled)
+            {
+                if (state.Channel2Enabled) AL.SourcePlay(alSources[1]);
+                else AL.SourceStop(alSources[1]);
+            }
+
+            AL.Source(alSources[1], ALSourcef.Gain, state.Channel2Volume);
+
+            // Copy current state
+
+            previousState = state;
         }
 
         public void Stop()
         {
-            if (!isInitialized) return;
+            previousState = default;
 
-            if (!isPlaying) return;
-            isPlaying = false;
-
-            AL.SourceStop(alSource);
-            //AL.Source(alSource, ALSourcef.Gain, 0f);
+            AL.SourceStop(alSources[0]);
+            AL.SourceStop(alSources[1]);
+            AL.SourceStop(alSources[2]);
+            AL.SourceStop(alSources[3]);
         }
 
         static void CheckALError(string str)
@@ -132,16 +182,26 @@ namespace GBEmu.Audio
             }
         }
 
-        static short[] GenerateSquareWave(float frequency, float sampleRate)
+        static byte[] GenerateSquareWave(float frequency, Core.Sound.WavePatternDuties wavePattern, float sampleRate)
         {
             float waveLength = 1 / frequency;
-            short[] buffer = new short[(int)(waveLength * sampleRate)];
+            byte[] buffer = new byte[(int)(waveLength * sampleRate)];
+
+            float percentage;
+            switch (wavePattern)
+            {
+                default:
+                case Core.Sound.WavePatternDuties.Percent12_5: percentage = 0.875f; break;
+                case Core.Sound.WavePatternDuties.Percent25: percentage = 0.75f; break;
+                case Core.Sound.WavePatternDuties.Percent50: percentage = 0.50f; break;
+                case Core.Sound.WavePatternDuties.Percent75: percentage = 0.25f; break;
+            }
 
             for (int b = 0; b < buffer.Length; b++)
             {
                 float sin = MathF.Sin((b * frequency * MathF.PI * 2) / sampleRate);
-                //buffer[b] = (short)(sin * short.MaxValue);
-                buffer[b] = sin >= 0 ? short.MaxValue : short.MinValue;
+                //buffer[b] = (short)(sin * byte.MaxValue);
+                buffer[b] = sin >= percentage ? byte.MaxValue : byte.MinValue;
             }
 
             return buffer;

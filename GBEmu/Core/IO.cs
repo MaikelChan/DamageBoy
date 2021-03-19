@@ -7,6 +7,7 @@ namespace GBEmu.Core
         readonly PPU ppu;
         readonly DMA dma;
         readonly Timer timer;
+        readonly Sound sound;
         readonly InterruptHandler interruptHandler;
 
         public const ushort IO_PORTS_START_ADDRESS = 0xFF00;
@@ -15,11 +16,12 @@ namespace GBEmu.Core
 
         public const ushort INTERRUPT_ENABLE_REGISTER_ADDRESS = 0xFFFF;
 
-        public IO(PPU ppu, DMA dma, Timer timer, InterruptHandler interruptHandler)
+        public IO(PPU ppu, DMA dma, Timer timer, Sound sound, InterruptHandler interruptHandler)
         {
             this.ppu = ppu;
             this.dma = dma;
             this.timer = timer;
+            this.sound = sound;
             this.interruptHandler = interruptHandler;
 
             buttons = new bool[8];
@@ -357,10 +359,6 @@ namespace GBEmu.Core
 
         #region Sound Channel 1 - Tone & Sweep
 
-        byte soundChannel1NumberOfSweepShift;
-        Sound.SweepTypes soundChannel1SweepType;
-        byte soundChannel1SweepTime;
-
         /// <summary>
         /// FF10 - NR10 - Channel 1 Sweep register (R/W)
         /// </summary>
@@ -368,111 +366,201 @@ namespace GBEmu.Core
         {
             get
             {
+                if (!sound.AllSoundEnabled) return 0xFF;
+
                 byte register = 0b1000_0000;
-                register |= (byte)(soundChannel1NumberOfSweepShift & 0b0000_0111);
-                Helpers.SetBit(ref register, 3, soundChannel1SweepType == Sound.SweepTypes.Decrease);
-                register |= (byte)((soundChannel1SweepTime & 0b0000_0111) << 4);
+                register |= (byte)(sound.Channel1SweepShift & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, sound.Channel1SweepType == Sound.SweepTypes.Decrease);
+                register |= (byte)((sound.Channel1SweepTime & 0b0000_0111) << 4);
                 return register;
             }
 
             set
             {
-                soundChannel1NumberOfSweepShift = (byte)(value & 0b0000_0111);
-                soundChannel1SweepType = (value & 0b0000_1000) == 0 ? Sound.SweepTypes.Increase : Sound.SweepTypes.Decrease;
-                soundChannel1SweepTime = (byte)((value & 0b0111_0000) >> 4);
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel1SweepShift = (byte)(value & 0b0000_0111);
+                sound.Channel1SweepType = Helpers.GetBit(value, 3) ? Sound.SweepTypes.Decrease : Sound.SweepTypes.Increase;
+                sound.Channel1SweepTime = (byte)((value & 0b0111_0000) >> 4);
             }
         }
-
-        byte nr11;
 
         /// <summary>
         /// FF11 - NR11 - Channel 1 Sound length/Wave pattern duty (R/W)
         /// </summary>
         byte NR11
         {
-            get => nr11;
-            set => nr11 = value;
-        }
+            get
+            {
+                if (!sound.AllSoundEnabled) return 0xFF;
 
-        byte nr12;
+                byte register = 0b0011_1111;
+                register |= (byte)((byte)sound.Channel1WavePatternDuty << 6);
+                return register;
+            }
+
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel1Length = (byte)(value & 0b0011_1111);
+                sound.Channel1WavePatternDuty = (Sound.WavePatternDuties)((value & 0b1100_0000) >> 6);
+            }
+        }
 
         /// <summary>
         /// FF12 - NR12 - Channel 1 Volume Envelope (R/W)
         /// </summary>
         byte NR12
         {
-            get => nr12;
-            set => nr12 = value;
-        }
+            get
+            {
+                if (!sound.AllSoundEnabled) return 0xFF;
 
-        byte nr13;
+                byte register = 0;
+                register |= (byte)(sound.Channel1LengthEnvelopeSteps & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, sound.Channel1EnvelopeDirection == Sound.EnvelopeDirections.Increase);
+                register |= (byte)((sound.Channel1InitialVolume & 0b0000_1111) << 4);
+                return register;
+            }
+
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel1LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
+                sound.Channel1EnvelopeDirection = Helpers.GetBit(value, 3) ? Sound.EnvelopeDirections.Increase : Sound.EnvelopeDirections.Decrease;
+                sound.Channel1InitialVolume = (byte)((value & 0b1111_0000 >> 4));
+            }
+        }
 
         /// <summary>
         /// FF13 - NR13 - Channel 1 Frequency lo (Write Only)
         /// </summary>
         byte NR13
         {
-            get => 0xFF; // nr13;
-            set => nr13 = value;
-        }
+            get => 0xFF;
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
 
-        byte nr14;
+                sound.Channel1FrequencyLo = value;
+            }
+        }
 
         /// <summary>
         /// FF14 - NR14 - Channel 1 Frequency hi (R/W)
         /// </summary>
         byte NR14
         {
-            get => nr14;
-            set => nr14 = value;
+            get
+            {
+                if (!sound.AllSoundEnabled) return 0xFF;
+
+                byte register = 0b1011_1111;
+                Helpers.SetBit(ref register, 6, sound.Channel1LengthType == Sound.LengthTypes.Counter);
+                return register;
+            }
+
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel1FrequencyHi = (byte)(value & 0b0000_0111);
+                sound.Channel1LengthType = Helpers.GetBit(value, 6) ? Sound.LengthTypes.Counter : Sound.LengthTypes.Consecutive;
+                sound.Channel1Initialize = Helpers.GetBit(value, 7);
+            }
         }
 
         #endregion
 
         #region Sound Channel 2 - Tone
 
-        byte nr21;
-
         /// <summary>
         /// FF16 - NR21 - Channel 2 Sound Length/Wave Pattern Duty (R/W)
         /// </summary>
         byte NR21
         {
-            get => nr21;
-            set => nr21 = value;
-        }
+            get
+            {
+                if (!sound.AllSoundEnabled) return 0xFF;
 
-        byte nr22;
+                byte register = 0b0011_1111;
+                register |= (byte)((byte)sound.Channel2WavePatternDuty << 6);
+                return register;
+            }
+
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel2Length = (byte)(value & 0b0011_1111);
+                sound.Channel2WavePatternDuty = (Sound.WavePatternDuties)((value & 0b1100_0000) >> 6);
+            }
+        }
 
         /// <summary>
         /// FF17 - NR22 - Channel 2 Volume Envelope (R/W)
         /// </summary>
         byte NR22
         {
-            get => nr22;
-            set => nr22 = value;
-        }
+            get
+            {
+                if (!sound.AllSoundEnabled) return 0xFF;
 
-        byte nr23;
+                byte register = 0;
+                register |= (byte)(sound.Channel2LengthEnvelopeSteps & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, sound.Channel2EnvelopeDirection == Sound.EnvelopeDirections.Increase);
+                register |= (byte)((sound.Channel2InitialVolume & 0b0000_1111) << 4);
+                return register;
+            }
+
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel2LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
+                sound.Channel2EnvelopeDirection = Helpers.GetBit(value, 3) ? Sound.EnvelopeDirections.Increase : Sound.EnvelopeDirections.Decrease;
+                sound.Channel2InitialVolume = (byte)((value & 0b1111_0000 >> 4));
+            }
+        }
 
         /// <summary>
         /// FF18 - NR23 - Channel 2 Frequency lo data (W)
         /// </summary>
         byte NR23
         {
-            get => 0xFF;// nr23;
-            set => nr23 = value;
-        }
+            get => 0xFF;
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
 
-        byte nr24;
+                sound.Channel2FrequencyLo = value;
+            }
+        }
 
         /// <summary>
         /// FF19 - NR24 - Channel 2 Frequency hi data (R/W)
         /// </summary>
         byte NR24
         {
-            get => nr24;
-            set => nr24 = value;
+            get
+            {
+                if (!sound.AllSoundEnabled) return 0xFF;
+
+                byte register = 0b1011_1111;
+                Helpers.SetBit(ref register, 6, sound.Channel2LengthType == Sound.LengthTypes.Counter);
+                return register;
+            }
+
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel2FrequencyHi = (byte)(value & 0b0000_0111);
+                sound.Channel2LengthType = Helpers.GetBit(value, 6) ? Sound.LengthTypes.Counter : Sound.LengthTypes.Consecutive;
+                sound.Channel2Initialize = Helpers.GetBit(value, 7);
+            }
         }
 
         #endregion
@@ -644,33 +732,69 @@ namespace GBEmu.Core
 
         #region Sound Control Registers
 
-        byte nr50;
-
         /// <summary>
         /// FF24 - NR50 - Channel control / ON-OFF / Volume (R/W)
         /// </summary>
         byte NR50
         {
-            get => nr50;
-            set => nr50 = value;
-        }
+            get
+            {
+                if (!sound.AllSoundEnabled) return 0xFF;
 
-        byte nr51;
+                byte register = 0;
+                register |= (byte)(sound.Output1Level & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, sound.VinOutput1);
+                register |= (byte)((sound.Output2Level & 0b0000_0111) << 4);
+                Helpers.SetBit(ref register, 7, sound.VinOutput2);
+                return register;
+            }
+
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Output1Level = (byte)(value & 0b0000_0111);
+                sound.VinOutput1 = Helpers.GetBit(value, 3);
+                sound.Output2Level = (byte)((value & 0b0111_0000) >> 4);
+                sound.VinOutput2 = Helpers.GetBit(value, 7);
+            }
+        }
 
         /// <summary>
         /// FF25 - NR51 - Selection of Sound output terminal (R/W)
         /// </summary>
         byte NR51
         {
-            get => nr51;
-            set => nr51 = value;
-        }
+            get
+            {
+                if (!sound.AllSoundEnabled) return 0xFF;
 
-        bool SoundChannel1Enabled { get; set; }
-        bool SoundChannel2Enabled { get; set; }
-        bool SoundChannel3Enabled { get; set; }
-        bool SoundChannel4Enabled { get; set; }
-        bool AllSoundEnabled { get; set; }
+                byte register = 0;
+                Helpers.SetBit(ref register, 0, sound.Channel1Output1);
+                Helpers.SetBit(ref register, 1, sound.Channel2Output1);
+                Helpers.SetBit(ref register, 2, sound.Channel3Output1);
+                Helpers.SetBit(ref register, 3, sound.Channel4Output1);
+                Helpers.SetBit(ref register, 4, sound.Channel1Output2);
+                Helpers.SetBit(ref register, 5, sound.Channel2Output2);
+                Helpers.SetBit(ref register, 6, sound.Channel3Output2);
+                Helpers.SetBit(ref register, 7, sound.Channel4Output2);
+                return register;
+            }
+
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel1Output1 = Helpers.GetBit(value, 0);
+                sound.Channel2Output1 = Helpers.GetBit(value, 1);
+                sound.Channel3Output1 = Helpers.GetBit(value, 2);
+                sound.Channel4Output1 = Helpers.GetBit(value, 3);
+                sound.Channel1Output2 = Helpers.GetBit(value, 4);
+                sound.Channel2Output2 = Helpers.GetBit(value, 5);
+                sound.Channel3Output2 = Helpers.GetBit(value, 6);
+                sound.Channel4Output2 = Helpers.GetBit(value, 7);
+            }
+        }
 
         /// <summary>
         /// FF26 - NR52 - Sound on/off
@@ -680,31 +804,21 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b0111_0000;
-                Helpers.SetBit(ref register, 0, SoundChannel1Enabled);
-                Helpers.SetBit(ref register, 1, SoundChannel2Enabled);
-                Helpers.SetBit(ref register, 2, SoundChannel3Enabled);
-                Helpers.SetBit(ref register, 3, SoundChannel4Enabled);
-                Helpers.SetBit(ref register, 7, AllSoundEnabled);
+                Helpers.SetBit(ref register, 0, sound.Channel1Enabled);
+                Helpers.SetBit(ref register, 1, sound.Channel2Enabled);
+                Helpers.SetBit(ref register, 2, sound.Channel3Enabled);
+                Helpers.SetBit(ref register, 3, sound.Channel4Enabled);
+                Helpers.SetBit(ref register, 7, sound.AllSoundEnabled);
                 return register;
             }
 
             set
             {
-                AllSoundEnabled = Helpers.GetBit(value, 7);
+                sound.AllSoundEnabled = Helpers.GetBit(value, 7);
             }
         }
 
         #endregion
-
-        //void SoundOnOff(byte value)
-        //{
-
-        //}
-
-        //void StopAllSounds()
-        //{
-
-        //}
 
         #endregion
 

@@ -43,7 +43,7 @@ namespace GBEmu.Core
             timer = new Timer(interruptHandler);
             sound = new Sound(soundUpdateCallback);
             ppu = new PPU(interruptHandler, vram, ScreenUpdate);
-            io = new IO(ppu, dma, timer, interruptHandler);
+            io = new IO(ppu, dma, timer, sound, interruptHandler);
             mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
             cpu = new CPU(mmu, bootRom != null);
 
