@@ -143,7 +143,7 @@ namespace GBEmu.Audio
                 AL.Source(alSources[1], ALSourcei.Buffer, 0);
 
                 byte[] wave = GenerateSquareWave(state.Channel2Frequency, state.Channel2WavePattern, SAMPLE_RATE);
-                AL.BufferData(alBuffers[1], ALFormat.Mono8, ref wave[1], wave.Length * sizeof(byte), (int)SAMPLE_RATE);
+                AL.BufferData(alBuffers[1], ALFormat.Mono8, ref wave[0], wave.Length * sizeof(byte), (int)SAMPLE_RATE);
 
                 AL.Source(alSources[1], ALSourcei.Buffer, alBuffers[1]);
 
@@ -185,7 +185,8 @@ namespace GBEmu.Audio
         static byte[] GenerateSquareWave(float frequency, Core.Sound.WavePatternDuties wavePattern, float sampleRate)
         {
             float waveLength = 1 / frequency;
-            byte[] buffer = new byte[(int)(waveLength * sampleRate)];
+            int bufferLength = Math.Max(1, (int)(waveLength * sampleRate));
+            byte[] buffer = new byte[bufferLength];
 
             float percentage;
             switch (wavePattern)

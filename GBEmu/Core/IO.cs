@@ -366,8 +366,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0b1000_0000;
                 register |= (byte)(sound.Channel1SweepShift & 0b0000_0111);
                 Helpers.SetBit(ref register, 3, sound.Channel1SweepType == Sound.SweepTypes.Decrease);
@@ -392,8 +390,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0b0011_1111;
                 register |= (byte)((byte)sound.Channel1WavePatternDuty << 6);
                 return register;
@@ -415,8 +411,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0;
                 register |= (byte)(sound.Channel1LengthEnvelopeSteps & 0b0000_0111);
                 Helpers.SetBit(ref register, 3, sound.Channel1EnvelopeDirection == Sound.EnvelopeDirections.Increase);
@@ -430,7 +424,7 @@ namespace GBEmu.Core
 
                 sound.Channel1LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
                 sound.Channel1EnvelopeDirection = Helpers.GetBit(value, 3) ? Sound.EnvelopeDirections.Increase : Sound.EnvelopeDirections.Decrease;
-                sound.Channel1InitialVolume = (byte)((value & 0b1111_0000 >> 4));
+                sound.Channel1InitialVolume = (byte)((value & 0b1111_0000) >> 4);
             }
         }
 
@@ -455,8 +449,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0b1011_1111;
                 Helpers.SetBit(ref register, 6, sound.Channel1LengthType == Sound.LengthTypes.Counter);
                 return register;
@@ -483,8 +475,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0b0011_1111;
                 register |= (byte)((byte)sound.Channel2WavePatternDuty << 6);
                 return register;
@@ -506,8 +496,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0;
                 register |= (byte)(sound.Channel2LengthEnvelopeSteps & 0b0000_0111);
                 Helpers.SetBit(ref register, 3, sound.Channel2EnvelopeDirection == Sound.EnvelopeDirections.Increase);
@@ -521,7 +509,7 @@ namespace GBEmu.Core
 
                 sound.Channel2LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
                 sound.Channel2EnvelopeDirection = Helpers.GetBit(value, 3) ? Sound.EnvelopeDirections.Increase : Sound.EnvelopeDirections.Decrease;
-                sound.Channel2InitialVolume = (byte)((value & 0b1111_0000 >> 4));
+                sound.Channel2InitialVolume = (byte)((value & 0b1111_0000) >> 4);
             }
         }
 
@@ -546,8 +534,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0b1011_1111;
                 Helpers.SetBit(ref register, 6, sound.Channel2LengthType == Sound.LengthTypes.Counter);
                 return register;
@@ -567,8 +553,6 @@ namespace GBEmu.Core
 
         #region Sound Channel 3 - Wave Output
 
-        bool soundChannel3On;
-
         /// <summary>
         /// FF1A - NR30 - Channel 3 Sound on/off (R/W)
         /// </summary>
@@ -577,29 +561,36 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b0111_1111;
-                Helpers.SetBit(ref register, 7, soundChannel3On);
+                Helpers.SetBit(ref register, 7, sound.Channel3On);
                 return register;
             }
 
             set
             {
-                soundChannel3On = Helpers.GetBit(value, 7);
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel3On = Helpers.GetBit(value, 7);
             }
         }
-
-        byte nr31;
 
         /// <summary>
         /// FF1B - NR31 - Channel 3 Sound Length
         /// </summary>
         byte NR31
         {
-            get => nr31;
-            set => nr31 = value;
-        }
+            get
+            {
+                if (!sound.Channel3On) return 0xFF;
 
-        enum SoundChannel3OutputLevels { Mute, Percent100, Percent50, Percent25 }
-        SoundChannel3OutputLevels soundChannel3OutputLevel;
+                return sound.Channel3Length;
+            }
+            set
+            {
+                if (!sound.AllSoundEnabled || !sound.Channel3On) return;
+
+                sound.Channel3Length = value;
+            }
+        }
 
         /// <summary>
         /// FF1C - NR32 - Channel 3 Select output level (R/W)
@@ -609,46 +600,60 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1001_1111;
-                register |= (byte)((byte)soundChannel3OutputLevel << 5);
+                register |= (byte)(sound.Channel3Volume << 5);
                 return register;
             }
 
             set
             {
-                soundChannel3OutputLevel = (SoundChannel3OutputLevels)((value & 0b0110_0000) >> 5);
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel3Volume = (byte)((value & 0b0110_0000) >> 5);
             }
         }
-
-        byte nr33;
 
         /// <summary>
         /// FF1D - NR33 - Channel 3 Frequency's lower data (W)
         /// </summary>
         byte NR33
         {
-            get => 0xFF;// nr33;
-            set => nr33 = value;
-        }
+            get => 0xFF;
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
 
-        byte nr34;
+                sound.Channel3FrequencyLo = value;
+            }
+        }
 
         /// <summary>
         /// FF1E - NR34 - Channel 3 Frequency's higher data (R/W)
         /// </summary>
         byte NR34
         {
-            get => nr34;
-            set => nr34 = value;
-        }
+            get
+            {
+                byte register = 0b1011_1111;
+                Helpers.SetBit(ref register, 6, sound.Channel3LengthType == Sound.LengthTypes.Counter);
+                return register;
+            }
 
-        byte[] wavePattern = new byte[0x10];
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel3FrequencyHi = (byte)(value & 0b0000_0111);
+                sound.Channel3LengthType = Helpers.GetBit(value, 6) ? Sound.LengthTypes.Counter : Sound.LengthTypes.Consecutive;
+                sound.Channel3Initialize = Helpers.GetBit(value, 7);
+            }
+        }
 
         /// <summary>
         /// FF30-FF3F - Wave Pattern RAM
         /// </summary>
         byte GetWavePattern(int index)
         {
-            return wavePattern[index - 0x30];
+            return sound.WavePattern[index - 0x30];
         }
 
         /// <summary>
@@ -656,57 +661,76 @@ namespace GBEmu.Core
         /// </summary>
         void SetWavePattern(int index, byte value)
         {
-            wavePattern[index - 0x30] = value;
+            sound.WavePattern[index - 0x30] = value;
         }
 
         #endregion
 
         #region Sound Channel 4 - Noise
 
-        byte soundChannel4LengthData;
-
         /// <summary>
         /// FF20 - NR41 - Channel 4 Sound Length (R/W)
         /// </summary>
         byte NR41
         {
-            get
-            {
-                byte register = 0b1100_0000;
-                register |= (byte)(soundChannel4LengthData & 0b0011_1111);
-                return register;
-            }
+            // Despite what it says in PanDocs, this is write only
+            get => 0xFF;
 
             set
             {
-                soundChannel4LengthData = (byte)(value & 0b0011_1111);
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel4Length = (byte)(value & 0b0011_1111);
             }
         }
-
-        byte nr42;
 
         /// <summary>
         /// FF21 - NR42 - Channel 4 Volume Envelope (R/W)
         /// </summary>
         byte NR42
         {
-            get => nr42;
-            set => nr42 = value;
-        }
+            get
+            {
+                byte register = 0;
+                register |= (byte)(sound.Channel4LengthEnvelopeSteps & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, sound.Channel4EnvelopeDirection == Sound.EnvelopeDirections.Increase);
+                register |= (byte)((sound.Channel4InitialVolume & 0b0000_1111) << 4);
+                return register;
+            }
 
-        byte nr43;
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel4LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
+                sound.Channel4EnvelopeDirection = Helpers.GetBit(value, 3) ? Sound.EnvelopeDirections.Increase : Sound.EnvelopeDirections.Decrease;
+                sound.Channel4InitialVolume = (byte)((value & 0b1111_0000) >> 4);
+            }
+        }
 
         /// <summary>
         /// FF22 - NR43 - Channel 4 Polynomial Counter (R/W)
         /// </summary>
         byte NR43
         {
-            get => nr43;
-            set => nr43 = value;
-        }
+            get
+            {
+                byte register = 0;
+                register |= (byte)(sound.Channel4DividingRatioFrequencies & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, sound.Channel4CounterStepWidth == Sound.NoiseCounterStepWidths.Bits7);
+                register |= (byte)((sound.Channel4ShiftClockFrequency & 0b0000_1111) << 4);
+                return register;
+            }
 
-        bool soundChannel4CounterConsecutiveSelection;
-        bool soundChannel4Initial;
+            set
+            {
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel4DividingRatioFrequencies = (byte)(value & 0b0000_0111);
+                sound.Channel4CounterStepWidth = Helpers.GetBit(value, 3) ? Sound.NoiseCounterStepWidths.Bits7 : Sound.NoiseCounterStepWidths.Bits15;
+                sound.Channel4ShiftClockFrequency = (byte)((value & 0b1111_0000) >> 4);
+            }
+        }
 
         /// <summary>
         /// FF23 - NR44 - Channel 4 Counter/consecutive; Inital (R/W)
@@ -715,16 +739,17 @@ namespace GBEmu.Core
         {
             get
             {
-                byte register = 0b0011_1111;
-                Helpers.SetBit(ref register, 6, soundChannel4CounterConsecutiveSelection);
-                Helpers.SetBit(ref register, 7, soundChannel4Initial);
+                byte register = 0b1011_1111;
+                Helpers.SetBit(ref register, 6, sound.Channel4LengthType == Sound.LengthTypes.Counter);
                 return register;
             }
 
             set
             {
-                soundChannel4CounterConsecutiveSelection = Helpers.GetBit(value, 6);
-                soundChannel4Initial = Helpers.GetBit(value, 7);
+                if (!sound.AllSoundEnabled) return;
+
+                sound.Channel4LengthType = Helpers.GetBit(value, 6) ? Sound.LengthTypes.Counter : Sound.LengthTypes.Consecutive;
+                sound.Channel4Initialize = Helpers.GetBit(value, 7);
             }
         }
 
@@ -739,8 +764,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0;
                 register |= (byte)(sound.Output1Level & 0b0000_0111);
                 Helpers.SetBit(ref register, 3, sound.VinOutput1);
@@ -767,8 +790,6 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.AllSoundEnabled) return 0xFF;
-
                 byte register = 0;
                 Helpers.SetBit(ref register, 0, sound.Channel1Output1);
                 Helpers.SetBit(ref register, 1, sound.Channel2Output1);
