@@ -58,7 +58,7 @@ namespace GBEmu.Core
 
             ProcessChannel1(updateLength, updateVolume, updateSweep);
             ProcessChannel2(updateLength, updateVolume);
-            ProcessChannel3(updateLength, updateVolume);
+            ProcessChannel3(updateLength);
             ProcessChannel4(updateLength, updateVolume);
 
             soundUpdateCallback?.Invoke(state);
@@ -181,7 +181,7 @@ namespace GBEmu.Core
                 return;
             }
 
-            if (updateLength)
+            if (updateLength && Channel1LengthType == LengthTypes.Counter)
             {
                 Channel1Length--;
                 if (Channel1Length <= 0)
@@ -297,7 +297,7 @@ namespace GBEmu.Core
                 return;
             }
 
-            if (updateLength)
+            if (updateLength && Channel2LengthType == LengthTypes.Counter)
             {
                 Channel2Length--;
                 if (Channel2Length <= 0)
@@ -402,60 +402,40 @@ namespace GBEmu.Core
 
         public byte[] WavePattern = new byte[0x10];
 
-        // Current state
 
-        double channel3LengthTimer;
-        double channel3EnvelopeTimer;
-        byte channel3CurrentVolume;
-
-        void ProcessChannel3(bool updateLength, bool updateVolume)
+        void ProcessChannel3(bool updateLength)
         {
-            if (!AllSoundEnabled)
+            if (!AllSoundEnabled || !Channel3On)
             {
                 StopChannel3();
                 return;
             }
 
-            //channel2LengthTimer -= TIME_INTERVAL;
-            //if (channel2LengthTimer <= 0d)
-            //{
-            //    StopChannel3();
-            //    return;
-            //}
+            if (updateLength)
+            {
+                Channel3Length--;
+                if (Channel3Length <= 0)
+                {
+                    StopChannel3();
+                    return;
+                }
+            }
 
-            //if (Channel2LengthEnvelopeSteps > 0)
-            //{
-            //    channel2EnvelopeTimer -= TIME_INTERVAL;
-            //    if (channel2EnvelopeTimer <= 0)
-            //    {
-            //        channel2EnvelopeTimer = Channel2LengthEnvelopeSteps / 64d;
+            switch (Channel3Volume)
+            {
+                default:
+                case 0: state.Channel3Volume = 0f; break;
+                case 1: state.Channel3Volume = 1f; break;
+                case 2: state.Channel3Volume = 0.5f; break;
+                case 3: state.Channel3Volume = 0.25f; break;
+            }
 
-            //        if (Channel2EnvelopeDirection == EnvelopeDirections.Decrease)
-            //        {
-            //            channel2CurrentVolume--;
-            //            if (channel2CurrentVolume < 0) channel2CurrentVolume = 0;
-            //        }
-            //        else
-            //        {
-            //            channel2CurrentVolume++;
-            //            if (channel2CurrentVolume > 0xF) channel2CurrentVolume = 0xF;
-            //        }
-            //    }
-            //}
-
-            //state.Channel2Volume = channel2CurrentVolume / (float)0xF;
-
-            //state.Channel2Frequency = 131072f / (2048 - ((Channel2FrequencyHi << 8) | Channel2FrequencyLo));
-
-            //state.Channel2WavePattern = Channel2WavePatternDuty;
+            state.Channel3Frequency = 65536f / (2048 - ((Channel3FrequencyHi << 8) | Channel3FrequencyLo));
+            //state.Channel3WavePattern = Channel3WavePatternDuty;
         }
 
         void InitializeChannel3()
         {
-            //channel2LengthTimer = (64d - Channel2Length) / 256d;
-            //channel2EnvelopeTimer = Channel2LengthEnvelopeSteps / 64d;
-            //channel2CurrentVolume = Channel2InitialVolume;
-
             Channel3Enabled = true;
             state.Channel3Enabled = true;
         }
@@ -469,9 +449,6 @@ namespace GBEmu.Core
             Channel3FrequencyHi = 0;
             Channel3LengthType = LengthTypes.Consecutive;
             Channel3Initialize = false;
-            channel3LengthTimer = 0;
-            channel3EnvelopeTimer = 0;
-            channel3CurrentVolume = 0;
         }
 
         void StopChannel3()

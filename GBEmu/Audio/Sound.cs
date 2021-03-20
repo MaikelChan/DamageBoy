@@ -158,6 +158,31 @@ namespace GBEmu.Audio
 
             AL.Source(alSources[1], ALSourcef.Gain, state.Channel2Volume);
 
+            // Channel 3
+
+            if (previousState.Channel3Frequency != state.Channel3Frequency)
+            {
+                AL.SourceStop(alSources[2]);
+                //sourcesPlaying[2] = false;
+
+                AL.Source(alSources[2], ALSourcei.Buffer, 0);
+
+                byte[] wave = GenerateSquareWave(state.Channel3Frequency, Core.Sound.WavePatternDuties.Percent50, SAMPLE_RATE);
+                AL.BufferData(alBuffers[2], ALFormat.Mono8, ref wave[0], wave.Length * sizeof(byte), (int)SAMPLE_RATE);
+
+                AL.Source(alSources[2], ALSourcei.Buffer, alBuffers[2]);
+
+                if (state.Channel3Enabled) AL.SourcePlay(alSources[2]);
+            }
+
+            if (previousState.Channel3Enabled != state.Channel3Enabled)
+            {
+                if (state.Channel3Enabled) AL.SourcePlay(alSources[2]);
+                else AL.SourceStop(alSources[2]);
+            }
+
+            AL.Source(alSources[2], ALSourcef.Gain, state.Channel3Volume);
+
             // Copy current state
 
             previousState = state;
