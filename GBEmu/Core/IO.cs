@@ -7,7 +7,7 @@ namespace GBEmu.Core
         readonly PPU ppu;
         readonly DMA dma;
         readonly Timer timer;
-        readonly Sound sound;
+        readonly APU apu;
         readonly InterruptHandler interruptHandler;
 
         public const ushort IO_PORTS_START_ADDRESS = 0xFF00;
@@ -16,12 +16,12 @@ namespace GBEmu.Core
 
         public const ushort INTERRUPT_ENABLE_REGISTER_ADDRESS = 0xFFFF;
 
-        public IO(PPU ppu, DMA dma, Timer timer, Sound sound, InterruptHandler interruptHandler)
+        public IO(PPU ppu, DMA dma, Timer timer, APU apu, InterruptHandler interruptHandler)
         {
             this.ppu = ppu;
             this.dma = dma;
             this.timer = timer;
-            this.sound = sound;
+            this.apu = apu;
             this.interruptHandler = interruptHandler;
 
             buttons = new bool[8];
@@ -367,19 +367,19 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1000_0000;
-                register |= (byte)(sound.Channel1SweepShift & 0b0000_0111);
-                Helpers.SetBit(ref register, 3, sound.Channel1SweepType == Sound.SweepTypes.Decrease);
-                register |= (byte)((sound.Channel1SweepTime & 0b0000_0111) << 4);
+                register |= (byte)(apu.Channel1SweepShift & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, apu.Channel1SweepType == APU.SweepTypes.Decrease);
+                register |= (byte)((apu.Channel1SweepTime & 0b0000_0111) << 4);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel1SweepShift = (byte)(value & 0b0000_0111);
-                sound.Channel1SweepType = Helpers.GetBit(value, 3) ? Sound.SweepTypes.Decrease : Sound.SweepTypes.Increase;
-                sound.Channel1SweepTime = (byte)((value & 0b0111_0000) >> 4);
+                apu.Channel1SweepShift = (byte)(value & 0b0000_0111);
+                apu.Channel1SweepType = Helpers.GetBit(value, 3) ? APU.SweepTypes.Decrease : APU.SweepTypes.Increase;
+                apu.Channel1SweepTime = (byte)((value & 0b0111_0000) >> 4);
             }
         }
 
@@ -391,16 +391,16 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b0011_1111;
-                register |= (byte)((byte)sound.Channel1WavePatternDuty << 6);
+                register |= (byte)((byte)apu.Channel1WavePatternDuty << 6);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel1Length = (byte)(value & 0b0011_1111);
-                sound.Channel1WavePatternDuty = (Sound.WavePatternDuties)((value & 0b1100_0000) >> 6);
+                apu.Channel1Length = (byte)(value & 0b0011_1111);
+                apu.Channel1WavePatternDuty = (APU.WavePatternDuties)((value & 0b1100_0000) >> 6);
             }
         }
 
@@ -412,19 +412,19 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0;
-                register |= (byte)(sound.Channel1LengthEnvelopeSteps & 0b0000_0111);
-                Helpers.SetBit(ref register, 3, sound.Channel1EnvelopeDirection == Sound.EnvelopeDirections.Increase);
-                register |= (byte)((sound.Channel1InitialVolume & 0b0000_1111) << 4);
+                register |= (byte)(apu.Channel1LengthEnvelopeSteps & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, apu.Channel1EnvelopeDirection == APU.EnvelopeDirections.Increase);
+                register |= (byte)((apu.Channel1InitialVolume & 0b0000_1111) << 4);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel1LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
-                sound.Channel1EnvelopeDirection = Helpers.GetBit(value, 3) ? Sound.EnvelopeDirections.Increase : Sound.EnvelopeDirections.Decrease;
-                sound.Channel1InitialVolume = (byte)((value & 0b1111_0000) >> 4);
+                apu.Channel1LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
+                apu.Channel1EnvelopeDirection = Helpers.GetBit(value, 3) ? APU.EnvelopeDirections.Increase : APU.EnvelopeDirections.Decrease;
+                apu.Channel1InitialVolume = (byte)((value & 0b1111_0000) >> 4);
             }
         }
 
@@ -436,9 +436,9 @@ namespace GBEmu.Core
             get => 0xFF;
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel1FrequencyLo = value;
+                apu.Channel1FrequencyLo = value;
             }
         }
 
@@ -450,17 +450,17 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1011_1111;
-                Helpers.SetBit(ref register, 6, sound.Channel1LengthType == Sound.LengthTypes.Counter);
+                Helpers.SetBit(ref register, 6, apu.Channel1LengthType == APU.LengthTypes.Counter);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel1FrequencyHi = (byte)(value & 0b0000_0111);
-                sound.Channel1LengthType = Helpers.GetBit(value, 6) ? Sound.LengthTypes.Counter : Sound.LengthTypes.Consecutive;
-                sound.Channel1Initialize = Helpers.GetBit(value, 7);
+                apu.Channel1FrequencyHi = (byte)(value & 0b0000_0111);
+                apu.Channel1LengthType = Helpers.GetBit(value, 6) ? APU.LengthTypes.Counter : APU.LengthTypes.Consecutive;
+                apu.Channel1Initialize = Helpers.GetBit(value, 7);
             }
         }
 
@@ -476,16 +476,16 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b0011_1111;
-                register |= (byte)((byte)sound.Channel2WavePatternDuty << 6);
+                register |= (byte)((byte)apu.Channel2WavePatternDuty << 6);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel2Length = (byte)(value & 0b0011_1111);
-                sound.Channel2WavePatternDuty = (Sound.WavePatternDuties)((value & 0b1100_0000) >> 6);
+                apu.Channel2Length = (byte)(value & 0b0011_1111);
+                apu.Channel2WavePatternDuty = (APU.WavePatternDuties)((value & 0b1100_0000) >> 6);
             }
         }
 
@@ -497,19 +497,19 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0;
-                register |= (byte)(sound.Channel2LengthEnvelopeSteps & 0b0000_0111);
-                Helpers.SetBit(ref register, 3, sound.Channel2EnvelopeDirection == Sound.EnvelopeDirections.Increase);
-                register |= (byte)((sound.Channel2InitialVolume & 0b0000_1111) << 4);
+                register |= (byte)(apu.Channel2LengthEnvelopeSteps & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, apu.Channel2EnvelopeDirection == APU.EnvelopeDirections.Increase);
+                register |= (byte)((apu.Channel2InitialVolume & 0b0000_1111) << 4);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel2LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
-                sound.Channel2EnvelopeDirection = Helpers.GetBit(value, 3) ? Sound.EnvelopeDirections.Increase : Sound.EnvelopeDirections.Decrease;
-                sound.Channel2InitialVolume = (byte)((value & 0b1111_0000) >> 4);
+                apu.Channel2LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
+                apu.Channel2EnvelopeDirection = Helpers.GetBit(value, 3) ? APU.EnvelopeDirections.Increase : APU.EnvelopeDirections.Decrease;
+                apu.Channel2InitialVolume = (byte)((value & 0b1111_0000) >> 4);
             }
         }
 
@@ -521,9 +521,9 @@ namespace GBEmu.Core
             get => 0xFF;
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel2FrequencyLo = value;
+                apu.Channel2FrequencyLo = value;
             }
         }
 
@@ -535,17 +535,17 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1011_1111;
-                Helpers.SetBit(ref register, 6, sound.Channel2LengthType == Sound.LengthTypes.Counter);
+                Helpers.SetBit(ref register, 6, apu.Channel2LengthType == APU.LengthTypes.Counter);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel2FrequencyHi = (byte)(value & 0b0000_0111);
-                sound.Channel2LengthType = Helpers.GetBit(value, 6) ? Sound.LengthTypes.Counter : Sound.LengthTypes.Consecutive;
-                sound.Channel2Initialize = Helpers.GetBit(value, 7);
+                apu.Channel2FrequencyHi = (byte)(value & 0b0000_0111);
+                apu.Channel2LengthType = Helpers.GetBit(value, 6) ? APU.LengthTypes.Counter : APU.LengthTypes.Consecutive;
+                apu.Channel2Initialize = Helpers.GetBit(value, 7);
             }
         }
 
@@ -561,15 +561,15 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b0111_1111;
-                Helpers.SetBit(ref register, 7, sound.Channel3On);
+                Helpers.SetBit(ref register, 7, apu.Channel3On);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel3On = Helpers.GetBit(value, 7);
+                apu.Channel3On = Helpers.GetBit(value, 7);
             }
         }
 
@@ -580,15 +580,15 @@ namespace GBEmu.Core
         {
             get
             {
-                if (!sound.Channel3On) return 0xFF;
+                if (!apu.Channel3On) return 0xFF;
 
-                return sound.Channel3Length;
+                return apu.Channel3Length;
             }
             set
             {
-                if (!sound.AllSoundEnabled || !sound.Channel3On) return;
+                if (!apu.AllSoundEnabled || !apu.Channel3On) return;
 
-                sound.Channel3Length = value;
+                apu.Channel3Length = value;
             }
         }
 
@@ -600,15 +600,15 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1001_1111;
-                register |= (byte)(sound.Channel3Volume << 5);
+                register |= (byte)(apu.Channel3Volume << 5);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel3Volume = (byte)((value & 0b0110_0000) >> 5);
+                apu.Channel3Volume = (byte)((value & 0b0110_0000) >> 5);
             }
         }
 
@@ -620,9 +620,9 @@ namespace GBEmu.Core
             get => 0xFF;
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel3FrequencyLo = value;
+                apu.Channel3FrequencyLo = value;
             }
         }
 
@@ -634,17 +634,17 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1011_1111;
-                Helpers.SetBit(ref register, 6, sound.Channel3LengthType == Sound.LengthTypes.Counter);
+                Helpers.SetBit(ref register, 6, apu.Channel3LengthType == APU.LengthTypes.Counter);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel3FrequencyHi = (byte)(value & 0b0000_0111);
-                sound.Channel3LengthType = Helpers.GetBit(value, 6) ? Sound.LengthTypes.Counter : Sound.LengthTypes.Consecutive;
-                sound.Channel3Initialize = Helpers.GetBit(value, 7);
+                apu.Channel3FrequencyHi = (byte)(value & 0b0000_0111);
+                apu.Channel3LengthType = Helpers.GetBit(value, 6) ? APU.LengthTypes.Counter : APU.LengthTypes.Consecutive;
+                apu.Channel3Initialize = Helpers.GetBit(value, 7);
             }
         }
 
@@ -653,7 +653,7 @@ namespace GBEmu.Core
         /// </summary>
         byte GetWavePattern(int index)
         {
-            return sound.WavePattern[index - 0x30];
+            return apu.WavePattern[index - 0x30];
         }
 
         /// <summary>
@@ -661,7 +661,7 @@ namespace GBEmu.Core
         /// </summary>
         void SetWavePattern(int index, byte value)
         {
-            sound.WavePattern[index - 0x30] = value;
+            apu.WavePattern[index - 0x30] = value;
         }
 
         #endregion
@@ -678,9 +678,9 @@ namespace GBEmu.Core
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel4Length = (byte)(value & 0b0011_1111);
+                apu.Channel4Length = (byte)(value & 0b0011_1111);
             }
         }
 
@@ -692,19 +692,19 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0;
-                register |= (byte)(sound.Channel4LengthEnvelopeSteps & 0b0000_0111);
-                Helpers.SetBit(ref register, 3, sound.Channel4EnvelopeDirection == Sound.EnvelopeDirections.Increase);
-                register |= (byte)((sound.Channel4InitialVolume & 0b0000_1111) << 4);
+                register |= (byte)(apu.Channel4LengthEnvelopeSteps & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, apu.Channel4EnvelopeDirection == APU.EnvelopeDirections.Increase);
+                register |= (byte)((apu.Channel4InitialVolume & 0b0000_1111) << 4);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel4LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
-                sound.Channel4EnvelopeDirection = Helpers.GetBit(value, 3) ? Sound.EnvelopeDirections.Increase : Sound.EnvelopeDirections.Decrease;
-                sound.Channel4InitialVolume = (byte)((value & 0b1111_0000) >> 4);
+                apu.Channel4LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
+                apu.Channel4EnvelopeDirection = Helpers.GetBit(value, 3) ? APU.EnvelopeDirections.Increase : APU.EnvelopeDirections.Decrease;
+                apu.Channel4InitialVolume = (byte)((value & 0b1111_0000) >> 4);
             }
         }
 
@@ -716,19 +716,19 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0;
-                register |= (byte)(sound.Channel4DividingRatioFrequencies & 0b0000_0111);
-                Helpers.SetBit(ref register, 3, sound.Channel4CounterStepWidth == Sound.NoiseCounterStepWidths.Bits7);
-                register |= (byte)((sound.Channel4ShiftClockFrequency & 0b0000_1111) << 4);
+                register |= (byte)(apu.Channel4DividingRatioFrequencies & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, apu.Channel4CounterStepWidth == APU.NoiseCounterStepWidths.Bits7);
+                register |= (byte)((apu.Channel4ShiftClockFrequency & 0b0000_1111) << 4);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel4DividingRatioFrequencies = (byte)(value & 0b0000_0111);
-                sound.Channel4CounterStepWidth = Helpers.GetBit(value, 3) ? Sound.NoiseCounterStepWidths.Bits7 : Sound.NoiseCounterStepWidths.Bits15;
-                sound.Channel4ShiftClockFrequency = (byte)((value & 0b1111_0000) >> 4);
+                apu.Channel4DividingRatioFrequencies = (byte)(value & 0b0000_0111);
+                apu.Channel4CounterStepWidth = Helpers.GetBit(value, 3) ? APU.NoiseCounterStepWidths.Bits7 : APU.NoiseCounterStepWidths.Bits15;
+                apu.Channel4ShiftClockFrequency = (byte)((value & 0b1111_0000) >> 4);
             }
         }
 
@@ -740,16 +740,16 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b1011_1111;
-                Helpers.SetBit(ref register, 6, sound.Channel4LengthType == Sound.LengthTypes.Counter);
+                Helpers.SetBit(ref register, 6, apu.Channel4LengthType == APU.LengthTypes.Counter);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel4LengthType = Helpers.GetBit(value, 6) ? Sound.LengthTypes.Counter : Sound.LengthTypes.Consecutive;
-                sound.Channel4Initialize = Helpers.GetBit(value, 7);
+                apu.Channel4LengthType = Helpers.GetBit(value, 6) ? APU.LengthTypes.Counter : APU.LengthTypes.Consecutive;
+                apu.Channel4Initialize = Helpers.GetBit(value, 7);
             }
         }
 
@@ -765,21 +765,21 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0;
-                register |= (byte)(sound.Output1Level & 0b0000_0111);
-                Helpers.SetBit(ref register, 3, sound.VinOutput1);
-                register |= (byte)((sound.Output2Level & 0b0000_0111) << 4);
-                Helpers.SetBit(ref register, 7, sound.VinOutput2);
+                register |= (byte)(apu.Output1Level & 0b0000_0111);
+                Helpers.SetBit(ref register, 3, apu.VinOutput1);
+                register |= (byte)((apu.Output2Level & 0b0000_0111) << 4);
+                Helpers.SetBit(ref register, 7, apu.VinOutput2);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Output1Level = (byte)(value & 0b0000_0111);
-                sound.VinOutput1 = Helpers.GetBit(value, 3);
-                sound.Output2Level = (byte)((value & 0b0111_0000) >> 4);
-                sound.VinOutput2 = Helpers.GetBit(value, 7);
+                apu.Output1Level = (byte)(value & 0b0000_0111);
+                apu.VinOutput1 = Helpers.GetBit(value, 3);
+                apu.Output2Level = (byte)((value & 0b0111_0000) >> 4);
+                apu.VinOutput2 = Helpers.GetBit(value, 7);
             }
         }
 
@@ -791,29 +791,29 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0;
-                Helpers.SetBit(ref register, 0, sound.Channel1Output1);
-                Helpers.SetBit(ref register, 1, sound.Channel2Output1);
-                Helpers.SetBit(ref register, 2, sound.Channel3Output1);
-                Helpers.SetBit(ref register, 3, sound.Channel4Output1);
-                Helpers.SetBit(ref register, 4, sound.Channel1Output2);
-                Helpers.SetBit(ref register, 5, sound.Channel2Output2);
-                Helpers.SetBit(ref register, 6, sound.Channel3Output2);
-                Helpers.SetBit(ref register, 7, sound.Channel4Output2);
+                Helpers.SetBit(ref register, 0, apu.Channel1Output1);
+                Helpers.SetBit(ref register, 1, apu.Channel2Output1);
+                Helpers.SetBit(ref register, 2, apu.Channel3Output1);
+                Helpers.SetBit(ref register, 3, apu.Channel4Output1);
+                Helpers.SetBit(ref register, 4, apu.Channel1Output2);
+                Helpers.SetBit(ref register, 5, apu.Channel2Output2);
+                Helpers.SetBit(ref register, 6, apu.Channel3Output2);
+                Helpers.SetBit(ref register, 7, apu.Channel4Output2);
                 return register;
             }
 
             set
             {
-                if (!sound.AllSoundEnabled) return;
+                if (!apu.AllSoundEnabled) return;
 
-                sound.Channel1Output1 = Helpers.GetBit(value, 0);
-                sound.Channel2Output1 = Helpers.GetBit(value, 1);
-                sound.Channel3Output1 = Helpers.GetBit(value, 2);
-                sound.Channel4Output1 = Helpers.GetBit(value, 3);
-                sound.Channel1Output2 = Helpers.GetBit(value, 4);
-                sound.Channel2Output2 = Helpers.GetBit(value, 5);
-                sound.Channel3Output2 = Helpers.GetBit(value, 6);
-                sound.Channel4Output2 = Helpers.GetBit(value, 7);
+                apu.Channel1Output1 = Helpers.GetBit(value, 0);
+                apu.Channel2Output1 = Helpers.GetBit(value, 1);
+                apu.Channel3Output1 = Helpers.GetBit(value, 2);
+                apu.Channel4Output1 = Helpers.GetBit(value, 3);
+                apu.Channel1Output2 = Helpers.GetBit(value, 4);
+                apu.Channel2Output2 = Helpers.GetBit(value, 5);
+                apu.Channel3Output2 = Helpers.GetBit(value, 6);
+                apu.Channel4Output2 = Helpers.GetBit(value, 7);
             }
         }
 
@@ -825,17 +825,17 @@ namespace GBEmu.Core
             get
             {
                 byte register = 0b0111_0000;
-                Helpers.SetBit(ref register, 0, sound.Channel1Enabled);
-                Helpers.SetBit(ref register, 1, sound.Channel2Enabled);
-                Helpers.SetBit(ref register, 2, sound.Channel3Enabled);
-                Helpers.SetBit(ref register, 3, sound.Channel4Enabled);
-                Helpers.SetBit(ref register, 7, sound.AllSoundEnabled);
+                Helpers.SetBit(ref register, 0, apu.Channel1Enabled);
+                Helpers.SetBit(ref register, 1, apu.Channel2Enabled);
+                Helpers.SetBit(ref register, 2, apu.Channel3Enabled);
+                Helpers.SetBit(ref register, 3, apu.Channel4Enabled);
+                Helpers.SetBit(ref register, 7, apu.AllSoundEnabled);
                 return register;
             }
 
             set
             {
-                sound.AllSoundEnabled = Helpers.GetBit(value, 7);
+                apu.AllSoundEnabled = Helpers.GetBit(value, 7);
             }
         }
 

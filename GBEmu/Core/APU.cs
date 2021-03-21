@@ -2,7 +2,7 @@
 
 namespace GBEmu.Core
 {
-    class Sound
+    class APU
     {
         readonly Action<SoundState> soundUpdateCallback;
 
@@ -22,7 +22,7 @@ namespace GBEmu.Core
         const int VOLUME_ENVELOPE_INTERVAL_HZ = 64;
         const int SWEEP_INTERVAL_HZ = 128;
 
-        public Sound(Action<SoundState> soundUpdateCallback)
+        public APU(Action<SoundState> soundUpdateCallback)
         {
             this.soundUpdateCallback = soundUpdateCallback;
 
@@ -184,7 +184,7 @@ namespace GBEmu.Core
             if (updateLength && Channel1LengthType == LengthTypes.Counter)
             {
                 Channel1Length--;
-                if (Channel1Length <= 0)
+                if (Channel1Length == 0)
                 {
                     StopChannel1();
                     return;
@@ -193,7 +193,7 @@ namespace GBEmu.Core
 
             if (updateVolume)
             {
-                if (Channel1LengthEnvelopeSteps > 0)
+                if (Channel1LengthEnvelopeSteps > 0 && channel1EnvelopeTimer > 0)
                 {
                     channel1EnvelopeTimer--;
                     if (channel1EnvelopeTimer == 0)
@@ -300,7 +300,7 @@ namespace GBEmu.Core
             if (updateLength && Channel2LengthType == LengthTypes.Counter)
             {
                 Channel2Length--;
-                if (Channel2Length <= 0)
+                if (Channel2Length == 0)
                 {
                     StopChannel2();
                     return;
@@ -309,7 +309,7 @@ namespace GBEmu.Core
 
             if (updateVolume)
             {
-                if (Channel2LengthEnvelopeSteps > 0)
+                if (Channel2LengthEnvelopeSteps > 0 && channel2EnvelopeTimer > 0)
                 {
                     channel2EnvelopeTimer--;
                     if (channel2EnvelopeTimer == 0)
@@ -411,10 +411,10 @@ namespace GBEmu.Core
                 return;
             }
 
-            if (updateLength)
+            if (updateLength && Channel3LengthType == LengthTypes.Counter)
             {
                 Channel3Length--;
-                if (Channel3Length <= 0)
+                if (Channel3Length == 0)
                 {
                     StopChannel3();
                     return;
@@ -491,9 +491,8 @@ namespace GBEmu.Core
 
         // Current state
 
-        double channel4LengthTimer;
-        double channel4EnvelopeTimer;
-        byte channel4CurrentVolume;
+        int channel4EnvelopeTimer;
+        int channel4CurrentVolume;
 
         void ProcessChannel4(bool updateLength, bool updateVolume)
         {
@@ -503,6 +502,38 @@ namespace GBEmu.Core
                 return;
             }
 
+            if (updateLength && Channel4LengthType == LengthTypes.Counter)
+            {
+                Channel4Length--;
+                if (Channel4Length == 0)
+                {
+                    StopChannel4();
+                    return;
+                }
+            }
+
+            if (updateVolume)
+            {
+                if (Channel4LengthEnvelopeSteps > 0 && channel4EnvelopeTimer > 0)
+                {
+                    channel4EnvelopeTimer--;
+                    if (channel4EnvelopeTimer == 0)
+                    {
+                        channel4EnvelopeTimer = Channel4LengthEnvelopeSteps;
+
+                        if (Channel4EnvelopeDirection == EnvelopeDirections.Decrease)
+                        {
+                            channel4CurrentVolume--;
+                            if (channel4CurrentVolume < 0) channel4CurrentVolume = 0;
+                        }
+                        else
+                        {
+                            channel4CurrentVolume++;
+                            if (channel4CurrentVolume > 0xF) channel4CurrentVolume = 0xF;
+                        }
+                    }
+                }
+            }
         }
 
         void InitializeChannel4()
@@ -523,7 +554,6 @@ namespace GBEmu.Core
             Channel4ShiftClockFrequency = 0;
             Channel4LengthType = LengthTypes.Consecutive;
             Channel4Initialize = false;
-            channel4LengthTimer = 0;
             channel4EnvelopeTimer = 0;
             channel4CurrentVolume = 0;
         }
@@ -542,12 +572,12 @@ namespace GBEmu.Core
         public bool Channel1Enabled;
         public float Channel1Volume;
         public float Channel1Frequency;
-        public Sound.WavePatternDuties Channel1WavePattern;
+        public APU.WavePatternDuties Channel1WavePattern;
 
         public bool Channel2Enabled;
         public float Channel2Volume;
         public float Channel2Frequency;
-        public Sound.WavePatternDuties Channel2WavePattern;
+        public APU.WavePatternDuties Channel2WavePattern;
 
         public bool Channel3Enabled;
         public float Channel3Volume;

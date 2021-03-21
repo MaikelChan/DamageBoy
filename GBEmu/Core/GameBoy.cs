@@ -18,7 +18,7 @@ namespace GBEmu.Core
         readonly InterruptHandler interruptHandler;
         readonly DMA dma;
         readonly Timer timer;
-        readonly Sound sound;
+        readonly APU apu;
         readonly PPU ppu;
         readonly IO io;
         readonly MMU mmu;
@@ -41,9 +41,9 @@ namespace GBEmu.Core
             interruptHandler = new InterruptHandler();
             dma = new DMA(cartridge, ram, vram);
             timer = new Timer(interruptHandler);
-            sound = new Sound(soundUpdateCallback);
+            apu = new APU(soundUpdateCallback);
             ppu = new PPU(interruptHandler, vram, ScreenUpdate);
-            io = new IO(ppu, dma, timer, sound, interruptHandler);
+            io = new IO(ppu, dma, timer, apu, interruptHandler);
             mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
             cpu = new CPU(mmu, bootRom != null);
 
@@ -92,11 +92,11 @@ namespace GBEmu.Core
                 try
                 {
 #endif
-                timer.Update();
-                sound.Update();
-                ppu.Update();
-                cpu.Update();
-                dma.Update();
+                    timer.Update();
+                    apu.Update();
+                    ppu.Update();
+                    cpu.Update();
+                    dma.Update();
 #if !DEBUG
                 }
                 catch (Exception ex)

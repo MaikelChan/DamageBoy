@@ -167,7 +167,7 @@ namespace GBEmu.Audio
 
                 AL.Source(alSources[2], ALSourcei.Buffer, 0);
 
-                byte[] wave = GenerateSquareWave(state.Channel3Frequency, Core.Sound.WavePatternDuties.Percent50, SAMPLE_RATE);
+                byte[] wave = GenerateSquareWave(state.Channel3Frequency, Core.APU.WavePatternDuties.Percent50, SAMPLE_RATE);
                 AL.BufferData(alBuffers[2], ALFormat.Mono8, ref wave[0], wave.Length * sizeof(byte), (int)SAMPLE_RATE);
 
                 AL.Source(alSources[2], ALSourcei.Buffer, alBuffers[2]);
@@ -207,7 +207,7 @@ namespace GBEmu.Audio
             }
         }
 
-        static byte[] GenerateSquareWave(float frequency, Core.Sound.WavePatternDuties wavePattern, float sampleRate)
+        static byte[] GenerateSquareWave(float frequency, Core.APU.WavePatternDuties wavePattern, float sampleRate)
         {
             float waveLength = 1 / frequency;
             int bufferLength = Math.Max(1, (int)(waveLength * sampleRate));
@@ -217,10 +217,10 @@ namespace GBEmu.Audio
             switch (wavePattern)
             {
                 default:
-                case Core.Sound.WavePatternDuties.Percent12_5: percentage = 0.875f; break;
-                case Core.Sound.WavePatternDuties.Percent25: percentage = 0.75f; break;
-                case Core.Sound.WavePatternDuties.Percent50: percentage = 0.50f; break;
-                case Core.Sound.WavePatternDuties.Percent75: percentage = 0.25f; break;
+                case Core.APU.WavePatternDuties.Percent12_5: percentage = 0.875f; break;
+                case Core.APU.WavePatternDuties.Percent25: percentage = 0.75f; break;
+                case Core.APU.WavePatternDuties.Percent50: percentage = 0.50f; break;
+                case Core.APU.WavePatternDuties.Percent75: percentage = 0.25f; break;
             }
 
             for (int b = 0; b < buffer.Length; b++)
