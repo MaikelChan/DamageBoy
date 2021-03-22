@@ -61,7 +61,10 @@ namespace GBEmu.Core
             ProcessChannel3(updateLength);
             ProcessChannel4(updateLength, updateVolume);
 
-            soundUpdateCallback?.Invoke(state);
+            if (updateLength || updateVolume || updateSweep)
+            {
+                soundUpdateCallback?.Invoke(state);
+            }
         }
 
         #region Sound Control Registers

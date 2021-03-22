@@ -2430,14 +2430,17 @@ namespace GBEmu.Core
                 if (interruptMasterEnablePendingCycles == 0) interruptMasterEnableFlag = true;
             }
 
-            if (Helpers.GetBit(mmu[0xFF0F], 0) && Helpers.GetBit(mmu[0xFFFF], 0))
+            byte IF = mmu[0xFF0F];
+            byte IE = mmu[0xFFFF];
+
+            if (Helpers.GetBit(IF, 0) && Helpers.GetBit(IE, 0))
             {
                 isHalted = false;
 
                 if (interruptMasterEnableFlag)
                 {
                     // Perform VBlank interrupt
-                    mmu[0xFF0F] = Helpers.SetBit(mmu[0xFF0F], 0, false);
+                    mmu[0xFF0F] = Helpers.SetBit(IF, 0, false);
                     interruptMasterEnableFlag = false;
                     JumpVector(0x40);
 
@@ -2445,14 +2448,14 @@ namespace GBEmu.Core
                 }
             }
 
-            if (Helpers.GetBit(mmu[0xFF0F], 1) && Helpers.GetBit(mmu[0xFFFF], 1))
+            if (Helpers.GetBit(IF, 1) && Helpers.GetBit(IE, 1))
             {
                 isHalted = false;
 
                 if (interruptMasterEnableFlag)
                 {
                     // Perform LCD Stat interrupt
-                    mmu[0xFF0F] = Helpers.SetBit(mmu[0xFF0F], 1, false);
+                    mmu[0xFF0F] = Helpers.SetBit(IF, 1, false);
                     interruptMasterEnableFlag = false;
                     JumpVector(0x48);
 
@@ -2460,14 +2463,14 @@ namespace GBEmu.Core
                 }
             }
 
-            if (Helpers.GetBit(mmu[0xFF0F], 2) && Helpers.GetBit(mmu[0xFFFF], 2))
+            if (Helpers.GetBit(IF, 2) && Helpers.GetBit(IE, 2))
             {
                 isHalted = false;
 
                 if (interruptMasterEnableFlag)
                 {
                     // Perform Timer Overflow interrupt
-                    mmu[0xFF0F] = Helpers.SetBit(mmu[0xFF0F], 2, false);
+                    mmu[0xFF0F] = Helpers.SetBit(IF, 2, false);
                     interruptMasterEnableFlag = false;
                     JumpVector(0x50);
 
@@ -2475,14 +2478,14 @@ namespace GBEmu.Core
                 }
             }
 
-            if (Helpers.GetBit(mmu[0xFF0F], 3) && Helpers.GetBit(mmu[0xFFFF], 3))
+            if (Helpers.GetBit(IF, 3) && Helpers.GetBit(IE, 3))
             {
                 isHalted = false;
 
                 if (interruptMasterEnableFlag)
                 {
                     // Perform Serial interrupt
-                    mmu[0xFF0F] = Helpers.SetBit(mmu[0xFF0F], 3, false);
+                    mmu[0xFF0F] = Helpers.SetBit(IF, 3, false);
                     interruptMasterEnableFlag = false;
                     JumpVector(0x58);
 
@@ -2490,14 +2493,14 @@ namespace GBEmu.Core
                 }
             }
 
-            if (Helpers.GetBit(mmu[0xFF0F], 4) && Helpers.GetBit(mmu[0xFFFF], 4))
+            if (Helpers.GetBit(IF, 4) && Helpers.GetBit(IE, 4))
             {
                 isHalted = false;
 
                 if (interruptMasterEnableFlag)
                 {
                     // Perform Joypad interrupt
-                    mmu[0xFF0F] = Helpers.SetBit(mmu[0xFF0F], 4, false);
+                    mmu[0xFF0F] = Helpers.SetBit(IF, 4, false);
                     interruptMasterEnableFlag = false;
                     JumpVector(0x60);
 

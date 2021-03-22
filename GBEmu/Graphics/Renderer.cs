@@ -18,6 +18,8 @@ namespace GBEmu.Graphics
         int viewportX, viewportY, viewportWidth, viewportHeight;
         double elapsedTime;
 
+        byte[] pixels;
+
         public Renderer() : base()
         {
             // A VAO is not needed, but OpenGL complains if there's no one bound
@@ -66,6 +68,11 @@ namespace GBEmu.Graphics
             PipelineState.CurrentVAO = vao;
             PipelineState.CurrentShader = screenMaterial.Shader;
 
+            if (pixels != null)
+            {
+                screenTexture.Update(pixels);
+            }
+
             screenMaterial.OffColor = pixelOffColor;
             screenMaterial.OnColor = pixelOnColor;
             screenMaterial.SetUniforms(globalUniforms);
@@ -99,7 +106,7 @@ namespace GBEmu.Graphics
 
         public override void ScreenUpdate(byte[] pixels)
         {
-            screenTexture.Update(pixels);
+            this.pixels = pixels;
         }
 
         public override void SetColors()

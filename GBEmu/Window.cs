@@ -156,7 +156,6 @@ namespace GBEmu
 
                 Utils.Log(LogType.Info, $"ROM file successfully loaded: {selectedRomFile}");
                 gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
-                gameBoy.Run();
             }
         }
 
@@ -164,9 +163,9 @@ namespace GBEmu
         {
             if (gameBoy == null) return;
 
-            sound.Stop();
-            gameBoy.Stop();
+            gameBoy.Dispose();
             gameBoy = null;
+            sound.Stop();
         }
 
         public void SaveState()
@@ -208,20 +207,20 @@ namespace GBEmu
 
         #region Window events
 
-        protected override void OnUpdateFrame(FrameEventArgs args)
-        {
-            base.OnUpdateFrame(args);
+        //protected override void OnUpdateFrame(FrameEventArgs args)
+        //{
+        //    base.OnUpdateFrame(args);
 
-            if (IsExiting) return;
+        //    if (IsExiting) return;
 
-            //if (WindowState == WindowState.Minimized || !IsFocused)
-            //{
-            //    //Thread.Sleep(50);
-            //    return;
-            //}
+        //    //if (WindowState == WindowState.Minimized || !IsFocused)
+        //    //{
+        //    //    //Thread.Sleep(50);
+        //    //    return;
+        //    //}
 
-            gameBoy?.Update();
-        }
+        //    gameBoy?.Update();
+        //}
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {

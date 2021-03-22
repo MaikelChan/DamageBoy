@@ -9,7 +9,7 @@ namespace GBEmu.Core
         readonly VRAM vram;
         readonly Action<byte[]> screenUpdateCallback;
 
-        readonly byte[] lcdPixels;
+        readonly byte[][] lcdPixelBuffers;
         readonly byte[] spriteIndicesInCurrentLine;
         byte spritesAmountInCurrentLine;
 
@@ -48,6 +48,7 @@ namespace GBEmu.Core
         public byte ObjectPalette0 { get; set; }
         public byte ObjectPalette1 { get; set; }
 
+        // Constants
 
         public const byte RES_X = 160;
         public const byte RES_Y = 144;
@@ -81,6 +82,7 @@ namespace GBEmu.Core
         public enum CoincidenceFlagModes : byte { Different, Equals }
 
         int clocksToWait;
+        int currentBuffer;
 
         public PPU(InterruptHandler interruptHandler, VRAM vram, Action<byte[]> screenUpdateCallback)
         {
@@ -88,7 +90,12 @@ namespace GBEmu.Core
             this.vram = vram;
             this.screenUpdateCallback = screenUpdateCallback;
 
-            lcdPixels = new byte[RES_X * RES_Y];
+            // Initialize double buffer
+            lcdPixelBuffers = new byte[2][];
+            lcdPixelBuffers[0] = new byte[RES_X * RES_Y];
+            lcdPixelBuffers[1] = new byte[RES_X * RES_Y];
+            currentBuffer = 0;
+
             spriteIndicesInCurrentLine = new byte[MAX_SPRITES_PER_LINE];
 
             DoOAMSearch();
@@ -194,7 +201,9 @@ namespace GBEmu.Core
 
                     if (LY >= RES_Y + VERTICAL_BLANK_LINES)
                     {
-                        screenUpdateCallback?.Invoke(lcdPixels);
+                        screenUpdateCallback?.Invoke(lcdPixelBuffers[currentBuffer]);
+                        currentBuffer ^= 1;
+
                         LY = 0;
                         CheckLYC();
                         DoOAMSearch();
@@ -237,11 +246,6 @@ namespace GBEmu.Core
 
                 // TODO: Check more conditions?
 
-                //if (LY >= 0x88)
-                //{
-                //    int a = 0;
-                //}
-
                 spriteIndicesInCurrentLine[spritesAmountInCurrentLine] = s;
                 spritesAmountInCurrentLine++;
                 if (spritesAmountInCurrentLine >= MAX_SPRITES_PER_LINE) break;
@@ -279,14 +283,14 @@ namespace GBEmu.Core
 
                     byte bit = (byte)(7 - (sX & 0x7));
                     currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bit);
-                    lcdPixels[currentLCDPixel] = GetBGColor(currentLineColorIndices[x]);
+                    lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetBGColor(currentLineColorIndices[x]);
                 }
             }
             else
             {
                 for (int p = 0; p < RES_X * RES_Y; p++)
                 {
-                    lcdPixels[p] = 0;
+                    lcdPixelBuffers[currentBuffer][p] = 0;
                 }
             }
 
@@ -320,7 +324,7 @@ namespace GBEmu.Core
 
                     byte bit = (byte)(7 - (sX & 0x7));
                     currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bit);
-                    lcdPixels[currentLCDPixel] = GetBGColor(currentLineColorIndices[x]);
+                    lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetBGColor(currentLineColorIndices[x]);
                 }
             }
 
@@ -341,11 +345,6 @@ namespace GBEmu.Core
                         if (x >= spriteX + 8) continue;
                         if (x < spriteX) continue;
 
-                        //if (x >= RES_X)
-                        //{
-                        //    int a = 0;
-                        //}
-
                         bool spritePalette = Helpers.GetBit(vram.Oam[spriteEntryAddress + 3], 4);
                         bool spriteInvX = Helpers.GetBit(vram.Oam[spriteEntryAddress + 3], 5);
                         bool spriteInvY = Helpers.GetBit(vram.Oam[spriteEntryAddress + 3], 6);
@@ -362,11 +361,11 @@ namespace GBEmu.Core
                         {
                             if (spritePriority)
                             {
-                                if (currentLineColorIndices[x] == 0) lcdPixels[currentLCDPixel] = GetSpriteColor(colorIndex, spritePalette);
+                                if (currentLineColorIndices[x] == 0) lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetSpriteColor(colorIndex, spritePalette);
                             }
                             else
                             {
-                                lcdPixels[currentLCDPixel] = GetSpriteColor(colorIndex, spritePalette);
+                                lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetSpriteColor(colorIndex, spritePalette);
                             }
                         }
                     }

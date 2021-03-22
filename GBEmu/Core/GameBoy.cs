@@ -1,6 +1,7 @@
 ﻿using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
-using System.IO;
+using System.Diagnostics;
+using System.Threading;
 
 namespace GBEmu.Core
 {
@@ -11,7 +12,7 @@ namespace GBEmu.Core
         Running
     }
 
-    class GameBoy
+    class GameBoy : IDisposable
     {
         readonly RAM ram;
         readonly VRAM vram;
@@ -26,11 +27,11 @@ namespace GBEmu.Core
 
         readonly Action<byte[]> screenUpdateCallback;
 
-        Cartridge cartridge;
+        readonly Cartridge cartridge;
 
         public EmulationStates EmulationState { get; private set; }
 
-        bool finishedFrame;
+        const float REFRESH_RATE = (float)CPU.CPU_CLOCKS / PPU.SCREEN_CLOCKS;
 
         public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<SoundState> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
         {
@@ -49,54 +50,44 @@ namespace GBEmu.Core
 
             this.screenUpdateCallback = screenUpdateCallback;
 
-            EmulationState = EmulationStates.Stopped;
+            Thread thread = new Thread(MainLoop);
+            thread.Start();
         }
 
-        public void Run()
-        {
-            if (EmulationState != EmulationStates.Stopped) return;
-
-            EmulationState = EmulationStates.Initializing;
-            Utils.Log(LogType.Info, "Emulation is now initializing.");
-
-            //Reset();
-            //memory.LoadROM(romStream);
-
-            EmulationState = EmulationStates.Running;
-            Utils.Log(LogType.Info, "Emulation is now running.");
-        }
-
-        public void Stop()
+        public void Dispose()
         {
             if (EmulationState != EmulationStates.Running) return;
 
             cartridge.Dispose();
-            cartridge = null;
 
             EmulationState = EmulationStates.Stopped;
             Utils.Log(LogType.Info, "Emulation is now stopped.");
         }
 
-        public void Update()
+        void MainLoop()
         {
             //ProcessSaveState();
 
-            finishedFrame = false;
+            EmulationState = EmulationStates.Running;
+            Utils.Log(LogType.Info, "Emulation is now running.");
 
-            while (!finishedFrame)
-            //for (int n = 0; n < 15000; n++)
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            while (EmulationState == EmulationStates.Running)
             {
-                if (EmulationState != EmulationStates.Running) break;
+                if (sw.ElapsedTicks < (4 * Stopwatch.Frequency) / CPU.CPU_CLOCKS) continue;
+                sw.Restart();
 
 #if !DEBUG
                 try
                 {
 #endif
-                    timer.Update();
-                    apu.Update();
-                    ppu.Update();
-                    cpu.Update();
-                    dma.Update();
+                timer.Update();
+                apu.Update();
+                ppu.Update();
+                cpu.Update();
+                dma.Update();
 #if !DEBUG
                 }
                 catch (Exception ex)
@@ -180,7 +171,6 @@ namespace GBEmu.Core
 
         void ScreenUpdate(byte[] lcdPixels)
         {
-            finishedFrame = true;
             screenUpdateCallback?.Invoke(lcdPixels);
         }
 
