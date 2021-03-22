@@ -65,7 +65,7 @@ namespace GBEmu.Audio
 
                 CheckALError("After generating buffer");
 
-                AL.Listener(ALListenerf.Gain, 0.1f);
+                AL.Listener(ALListenerf.Gain, 0.15f);
 
                 alSources = new int[SOUND_CHANNELS];
                 //sourcesPlaying = new bool[SOUND_CHANNELS];

@@ -175,6 +175,8 @@ namespace GBEmu.Core
 
         int channel1EnvelopeTimer;
         int channel1CurrentVolume;
+        int channel1SweepTimer;
+        int channel1CurrentFrequency;
 
         void ProcessChannel1(bool updateLength, bool updateVolume, bool updateSweep)
         {
@@ -217,8 +219,39 @@ namespace GBEmu.Core
                 }
             }
 
+            if (updateSweep)
+            {
+                if (Channel1SweepTime > 0 && channel1SweepTimer > 0)
+                {
+                    channel1SweepTimer--;
+                    if (channel1SweepTimer == 0)
+                    {
+                        channel1SweepTimer = Channel1SweepTime;
+
+                        int frequencyDifference = (int)(channel1CurrentFrequency / MathF.Pow(2, Channel1SweepShift));
+
+                        if (Channel1SweepType == SweepTypes.Increase)
+                        {
+                            channel1CurrentFrequency += frequencyDifference;
+                            if (channel1CurrentFrequency > 0x7FF)
+                            {
+                                StopChannel1();
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            if (frequencyDifference >= 0 && Channel1SweepShift > 0)
+                            {
+                                channel1CurrentFrequency -= frequencyDifference;
+                            }
+                        }
+                    }
+                }
+            }
+
             state.Channel1Volume = channel1CurrentVolume / (float)0xF;
-            state.Channel1Frequency = 131072f / (2048 - ((Channel1FrequencyHi << 8) | Channel1FrequencyLo));
+            state.Channel1Frequency = 131072f / (2048 - channel1CurrentFrequency);
             state.Channel1WavePattern = Channel1WavePatternDuty;
         }
 
@@ -226,6 +259,8 @@ namespace GBEmu.Core
         {
             channel1EnvelopeTimer = Channel1LengthEnvelopeSteps;
             channel1CurrentVolume = Channel1InitialVolume;
+            channel1SweepTimer = Channel1SweepTime;
+            channel1CurrentFrequency = (Channel1FrequencyHi << 8) | Channel1FrequencyLo;
 
             Channel1Enabled = true;
             state.Channel1Enabled = true;
@@ -247,6 +282,8 @@ namespace GBEmu.Core
             Channel1Initialize = false;
             channel1EnvelopeTimer = 0;
             channel1CurrentVolume = 0;
+            channel1SweepTimer = 0;
+            channel1CurrentFrequency = 0;
         }
 
         void StopChannel1()
