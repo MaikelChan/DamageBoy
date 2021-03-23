@@ -191,9 +191,9 @@ namespace GBEmu
             renderer.ScreenUpdate(pixels);
         }
 
-        void SoundUpdate(SoundState soundState)
+        void SoundUpdate(byte[] data)
         {
-            sound.Update(soundState);
+            sound.Update(data);
         }
 
         void SaveUpdate(byte[] data)

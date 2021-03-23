@@ -33,7 +33,7 @@ namespace GBEmu.Core
 
         const float REFRESH_RATE = (float)CPU.CPU_CLOCKS / PPU.SCREEN_CLOCKS;
 
-        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<SoundState> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
+        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<byte[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
         {
             cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
 
