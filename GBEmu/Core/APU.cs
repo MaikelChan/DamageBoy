@@ -14,6 +14,7 @@ namespace GBEmu.Core
         public enum LengthTypes : byte { Consecutive, Counter }
         public enum NoiseCounterStepWidths : byte { Bits15, Bits7 }
 
+        int sampleClocksToWait;
         int lengthControlClocksToWait;
         int volumeEnvelopeClocksToWait;
         int sweepClocksToWait;
@@ -21,6 +22,9 @@ namespace GBEmu.Core
         const int LENGTH_CONTROL_INTERVAL_HZ = 256;
         const int VOLUME_ENVELOPE_INTERVAL_HZ = 64;
         const int SWEEP_INTERVAL_HZ = 128;
+
+        public const int SAMPLE_RATE = CPU.CPU_CLOCKS >> 7; // 32768Hz
+        public const int SOUND_CHANNEL_COUNT = 4;
 
         public APU(Action<SoundState> soundUpdateCallback)
         {
@@ -31,9 +35,17 @@ namespace GBEmu.Core
 
         public void Update()
         {
+            bool updateSample = false;
             bool updateLength = false;
             bool updateVolume = false;
             bool updateSweep = false;
+
+            sampleClocksToWait -= 4;
+            if (sampleClocksToWait <= 0)
+            {
+                sampleClocksToWait = CPU.CPU_CLOCKS / SAMPLE_RATE;
+                updateSample = true;
+            }
 
             lengthControlClocksToWait -= 4;
             if (lengthControlClocksToWait <= 0)
@@ -57,11 +69,11 @@ namespace GBEmu.Core
             }
 
             ProcessChannel1(updateLength, updateVolume, updateSweep);
-            ProcessChannel2(updateLength, updateVolume);
-            ProcessChannel3(updateLength);
+            state.Channel2Data = ProcessChannel2(updateSample, updateLength, updateVolume);
+            state.Channel3Data = ProcessChannel3(updateSample, updateLength);
             ProcessChannel4(updateLength, updateVolume);
 
-            if (updateLength || updateVolume || updateSweep)
+            if (updateSample)
             {
                 soundUpdateCallback?.Invoke(state);
             }
@@ -328,13 +340,14 @@ namespace GBEmu.Core
 
         int channel2EnvelopeTimer;
         int channel2CurrentVolume;
+        float channel2WaveCycle;
 
-        void ProcessChannel2(bool updateLength, bool updateVolume)
+        byte ProcessChannel2(bool updateSample, bool updateLength, bool updateVolume)
         {
             if (!AllSoundEnabled)
             {
                 StopChannel2();
-                return;
+                return 127;
             }
 
             if (updateLength && Channel2LengthType == LengthTypes.Counter)
@@ -343,7 +356,7 @@ namespace GBEmu.Core
                 if (Channel2Length == 0)
                 {
                     StopChannel2();
-                    return;
+                    return 127;
                 }
             }
 
@@ -370,18 +383,36 @@ namespace GBEmu.Core
                 }
             }
 
-            state.Channel2Volume = channel2CurrentVolume / (float)0xF;
-            state.Channel2Frequency = 131072f / (2048 - ((Channel2FrequencyHi << 8) | Channel2FrequencyLo));
-            state.Channel2WavePattern = Channel2WavePatternDuty;
+            if (!updateSample) return 127;
+
+            float percentage;
+            switch (Channel2WavePatternDuty)
+            {
+                default:
+                case WavePatternDuties.Percent12_5: percentage = 0.75f; break;
+                case WavePatternDuties.Percent25: percentage = 0.5f; break;
+                case WavePatternDuties.Percent50: percentage = 0.0f; break;
+                case WavePatternDuties.Percent75: percentage = -0.5f; break;
+            }
+
+            float frequency = 131072f / (2048 - ((Channel2FrequencyHi << 8) | Channel2FrequencyLo));
+
+            channel2WaveCycle += (frequency * MathF.PI * 2) / SAMPLE_RATE;
+            channel2WaveCycle %= SAMPLE_RATE;
+
+            float wave = MathF.Sin(channel2WaveCycle);
+            wave = wave > percentage ? 0.999f : -1.0f;
+            wave *= channel2CurrentVolume / (float)0xF;
+            return (byte)(wave * 128 + 128);
         }
 
         void InitializeChannel2()
         {
             channel2EnvelopeTimer = Channel2LengthEnvelopeSteps;
             channel2CurrentVolume = Channel2InitialVolume;
+            channel2WaveCycle = 0;
 
             Channel2Enabled = true;
-            state.Channel2Enabled = true;
         }
 
         void ResetChannel2()
@@ -402,7 +433,6 @@ namespace GBEmu.Core
         void StopChannel2()
         {
             Channel2Enabled = false;
-            state.Channel2Enabled = false;
         }
 
         #endregion
@@ -442,13 +472,14 @@ namespace GBEmu.Core
 
         public byte[] WavePattern = new byte[0x10];
 
+        float channel3WaveCycle;
 
-        void ProcessChannel3(bool updateLength)
+        byte ProcessChannel3(bool updateSample, bool updateLength)
         {
             if (!AllSoundEnabled || !Channel3On)
             {
                 StopChannel3();
-                return;
+                return 127;
             }
 
             if (updateLength && Channel3LengthType == LengthTypes.Counter)
@@ -457,27 +488,40 @@ namespace GBEmu.Core
                 if (Channel3Length == 0)
                 {
                     StopChannel3();
-                    return;
+                    return 127;
                 }
             }
+
+            if (!updateSample) return 127;
+
+            float volume;
 
             switch (Channel3Volume)
             {
                 default:
-                case 0: state.Channel3Volume = 0f; break;
-                case 1: state.Channel3Volume = 1f; break;
-                case 2: state.Channel3Volume = 0.5f; break;
-                case 3: state.Channel3Volume = 0.25f; break;
+                case 0: volume = 0f; break;
+                case 1: volume = 1f; break;
+                case 2: volume = 0.5f; break;
+                case 3: volume = 0.25f; break;
             }
 
-            state.Channel3Frequency = 65536f / (2048 - ((Channel3FrequencyHi << 8) | Channel3FrequencyLo));
+            float frequency = 65536f / (2048 - ((Channel3FrequencyHi << 8) | Channel3FrequencyLo));
+
+            channel3WaveCycle += (frequency * MathF.PI * 2) / SAMPLE_RATE;
+            channel3WaveCycle %= SAMPLE_RATE;
+
+            float wave = MathF.Sin(channel3WaveCycle);
+            wave *= volume;
+            return wave > 0 ? byte.MaxValue : byte.MinValue;
+
             //state.Channel3WavePattern = Channel3WavePatternDuty;
         }
 
         void InitializeChannel3()
         {
+            channel3WaveCycle = 0;
+
             Channel3Enabled = true;
-            state.Channel3Enabled = true;
         }
 
         void ResetChannel3()
@@ -494,7 +538,7 @@ namespace GBEmu.Core
         void StopChannel3()
         {
             Channel3Enabled = false;
-            state.Channel3Enabled = false;
+            //state.Channel3Enabled = false;
         }
 
         #endregion
@@ -614,14 +658,17 @@ namespace GBEmu.Core
         public float Channel1Frequency;
         public APU.WavePatternDuties Channel1WavePattern;
 
-        public bool Channel2Enabled;
-        public float Channel2Volume;
-        public float Channel2Frequency;
-        public APU.WavePatternDuties Channel2WavePattern;
+        //public bool Channel2Enabled;
+        //public float Channel2Volume;
+        //public float Channel2Frequency;
+        //public APU.WavePatternDuties Channel2WavePattern;
 
-        public bool Channel3Enabled;
-        public float Channel3Volume;
-        public float Channel3Frequency;
+        //public bool Channel3Enabled;
+        //public float Channel3Volume;
+        //public float Channel3Frequency;
+
+        public byte Channel2Data;
+        public byte Channel3Data;
 
         public bool Channel4Enabled;
         public float Channel4Volume;
