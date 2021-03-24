@@ -6,6 +6,8 @@ namespace GBEmu.Core
     {
         readonly Action<byte[]> soundUpdateCallback;
 
+        readonly Random random;
+
         public enum SweepTypes : byte { Increase, Decrease }
         public enum EnvelopeDirections : byte { Decrease, Increase }
         public enum WavePatternDuties : byte { Percent12_5, Percent25, Percent50, Percent75 }
@@ -27,6 +29,8 @@ namespace GBEmu.Core
         public APU(Action<byte[]> soundUpdateCallback)
         {
             this.soundUpdateCallback = soundUpdateCallback;
+
+            random = new Random();
         }
 
         public void Update()
@@ -68,7 +72,7 @@ namespace GBEmu.Core
             data[0] = ProcessChannel1(updateSample, updateLength, updateVolume, updateSweep);
             data[1] = ProcessChannel2(updateSample, updateLength, updateVolume);
             data[2] = ProcessChannel3(updateSample, updateLength);
-            ProcessChannel4(updateLength, updateVolume);
+            data[3] = ProcessChannel4(updateSample, updateLength, updateVolume);
 
             if (updateSample)
             {
@@ -278,9 +282,9 @@ namespace GBEmu.Core
             channel1WaveCycle %= SAMPLE_RATE;
 
             float wave = MathF.Sin(channel1WaveCycle);
-            wave = wave > percentage ? 0.999f : -1.0f;
+            wave = wave > percentage ? 1f : -0.999f;
             wave *= channel1CurrentVolume / (float)0xF;
-            return (byte)(wave * 128 + 128);
+            return (byte)(wave * 128 + 127);
         }
 
         void InitializeChannel1()
@@ -415,9 +419,9 @@ namespace GBEmu.Core
             channel2WaveCycle %= SAMPLE_RATE;
 
             float wave = MathF.Sin(channel2WaveCycle);
-            wave = wave > percentage ? 0.999f : -1.0f;
+            wave = wave > percentage ? 1f : -0.999f;
             wave *= channel2CurrentVolume / (float)0xF;
-            return (byte)(wave * 128 + 128);
+            return (byte)(wave * 128 + 127);
         }
 
         void InitializeChannel2()
@@ -525,9 +529,9 @@ namespace GBEmu.Core
             channel3WaveCycle %= SAMPLE_RATE;
 
             float wave = MathF.Sin(channel3WaveCycle);
-            wave = wave > 0f ? 0.999f : -1.0f;
+            wave = wave > 0f ? 1f : -0.999f;
             wave *= volume;
-            return (byte)(wave * 128 + 128);
+            return (byte)(wave * 128 + 127);
 
             //state.Channel3WavePattern = Channel3WavePatternDuty;
         }
@@ -592,12 +596,12 @@ namespace GBEmu.Core
         int channel4EnvelopeTimer;
         int channel4CurrentVolume;
 
-        void ProcessChannel4(bool updateLength, bool updateVolume)
+        byte ProcessChannel4(bool updateSample, bool updateLength, bool updateVolume)
         {
             if (!AllSoundEnabled)
             {
                 StopChannel4();
-                return;
+                return 127;
             }
 
             if (updateLength && Channel4LengthType == LengthTypes.Counter)
@@ -606,7 +610,7 @@ namespace GBEmu.Core
                 if (Channel4Length == 0)
                 {
                     StopChannel4();
-                    return;
+                    return 127;
                 }
             }
 
@@ -632,10 +636,17 @@ namespace GBEmu.Core
                     }
                 }
             }
+
+            float wave = (float)(random.NextDouble() * 2 - 1);
+            wave *= channel4CurrentVolume / (float)0xF;
+            return (byte)(wave * 128 + 127);
         }
 
         void InitializeChannel4()
         {
+            channel4EnvelopeTimer = Channel4LengthEnvelopeSteps;
+            channel4CurrentVolume = Channel4InitialVolume;
+
             Channel4Enabled = true;
         }
 
