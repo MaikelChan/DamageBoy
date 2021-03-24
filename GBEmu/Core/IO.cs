@@ -653,7 +653,9 @@ namespace GBEmu.Core
         /// </summary>
         byte GetWavePattern(int index)
         {
-            return apu.WavePattern[index - 0x30];
+            index -= 0x30;
+            index <<= 1;
+            return (byte)((apu.Channel3WavePattern[index + 0] << 4) | (apu.Channel3WavePattern[index + 1] & 0b0000_1111));
         }
 
         /// <summary>
@@ -661,7 +663,10 @@ namespace GBEmu.Core
         /// </summary>
         void SetWavePattern(int index, byte value)
         {
-            apu.WavePattern[index - 0x30] = value;
+            index -= 0x30;
+            index <<= 1;
+            apu.Channel3WavePattern[index + 0] = (byte)(value >> 4);
+            apu.Channel3WavePattern[index + 1] = (byte)(value & 0b0000_1111);
         }
 
         #endregion

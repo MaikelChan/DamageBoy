@@ -488,7 +488,7 @@ namespace GBEmu.Core
 
         // FF30-FF3F - Wave Pattern RAM
 
-        public byte[] WavePattern = new byte[0x10];
+        public byte[] Channel3WavePattern = new byte[0x20];
 
         float channel3WaveCycle;
 
@@ -525,15 +525,12 @@ namespace GBEmu.Core
 
             float frequency = 65536f / (2048 - ((Channel3FrequencyHi << 8) | Channel3FrequencyLo));
 
-            channel3WaveCycle += (frequency * MathF.PI * 2) / SAMPLE_RATE;
-            channel3WaveCycle %= SAMPLE_RATE;
+            channel3WaveCycle += frequency / (SAMPLE_RATE >> 5);
+            channel3WaveCycle %= 32f;
 
-            float wave = MathF.Sin(channel3WaveCycle);
-            wave = wave > 0f ? 1f : -0.999f;
+            float wave = (Channel3WavePattern[(int)channel3WaveCycle] / 7.5f) - 0.999f;
             wave *= volume;
             return (byte)(wave * 128 + 127);
-
-            //state.Channel3WavePattern = Channel3WavePatternDuty;
         }
 
         void InitializeChannel3()

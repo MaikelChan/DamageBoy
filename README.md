@@ -5,7 +5,7 @@
 - It can run games with no MBC, MBC1, MBC3 and MBC5.
 - Basic graphics features are supported: background, window, sprites, scrolling and mid-scanline effects.
 - It supports saving and loading. Saves are stored in the `Saves` subfolder in the emulator path.
-- No audio support for now.
+- Audio mostly implemented, but there are still some sounds that don't play correctly.
 - It's still not too accurate, so there are some timer / interrupt issues. `Super Mario Land` can randomly crash. Though I've been able to play other games like `Super Mario Land 2` and `Link's Awakening` for a while without issues.
 
 ## Requirements
