@@ -12,6 +12,13 @@ namespace GBEmu.Core
         Running
     }
 
+    enum FrameLimiterStates
+    {
+        Limited,
+        Unlimited,
+        Paused
+    }
+
     class GameBoy : IDisposable
     {
         readonly RAM ram;
@@ -28,14 +35,16 @@ namespace GBEmu.Core
         readonly Action<byte[]> screenUpdateCallback;
 
         readonly Cartridge cartridge;
+        readonly Action<byte[]> soundUpdateCallback;
 
         public EmulationStates EmulationState { get; private set; }
 
-        const float REFRESH_RATE = (float)CPU.CPU_CLOCKS / PPU.SCREEN_CLOCKS;
+        FrameLimiterStates frameLimiterState;
 
         public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<byte[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
         {
             cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
+            this.soundUpdateCallback = soundUpdateCallback;
 
             ram = new RAM();
             vram = new VRAM();
@@ -49,6 +58,8 @@ namespace GBEmu.Core
             cpu = new CPU(mmu, bootRom != null);
 
             this.screenUpdateCallback = screenUpdateCallback;
+
+            frameLimiterState = FrameLimiterStates.Limited;
 
             Thread thread = new Thread(MainLoop);
             thread.Start();
@@ -76,8 +87,22 @@ namespace GBEmu.Core
 
             while (EmulationState == EmulationStates.Running)
             {
-                if (sw.ElapsedTicks < (4 * Stopwatch.Frequency) / CPU.CPU_CLOCKS) continue;
-                sw.Restart();
+                if (frameLimiterState == FrameLimiterStates.Paused)
+                {
+                    if (sw.ElapsedTicks < (4 * Stopwatch.Frequency) / CPU.CPU_CLOCKS) continue;
+                    sw.Restart();
+
+                    // We need to keep the sound system alive invoking it, so the GameBoy's main loop
+                    // gets notified when an audio buffer has finished playing and the loop continues running. 
+                    soundUpdateCallback?.Invoke(null);
+                    continue;
+                }
+
+                if (frameLimiterState == FrameLimiterStates.Limited)
+                {
+                    if (sw.ElapsedTicks < (4 * Stopwatch.Frequency) / CPU.CPU_CLOCKS) continue;
+                    sw.Restart();
+                }
 
 #if !DEBUG
                 try
@@ -162,6 +187,11 @@ namespace GBEmu.Core
                     io.SetInput(IO.Buttons.Start, false);
                     break;
             }
+        }
+
+        public void SetFrameLimiterState(FrameLimiterStates state)
+        {
+            frameLimiterState = state;
         }
 
         //public void GetCPUState(CPUState cpuState)

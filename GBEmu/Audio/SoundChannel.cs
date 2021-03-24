@@ -8,23 +8,24 @@ namespace GBEmu.Audio
     {
         readonly int[] alBuffers;
         readonly byte[] soundData;
-        readonly byte[] resampledSoundData;
         int soundDataPosition;
-        BufferStates bufferState;
         int alSource;
 
-        enum BufferStates { EnqueuingData, Playing }
+        enum AudioStates { Buffering, Playing }
+        AudioStates audioState;
+
+        public Sound.BufferStates BufferState { get; private set; }
 
         public const int BUFFERS_PER_CHANNEL = 2;
-        public const int BUFFER_SIZE = 8 * 1024;
+        public const int BUFFER_SIZE = 1024;
 
         public SoundChannel()
         {
             alBuffers = new int[BUFFERS_PER_CHANNEL];
             soundData = new byte[BUFFERS_PER_CHANNEL * BUFFER_SIZE];
-            resampledSoundData = new byte[BUFFER_SIZE];
             soundDataPosition = 0;
-            bufferState = BufferStates.EnqueuingData;
+            audioState = AudioStates.Buffering;
+            BufferState = Sound.BufferStates.Ok;
 
             for (int b = 0; b < BUFFERS_PER_CHANNEL; b++)
             {
@@ -42,11 +43,13 @@ namespace GBEmu.Audio
             DeleteSource();
         }
 
-        public void ProcessChannel(byte data)
+        public void ProcessChannel(byte? data)
         {
-            if (bufferState == BufferStates.EnqueuingData)
+            if (audioState == AudioStates.Buffering)
             {
-                soundData[soundDataPosition] = data;
+                if (!data.HasValue) return;
+
+                soundData[soundDataPosition] = data.Value;
                 soundDataPosition++;
 
                 if (soundDataPosition < BUFFERS_PER_CHANNEL * BUFFER_SIZE) return;
@@ -60,7 +63,7 @@ namespace GBEmu.Audio
                     AL.SourceQueueBuffer(alSource, alBuffers[b]);
                 }
 
-                bufferState = BufferStates.Playing;
+                audioState = AudioStates.Playing;
                 AL.SourcePlay(alSource);
             }
             else
@@ -68,13 +71,18 @@ namespace GBEmu.Audio
                 AL.GetSource(alSource, ALGetSourcei.SourceState, out int sourceState);
                 if (sourceState != (int)ALSourceState.Playing)
                 {
+                    // Need to fully delete the source before starting playback again.
+                    // I haven't seen a way to unqueue all buffers, which is required
+                    // to not have old audio playing when starting playback again).
+                    // SourceUnqueueBuffer() only unqueues processed ones, not all of them.
+
                     DeleteSource();
                     return;
                 }
 
-                if (soundDataPosition < BUFFERS_PER_CHANNEL * BUFFER_SIZE)
+                if (soundDataPosition < BUFFER_SIZE && data.HasValue)
                 {
-                    soundData[soundDataPosition] = data;
+                    soundData[soundDataPosition] = data.Value;
                     soundDataPosition++;
                 }
 
@@ -82,42 +90,37 @@ namespace GBEmu.Audio
 
                 if (buffersProcessed > 0)
                 {
-                    //if (soundDataPosition[index] >= BUFFERS_PER_CHANNEL * BUFFER_SIZE)
-                    //{
-                    //    Utils.Log(LogType.Error, $"There are {buffersProcessed} audio buffers to unqueue in channel 3. There should be 1.");
-                    //}
+                    if (soundDataPosition < BUFFER_SIZE)
+                    {
+                        BufferState = Sound.BufferStates.Underrun;
+                        return;
+                    }
+                    else
+                    {
+                        BufferState = Sound.BufferStates.Ok;
+                    }
 
-                    //while (soundDataPosition[index] < BUFFER_SIZE)
-                    //{
-                    //    soundData[index][soundDataPosition[index]] = 127;
-                    //    soundDataPosition[index]++;
-                    //}
-
-                    Resample(soundData, soundDataPosition, resampledSoundData, BUFFER_SIZE);
-                    //Utils.Log($"Buffers processed: {buffersProcessed}, Buffer Size: {soundDataPosition[1]}, New Buffer Dize: {newSoundData.Length}");
+                    //Resample(soundData, soundDataPosition, resampledSoundData, BUFFER_SIZE);
+                    //Utils.Log($"Buffers processed: {buffersProcessed}, Buffer Size: {soundDataPosition}, Expected Buffer Size: {BUFFER_SIZE}");
 
                     int unqueuedBuffer = AL.SourceUnqueueBuffer(alSource);
 
-                    AL.BufferData(unqueuedBuffer, ALFormat.Mono8, ref resampledSoundData[0], BUFFER_SIZE, APU.SAMPLE_RATE);
+                    AL.BufferData(unqueuedBuffer, ALFormat.Mono8, ref soundData[0], BUFFER_SIZE, APU.SAMPLE_RATE);
                     AL.SourceQueueBuffer(alSource, unqueuedBuffer);
 
                     soundDataPosition = 0;
                 }
-            }
-        }
-
-        static void Resample(byte[] source, int sourceLength, byte[] destination, int destinationLength)
-        {
-            float d = (float)sourceLength / destinationLength;
-
-            for (int b = 0; b < destinationLength; b++)
-            {
-                //destination[b] = source[(int)(b * d)];
-
-                if (b < sourceLength)
-                    destination[b] = source[b];
                 else
-                    destination[b] = 127;
+                {
+                    if (soundDataPosition >= BUFFER_SIZE)
+                    {
+                        BufferState = Sound.BufferStates.Overrun;
+                    }
+                    else
+                    {
+                        BufferState = Sound.BufferStates.Ok;
+                    }
+                }
             }
         }
 
@@ -138,8 +141,24 @@ namespace GBEmu.Audio
             AL.DeleteSource(alSource);
             alSource = 0;
 
-            bufferState = BufferStates.EnqueuingData;
+            audioState = AudioStates.Buffering;
+            BufferState = Sound.BufferStates.Ok;
             soundDataPosition = 0;
         }
+
+        //static void Resample(byte[] source, int sourceLength, byte[] destination, int destinationLength)
+        //{
+        //    float d = (float)sourceLength / destinationLength;
+
+        //    for (int b = 0; b < destinationLength; b++)
+        //    {
+        //        //destination[b] = source[(int)(b * d)];
+
+        //        if (b < sourceLength)
+        //            destination[b] = source[b];
+        //        else
+        //            destination[b] = 127;
+        //    }
+        //}
     }
 }

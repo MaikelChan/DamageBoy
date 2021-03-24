@@ -14,6 +14,8 @@ namespace GBEmu.Audio
 
         bool isInitialized;
 
+        public enum BufferStates { Uninitialized, Ok, Underrun, Overrun }
+
         public Sound()
         {
             try
@@ -83,14 +85,18 @@ namespace GBEmu.Audio
             ALC.CloseDevice(device);
         }
 
-        public void Update(byte[] data)
+        BufferStates oldState;
+
+        public BufferStates Update(byte[] data)
         {
-            if (!isInitialized) return;
+            if (!isInitialized) return BufferStates.Uninitialized;
 
             for (int sc = 0; sc < APU.SOUND_CHANNEL_COUNT; sc++)
             {
-                soundChannels[sc].ProcessChannel(data[sc]);
+                soundChannels[sc].ProcessChannel(data == null ? null : data[sc]);
             }
+
+            return soundChannels[0].BufferState;
         }
 
         public void Stop()

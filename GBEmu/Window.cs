@@ -193,7 +193,23 @@ namespace GBEmu
 
         void SoundUpdate(byte[] data)
         {
-            sound.Update(data);
+            if (IsExiting) return;
+
+            Sound.BufferStates bufferState = sound.Update(data);
+
+            switch (bufferState)
+            {
+                case Sound.BufferStates.Uninitialized:
+                case Sound.BufferStates.Ok:
+                    gameBoy.SetFrameLimiterState(FrameLimiterStates.Limited);
+                    break;
+                case Sound.BufferStates.Underrun:
+                    gameBoy.SetFrameLimiterState(FrameLimiterStates.Unlimited);
+                    break;
+                case Sound.BufferStates.Overrun:
+                    gameBoy.SetFrameLimiterState(FrameLimiterStates.Paused);
+                    break;
+            }
         }
 
         void SaveUpdate(byte[] data)
