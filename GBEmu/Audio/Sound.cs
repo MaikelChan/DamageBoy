@@ -85,15 +85,32 @@ namespace GBEmu.Audio
             ALC.CloseDevice(device);
         }
 
-        BufferStates oldState;
-
         public BufferStates Update(byte[] data)
         {
             if (!isInitialized) return BufferStates.Uninitialized;
 
-            for (int sc = 0; sc < APU.SOUND_CHANNEL_COUNT; sc++)
+            // Sometimes, not all channels are in the same state,
+            // so wait a bit until they are and then exit the loop.
+            // 16 iteration should be more than enough to guarantee
+            // the channels being in the same state.
+            // (Normally it's just 1 iteration)
+
+            for (int i = 0; i < 16; i++)
             {
-                soundChannels[sc].ProcessChannel(data == null ? null : data[sc]);
+                for (int sc = 0; sc < APU.SOUND_CHANNEL_COUNT; sc++)
+                {
+                    if (i == 0)
+                        soundChannels[sc].ProcessChannel(data == null ? null : data[sc]);
+                    else
+                        soundChannels[sc].ProcessChannel(null);
+                }
+
+                if (soundChannels[0].BufferState == soundChannels[1].BufferState &&
+                    soundChannels[0].BufferState == soundChannels[2].BufferState &&
+                    soundChannels[0].BufferState == soundChannels[3].BufferState)
+                {
+                    break;
+                }
             }
 
             return soundChannels[0].BufferState;
