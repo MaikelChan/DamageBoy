@@ -19,5 +19,5 @@ It requires [.NET 5.0 Runtime](https://dotnet.microsoft.com/download), [OpenAL 1
 ![Wario Land - Screenshot](/02.png)
 ![Zelda Link's Awakening - Screenshot](/03.png)
 ![Wario Land II - Screenshot](/04.png)
-![Pokemon Red - Screenshot](/05.png)
+![Donkey Kong Land - Screenshot](/05.png)
 ![Pokemon Red - Screenshot](/06.png)
