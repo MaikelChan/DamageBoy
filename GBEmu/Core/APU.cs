@@ -50,7 +50,7 @@ namespace GBEmu.Core
             lengthControlClocksToWait -= 4;
             if (lengthControlClocksToWait <= 0)
             {
-                lengthControlClocksToWait = CPU.CPU_CLOCKS / LENGTH_CONTROL_INTERVAL_HZ;
+                lengthControlClocksToWait = (CPU.CPU_CLOCKS / LENGTH_CONTROL_INTERVAL_HZ) >> 2;
                 updateLength = true;
             }
 
@@ -177,11 +177,7 @@ namespace GBEmu.Core
         public LengthTypes Channel1LengthType;
         public bool Channel1Initialize
         {
-            set
-            {
-                if (value) InitializeChannel1();
-                else StopChannel1();
-            }
+            set => InitializeChannel1(value);
         }
 
         // Current state
@@ -194,7 +190,7 @@ namespace GBEmu.Core
 
         byte ProcessChannel1(bool updateSample, bool updateLength, bool updateVolume, bool updateSweep)
         {
-            if (!AllSoundEnabled)
+            if (!AllSoundEnabled || !Channel1Enabled)
             {
                 StopChannel1();
                 return 127;
@@ -287,14 +283,19 @@ namespace GBEmu.Core
             return (byte)(wave * 128 + 127);
         }
 
-        void InitializeChannel1()
+        void InitializeChannel1(bool reset)
         {
-            channel1EnvelopeTimer = Channel1LengthEnvelopeSteps;
-            channel1CurrentVolume = Channel1InitialVolume;
-            channel1SweepTimer = Channel1SweepTime;
-            channel1CurrentFrequency = (Channel1FrequencyHi << 8) | Channel1FrequencyLo;
+            if (reset)
+            {
+                channel1EnvelopeTimer = Channel1LengthEnvelopeSteps;
+                channel1SweepTimer = Channel1SweepTime;
+                channel1WaveCycle = 0;
 
-            Channel1Enabled = true;
+                Channel1Enabled = true;
+            }
+
+            channel1CurrentVolume = Channel1InitialVolume;
+            channel1CurrentFrequency = (Channel1FrequencyHi << 8) | Channel1FrequencyLo;
         }
 
         void ResetChannel1()
@@ -347,11 +348,7 @@ namespace GBEmu.Core
         public LengthTypes Channel2LengthType;
         public bool Channel2Initialize
         {
-            set
-            {
-                if (value) InitializeChannel2();
-                else StopChannel2();
-            }
+            set => InitializeChannel2(value);
         }
 
         // Current state
@@ -362,7 +359,7 @@ namespace GBEmu.Core
 
         byte ProcessChannel2(bool updateSample, bool updateLength, bool updateVolume)
         {
-            if (!AllSoundEnabled)
+            if (!AllSoundEnabled || !Channel2Enabled)
             {
                 StopChannel2();
                 return 127;
@@ -424,13 +421,17 @@ namespace GBEmu.Core
             return (byte)(wave * 128 + 127);
         }
 
-        void InitializeChannel2()
+        void InitializeChannel2(bool reset)
         {
-            channel2EnvelopeTimer = Channel2LengthEnvelopeSteps;
-            channel2CurrentVolume = Channel2InitialVolume;
-            channel2WaveCycle = 0;
+            if (reset)
+            {
+                channel2EnvelopeTimer = Channel2LengthEnvelopeSteps;
+                channel2WaveCycle = 0;
 
-            Channel2Enabled = true;
+                Channel2Enabled = true;
+            }
+
+            channel2CurrentVolume = Channel2InitialVolume;
         }
 
         void ResetChannel2()
@@ -479,11 +480,7 @@ namespace GBEmu.Core
         public LengthTypes Channel3LengthType;
         public bool Channel3Initialize
         {
-            set
-            {
-                if (value) InitializeChannel3();
-                else StopChannel3();
-            }
+            set => InitializeChannel3(value);
         }
 
         // FF30-FF3F - Wave Pattern RAM
@@ -494,7 +491,7 @@ namespace GBEmu.Core
 
         byte ProcessChannel3(bool updateSample, bool updateLength)
         {
-            if (!AllSoundEnabled || !Channel3On)
+            if (!AllSoundEnabled || !Channel3Enabled || !Channel3On)
             {
                 StopChannel3();
                 return 127;
@@ -533,11 +530,14 @@ namespace GBEmu.Core
             return (byte)(wave * 128 + 127);
         }
 
-        void InitializeChannel3()
+        void InitializeChannel3(bool reset)
         {
-            channel3WaveCycle = 0;
+            if (reset)
+            {
+                channel3WaveCycle = 0;
 
-            Channel3Enabled = true;
+                Channel3Enabled = true;
+            }
         }
 
         void ResetChannel3()
@@ -581,11 +581,7 @@ namespace GBEmu.Core
         public LengthTypes Channel4LengthType;
         public bool Channel4Initialize
         {
-            set
-            {
-                if (value) InitializeChannel4();
-                else StopChannel4();
-            }
+            set => InitializeChannel4(value);
         }
 
         // Current state
@@ -664,13 +660,17 @@ namespace GBEmu.Core
             //return (byte)(wave * 128 + 127);
         }
 
-        void InitializeChannel4()
+        void InitializeChannel4(bool reset)
         {
-            channel4EnvelopeTimer = Channel4LengthEnvelopeSteps;
-            channel4CurrentVolume = Channel4InitialVolume;
-            channel4NoiseSequence = (ushort)random.Next(ushort.MinValue, ushort.MaxValue + 1);
+            if (reset)
+            {
+                channel4EnvelopeTimer = Channel4LengthEnvelopeSteps;
+                channel4NoiseSequence = (ushort)random.Next(ushort.MinValue, ushort.MaxValue + 1);
 
-            Channel4Enabled = true;
+                Channel4Enabled = true;
+            }
+
+            channel4CurrentVolume = Channel4InitialVolume;
         }
 
         void ResetChannel4()
