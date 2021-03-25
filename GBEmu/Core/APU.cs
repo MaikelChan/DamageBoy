@@ -180,6 +180,9 @@ namespace GBEmu.Core
             set => InitializeChannel1(value);
         }
 
+
+        bool Channel1DACEnabled => Channel1InitialVolume != 0 || Channel1EnvelopeDirection == EnvelopeDirections.Increase;
+
         // Current state
 
         int channel1CurrentLength;
@@ -191,6 +194,12 @@ namespace GBEmu.Core
 
         byte ProcessChannel1(bool updateSample, bool updateLength, bool updateVolume, bool updateSweep)
         {
+            if (!Channel1DACEnabled)
+            {
+                StopChannel1();
+                return 127;
+            }
+
             if (updateLength && Channel1LengthType == LengthTypes.Counter)
             {
                 channel1CurrentLength--;
@@ -358,6 +367,9 @@ namespace GBEmu.Core
             set => InitializeChannel2(value);
         }
 
+
+        bool Channel2DACEnabled => Channel2InitialVolume != 0 || Channel2EnvelopeDirection == EnvelopeDirections.Increase;
+
         // Current state
 
         int channel2CurrentLength;
@@ -367,6 +379,12 @@ namespace GBEmu.Core
 
         byte ProcessChannel2(bool updateSample, bool updateLength, bool updateVolume)
         {
+            if (!Channel2DACEnabled)
+            {
+                StopChannel2();
+                return 127;
+            }
+
             if (updateLength && Channel2LengthType == LengthTypes.Counter)
             {
                 channel2CurrentLength--;
@@ -503,6 +521,12 @@ namespace GBEmu.Core
 
         byte ProcessChannel3(bool updateSample, bool updateLength)
         {
+            if (!Channel3On)
+            {
+                StopChannel3();
+                return 127;
+            }
+
             if (updateLength && Channel3LengthType == LengthTypes.Counter)
             {
                 channel3CurrentLength--;
@@ -513,7 +537,7 @@ namespace GBEmu.Core
                 }
             }
 
-            if (!AllSoundEnabled || !Channel3Enabled || !Channel3On)
+            if (!AllSoundEnabled || !Channel3Enabled)
             {
                 StopChannel3();
                 return 127;
@@ -600,6 +624,9 @@ namespace GBEmu.Core
             set => InitializeChannel4(value);
         }
 
+
+        bool Channel4DACEnabled => Channel4InitialVolume != 0 || Channel4EnvelopeDirection == EnvelopeDirections.Increase;
+
         // Current state
 
         int channel4CurrentLength;
@@ -610,6 +637,12 @@ namespace GBEmu.Core
 
         byte ProcessChannel4(bool updateLength, bool updateVolume)
         {
+            if (!Channel4DACEnabled)
+            {
+                StopChannel4();
+                return 127;
+            }
+
             if (updateLength && Channel4LengthType == LengthTypes.Counter)
             {
                 channel4CurrentLength--;
