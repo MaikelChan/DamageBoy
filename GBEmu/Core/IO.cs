@@ -582,8 +582,9 @@ namespace GBEmu.Core
             {
                 if (!apu.Channel3On) return 0xFF;
 
-                return apu.Channel3Length;
+                return 0xFF; // apu.Channel3Length; //TODO? Is it write only?
             }
+
             set
             {
                 if (!apu.AllSoundEnabled || !apu.Channel3On) return;

@@ -50,7 +50,7 @@ namespace GBEmu.Core
             lengthControlClocksToWait -= 4;
             if (lengthControlClocksToWait <= 0)
             {
-                lengthControlClocksToWait = (CPU.CPU_CLOCKS / LENGTH_CONTROL_INTERVAL_HZ) >> 2;
+                lengthControlClocksToWait = CPU.CPU_CLOCKS / LENGTH_CONTROL_INTERVAL_HZ;
                 updateLength = true;
             }
 
@@ -158,7 +158,7 @@ namespace GBEmu.Core
 
         // FF11 - NR11 - Channel 1 Sound length/Wave pattern duty (R/W)
 
-        public byte Channel1Length;
+        public byte Channel1Length { set => channel1CurrentLength = 64 - value; }
         public WavePatternDuties Channel1WavePatternDuty;
 
         // FF12 - NR12 - Channel 1 Volume Envelope (R/W)
@@ -182,6 +182,7 @@ namespace GBEmu.Core
 
         // Current state
 
+        int channel1CurrentLength;
         int channel1EnvelopeTimer;
         int channel1CurrentVolume;
         int channel1SweepTimer;
@@ -190,20 +191,20 @@ namespace GBEmu.Core
 
         byte ProcessChannel1(bool updateSample, bool updateLength, bool updateVolume, bool updateSweep)
         {
-            if (!AllSoundEnabled || !Channel1Enabled)
-            {
-                StopChannel1();
-                return 127;
-            }
-
             if (updateLength && Channel1LengthType == LengthTypes.Counter)
             {
-                Channel1Length--;
-                if (Channel1Length == 0)
+                channel1CurrentLength--;
+                if (channel1CurrentLength == 0)
                 {
                     StopChannel1();
                     return 127;
                 }
+            }
+
+            if (!AllSoundEnabled || !Channel1Enabled)
+            {
+                StopChannel1();
+                return 127;
             }
 
             if (updateVolume)
@@ -294,6 +295,7 @@ namespace GBEmu.Core
                 Channel1Enabled = true;
             }
 
+            if (channel1CurrentLength == 0) channel1CurrentLength = 64;
             channel1CurrentVolume = Channel1InitialVolume;
             channel1CurrentFrequency = (Channel1FrequencyHi << 8) | Channel1FrequencyLo;
         }
@@ -312,6 +314,8 @@ namespace GBEmu.Core
             Channel1FrequencyHi = 0;
             Channel1LengthType = LengthTypes.Consecutive;
             Channel1Initialize = false;
+
+            channel1CurrentLength = 0;
             channel1EnvelopeTimer = 0;
             channel1CurrentVolume = 0;
             channel1SweepTimer = 0;
@@ -320,7 +324,10 @@ namespace GBEmu.Core
 
         void StopChannel1()
         {
-            Channel1Enabled = false;
+            if (Channel1Enabled)
+            {
+                Channel1Enabled = false;
+            }
         }
 
         #endregion
@@ -329,7 +336,7 @@ namespace GBEmu.Core
 
         // FF16 - NR21 - Channel 2 Sound Length/Wave Pattern Duty (R/W)
 
-        public byte Channel2Length;
+        public byte Channel2Length { set => channel2CurrentLength = 64 - value; }
         public WavePatternDuties Channel2WavePatternDuty;
 
         // FF17 - NR22 - Channel 2 Volume Envelope (R/W)
@@ -353,26 +360,27 @@ namespace GBEmu.Core
 
         // Current state
 
+        int channel2CurrentLength;
         int channel2EnvelopeTimer;
         int channel2CurrentVolume;
         float channel2WaveCycle;
 
         byte ProcessChannel2(bool updateSample, bool updateLength, bool updateVolume)
         {
-            if (!AllSoundEnabled || !Channel2Enabled)
-            {
-                StopChannel2();
-                return 127;
-            }
-
             if (updateLength && Channel2LengthType == LengthTypes.Counter)
             {
-                Channel2Length--;
-                if (Channel2Length == 0)
+                channel2CurrentLength--;
+                if (channel2CurrentLength == 0)
                 {
                     StopChannel2();
                     return 127;
                 }
+            }
+
+            if (!AllSoundEnabled || !Channel2Enabled)
+            {
+                StopChannel2();
+                return 127;
             }
 
             if (updateVolume)
@@ -431,6 +439,7 @@ namespace GBEmu.Core
                 Channel2Enabled = true;
             }
 
+            if (channel2CurrentLength == 0) channel2CurrentLength = 64;
             channel2CurrentVolume = Channel2InitialVolume;
         }
 
@@ -445,6 +454,8 @@ namespace GBEmu.Core
             Channel2FrequencyHi = 0;
             Channel2LengthType = LengthTypes.Consecutive;
             Channel2Initialize = false;
+
+            channel2CurrentLength = 0;
             channel2EnvelopeTimer = 0;
             channel2CurrentVolume = 0;
         }
@@ -464,7 +475,7 @@ namespace GBEmu.Core
 
         // FF1B - NR31 - Channel 3 Sound Length
 
-        public byte Channel3Length;
+        public byte Channel3Length { set => channel3CurrentLength = 256 - value; }
 
         // FF1C - NR32 - Channel 3 Select output level (R/W)
 
@@ -487,24 +498,25 @@ namespace GBEmu.Core
 
         public byte[] Channel3WavePattern = new byte[0x20];
 
+        int channel3CurrentLength;
         float channel3WaveCycle;
 
         byte ProcessChannel3(bool updateSample, bool updateLength)
         {
-            if (!AllSoundEnabled || !Channel3Enabled || !Channel3On)
-            {
-                StopChannel3();
-                return 127;
-            }
-
             if (updateLength && Channel3LengthType == LengthTypes.Counter)
             {
-                Channel3Length--;
-                if (Channel3Length == 0)
+                channel3CurrentLength--;
+                if (channel3CurrentLength == 0)
                 {
                     StopChannel3();
                     return 127;
                 }
+            }
+
+            if (!AllSoundEnabled || !Channel3Enabled || !Channel3On)
+            {
+                StopChannel3();
+                return 127;
             }
 
             if (!updateSample) return 127;
@@ -538,6 +550,8 @@ namespace GBEmu.Core
 
                 Channel3Enabled = true;
             }
+
+            if (channel3CurrentLength == 0) channel3CurrentLength = 256;
         }
 
         void ResetChannel3()
@@ -549,6 +563,8 @@ namespace GBEmu.Core
             Channel3FrequencyHi = 0;
             Channel3LengthType = LengthTypes.Consecutive;
             Channel3Initialize = false;
+
+            channel3CurrentLength = 0;
         }
 
         void StopChannel3()
@@ -562,7 +578,7 @@ namespace GBEmu.Core
 
         // FF20 - NR41 - Channel 4 Sound Length (R/W)
 
-        public byte Channel4Length;
+        public byte Channel4Length { set => channel4CurrentLength = 64 - value; }
 
         // FF21 - NR42 - Channel 4 Volume Envelope (R/W)
 
@@ -586,6 +602,7 @@ namespace GBEmu.Core
 
         // Current state
 
+        int channel4CurrentLength;
         int channel4EnvelopeTimer;
         int channel4CurrentVolume;
         int channel4NoiseClocksToWait;
@@ -593,20 +610,20 @@ namespace GBEmu.Core
 
         byte ProcessChannel4(bool updateLength, bool updateVolume)
         {
-            if (!AllSoundEnabled || !Channel4Enabled)
-            {
-                StopChannel4();
-                return 127;
-            }
-
             if (updateLength && Channel4LengthType == LengthTypes.Counter)
             {
-                Channel4Length--;
-                if (Channel4Length == 0)
+                channel4CurrentLength--;
+                if (channel4CurrentLength == 0)
                 {
                     StopChannel4();
                     return 127;
                 }
+            }
+
+            if (!AllSoundEnabled || !Channel4Enabled)
+            {
+                StopChannel4();
+                return 127;
             }
 
             if (updateVolume)
@@ -670,6 +687,7 @@ namespace GBEmu.Core
                 Channel4Enabled = true;
             }
 
+            if (channel4CurrentLength == 0) channel4CurrentLength = 64;
             channel4CurrentVolume = Channel4InitialVolume;
         }
 
@@ -684,6 +702,8 @@ namespace GBEmu.Core
             Channel4ShiftClockFrequency = 0;
             Channel4LengthType = LengthTypes.Consecutive;
             Channel4Initialize = false;
+
+            channel4CurrentLength = 0;
             channel4EnvelopeTimer = 0;
             channel4CurrentVolume = 0;
         }
