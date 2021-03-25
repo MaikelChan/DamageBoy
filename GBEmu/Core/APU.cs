@@ -72,7 +72,7 @@ namespace GBEmu.Core
             data[0] = ProcessChannel1(updateSample, updateLength, updateVolume, updateSweep);
             data[1] = ProcessChannel2(updateSample, updateLength, updateVolume);
             data[2] = ProcessChannel3(updateSample, updateLength);
-            data[3] = ProcessChannel4(updateSample, updateLength, updateVolume);
+            data[3] = ProcessChannel4(updateLength, updateVolume);
 
             if (updateSample)
             {
@@ -592,10 +592,12 @@ namespace GBEmu.Core
 
         int channel4EnvelopeTimer;
         int channel4CurrentVolume;
+        int channel4NoiseClocksToWait;
+        ushort channel4NoiseSequence;
 
-        byte ProcessChannel4(bool updateSample, bool updateLength, bool updateVolume)
+        byte ProcessChannel4(bool updateLength, bool updateVolume)
         {
-            if (!AllSoundEnabled)
+            if (!AllSoundEnabled || !Channel4Enabled)
             {
                 StopChannel4();
                 return 127;
@@ -634,15 +636,39 @@ namespace GBEmu.Core
                 }
             }
 
-            float wave = (float)(random.NextDouble() * 2 - 1);
+            channel4NoiseClocksToWait -= 4;
+            if (channel4NoiseClocksToWait <= 0)
+            {
+                float r = Channel4DividingRatioFrequencies == 0 ? 0.5f : Channel4DividingRatioFrequencies;
+                float frequency = 524288f / r / MathF.Pow(2, Channel4ShiftClockFrequency + 1);
+
+                channel4NoiseClocksToWait = (int)(CPU.CPU_CLOCKS / frequency);
+
+                int xor = (channel4NoiseSequence & 0x1) ^ ((channel4NoiseSequence >> 1) & 0x1);
+                channel4NoiseSequence >>= 1;
+                channel4NoiseSequence |= (ushort)(xor << 14);
+                if (Channel4CounterStepWidth == NoiseCounterStepWidths.Bits7)
+                {
+                    channel4NoiseSequence = (ushort)(channel4NoiseSequence & 0b1111_1111_1011_1111);
+                    channel4NoiseSequence |= (ushort)(xor << 6);
+                }
+            }
+
+            int bit = (channel4NoiseSequence & 0x1) ^ 1;
+            float wave = bit != 0 ? 1.0f : -0.999f;
             wave *= channel4CurrentVolume / (float)0xF;
             return (byte)(wave * 128 + 127);
+
+            //float wave = (float)(random.NextDouble() * 2 - 1);
+            //wave *= channel4CurrentVolume / (float)0xF;
+            //return (byte)(wave * 128 + 127);
         }
 
         void InitializeChannel4()
         {
             channel4EnvelopeTimer = Channel4LengthEnvelopeSteps;
             channel4CurrentVolume = Channel4InitialVolume;
+            channel4NoiseSequence = (ushort)random.Next(ushort.MinValue, ushort.MaxValue + 1);
 
             Channel4Enabled = true;
         }
