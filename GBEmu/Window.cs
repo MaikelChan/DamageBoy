@@ -222,20 +222,30 @@ namespace GBEmu
 
         #region Window events
 
-        //protected override void OnUpdateFrame(FrameEventArgs args)
-        //{
-        //    base.OnUpdateFrame(args);
+        protected override void OnUpdateFrame(FrameEventArgs args)
+        {
+            base.OnUpdateFrame(args);
 
-        //    if (IsExiting) return;
+            if (IsExiting) return;
 
-        //    //if (WindowState == WindowState.Minimized || !IsFocused)
-        //    //{
-        //    //    //Thread.Sleep(50);
-        //    //    return;
-        //    //}
+            //if (WindowState == WindowState.Minimized || !IsFocused)
+            //{
+            //    //Thread.Sleep(50);
+            //    return;
+            //}
 
-        //    gameBoy?.Update();
-        //}
+            GamepadState state = default;
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (GLFW.JoystickIsGamepad(i) && GLFW.GetGamepadState(i, out state))
+                {
+                    break;
+                }
+            }
+
+            gameBoy?.SetInput(KeyboardState, state);
+        }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
@@ -312,18 +322,8 @@ namespace GBEmu
                     case Keys.F7:
                         //gameBoy.LoadState();
                         break;
-                    default:
-                        gameBoy?.KeyDown(e.Key);
-                        break;
                 }
             }
-        }
-
-        protected override void OnKeyUp(KeyboardKeyEventArgs e)
-        {
-            base.OnKeyUp(e);
-
-            gameBoy?.KeyUp(e.Key);
         }
 
         protected override void OnTextInput(TextInputEventArgs e)

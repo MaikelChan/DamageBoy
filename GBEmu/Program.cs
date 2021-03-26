@@ -18,7 +18,7 @@ namespace GBEmu
             GameWindowSettings gameWindowSettings = new GameWindowSettings()
             {
                 IsMultiThreaded = false,
-                UpdateFrequency = 60.0f,
+                UpdateFrequency = 0.0f,
                 RenderFrequency = 0.0f
             };
 

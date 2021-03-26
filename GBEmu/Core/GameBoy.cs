@@ -123,69 +123,22 @@ namespace GBEmu.Core
             }
         }
 
-        public void KeyDown(Keys key)
+        public void SetInput(KeyboardState keyboard, GamepadState gamepad)
         {
             if (EmulationState != EmulationStates.Running) return;
 
-            switch (key)
-            {
-                case Keys.Right:
-                    io.SetInput(IO.Buttons.Right, true);
-                    break;
-                case Keys.Left:
-                    io.SetInput(IO.Buttons.Left, true);
-                    break;
-                case Keys.Up:
-                    io.SetInput(IO.Buttons.Up, true);
-                    break;
-                case Keys.Down:
-                    io.SetInput(IO.Buttons.Down, true);
-                    break;
-                case Keys.X:
-                    io.SetInput(IO.Buttons.A, true);
-                    break;
-                case Keys.Z:
-                    io.SetInput(IO.Buttons.B, true);
-                    break;
-                case Keys.RightShift:
-                    io.SetInput(IO.Buttons.Select, true);
-                    break;
-                case Keys.Enter:
-                    io.SetInput(IO.Buttons.Start, true);
-                    break;
-            }
-        }
+            const float DEADZONE = 0.65f;
 
-        public void KeyUp(Keys key)
-        {
-            if (EmulationState != EmulationStates.Running) return;
-
-            switch (key)
+            unsafe
             {
-                case Keys.Right:
-                    io.SetInput(IO.Buttons.Right, false);
-                    break;
-                case Keys.Left:
-                    io.SetInput(IO.Buttons.Left, false);
-                    break;
-                case Keys.Up:
-                    io.SetInput(IO.Buttons.Up, false);
-                    break;
-                case Keys.Down:
-                    io.SetInput(IO.Buttons.Down, false);
-                    break;
-                case Keys.X:
-                    io.SetInput(IO.Buttons.A, false);
-                    break;
-                case Keys.Z:
-                    io.SetInput(IO.Buttons.B, false);
-                    break;
-                case Keys.RightShift:
-                    io.SetInput(IO.Buttons.Select, false);
-                    break;
-                case Keys.Enter:
-                    io.SetInput(IO.Buttons.Start, false);
-                    break;
+                io.SetInput(IO.Buttons.A, keyboard.IsKeyDown(Keys.X) || gamepad.Buttons[0] > 0);
+                io.SetInput(IO.Buttons.B, keyboard.IsKeyDown(Keys.Z) || gamepad.Buttons[2] > 0);
+                io.SetInput(IO.Buttons.Select, keyboard.IsKeyDown(Keys.RightShift) || gamepad.Buttons[6] > 0);
+                io.SetInput(IO.Buttons.Start, keyboard.IsKeyDown(Keys.Enter) || gamepad.Buttons[7] > 0);
+                io.SetInput(IO.Buttons.Up, keyboard.IsKeyDown(Keys.Up) || gamepad.Buttons[11] > 0 || gamepad.Axes[1] < -DEADZONE);
+                io.SetInput(IO.Buttons.Right, keyboard.IsKeyDown(Keys.Right) || gamepad.Buttons[12] > 0 || gamepad.Axes[0] > DEADZONE);
+                io.SetInput(IO.Buttons.Down, keyboard.IsKeyDown(Keys.Down) || gamepad.Buttons[13] > 0 || gamepad.Axes[1] > DEADZONE);
+                io.SetInput(IO.Buttons.Left, keyboard.IsKeyDown(Keys.Left) || gamepad.Buttons[14] > 0 || gamepad.Axes[0] < -DEADZONE);
             }
         }
 
