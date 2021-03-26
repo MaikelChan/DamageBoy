@@ -48,6 +48,8 @@ namespace GBEmu
 
             mainUI = new MainUI(this, settings);
             mainUI.IsVisible = true;
+
+            SetWindowTitle();
         }
 
         protected override void Dispose(bool disposing)
@@ -80,6 +82,14 @@ namespace GBEmu
             selectedRomFile = romFile;
             StopEmulation();
             RunEmulation();
+
+            SetWindowTitle();
+        }
+
+        void SetWindowTitle()
+        {
+            string gameName = gameBoy != null ? gameBoy.GameTitle : "(No game loaded)";
+            Title = $"GBEmu - {gameName}";
         }
 
         #region GameBoy

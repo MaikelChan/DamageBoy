@@ -38,6 +38,8 @@ namespace GBEmu.Core
         readonly Cartridge cartridge;
         readonly Action<ushort[]> soundUpdateCallback;
 
+        public string GameTitle => cartridge.Title;
+
         public EmulationStates EmulationState { get; private set; }
 
         FrameLimiterStates frameLimiterState;

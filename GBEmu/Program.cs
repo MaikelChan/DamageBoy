@@ -33,7 +33,6 @@ namespace GBEmu
                 Flags = ContextFlags.ForwardCompatible,
 #endif
                 Size = new Vector2i(INITIAL_WIDTH, INITIAL_HEIGHT),
-                Title = APP_TITLE,
                 IsFullscreen = false,
             };
 
