@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBEmu.Core.Audio;
+using System;
 
 namespace GBEmu.Core
 {
@@ -6,13 +7,12 @@ namespace GBEmu.Core
     {
         readonly Action<byte[]> soundUpdateCallback;
 
-        readonly Random random;
+        readonly SoundChannel[] soundChannels;
 
-        public enum SweepTypes : byte { Increase, Decrease }
-        public enum EnvelopeDirections : byte { Decrease, Increase }
-        public enum WavePatternDuties : byte { Percent12_5, Percent25, Percent50, Percent75 }
-        public enum LengthTypes : byte { Consecutive, Counter }
-        public enum NoiseCounterStepWidths : byte { Bits15, Bits7 }
+        public PulseChannel Channel1 => soundChannels[0] as PulseChannel;
+        public PulseChannel Channel2 => soundChannels[1] as PulseChannel;
+        public WaveChannel Channel3 => soundChannels[2] as WaveChannel;
+        public NoiseChannel Channel4 => soundChannels[3] as NoiseChannel;
 
         int sampleClocksToWait;
         int lengthControlClocksToWait;
@@ -30,7 +30,11 @@ namespace GBEmu.Core
         {
             this.soundUpdateCallback = soundUpdateCallback;
 
-            random = new Random();
+            soundChannels = new SoundChannel[SOUND_CHANNEL_COUNT];
+            soundChannels[0] = new PulseChannel(this);
+            soundChannels[1] = new PulseChannel(this);
+            soundChannels[2] = new WaveChannel(this);
+            soundChannels[3] = new NoiseChannel(this);
         }
 
         public void Update()
@@ -69,10 +73,10 @@ namespace GBEmu.Core
             }
 
             byte[] data = new byte[SOUND_CHANNEL_COUNT];
-            data[0] = ProcessChannel1(updateSample, updateLength, updateVolume, updateSweep);
-            data[1] = ProcessChannel2(updateSample, updateLength, updateVolume);
-            data[2] = ProcessChannel3(updateSample, updateLength);
-            data[3] = ProcessChannel4(updateLength, updateVolume);
+            data[0] = soundChannels[0].Process(updateSample, updateLength, updateVolume, updateSweep);
+            data[1] = soundChannels[1].Process(updateSample, updateLength, updateVolume, false);
+            data[2] = soundChannels[2].Process(updateSample, updateLength, false, false);
+            data[3] = soundChannels[3].Process(false, updateLength, updateVolume, false);
 
             if (updateSample)
             {
@@ -89,23 +93,7 @@ namespace GBEmu.Core
         public byte Output2Level;
         public bool VinOutput2;
 
-        // FF25 - NR51 - Selection of Sound output terminal (R/W)
-
-        public bool Channel1Output1;
-        public bool Channel2Output1;
-        public bool Channel3Output1;
-        public bool Channel4Output1;
-        public bool Channel1Output2;
-        public bool Channel2Output2;
-        public bool Channel3Output2;
-        public bool Channel4Output2;
-
         // FF26 - NR52 - Sound on/off
-
-        public bool Channel1Enabled;
-        public bool Channel2Enabled;
-        public bool Channel3Enabled;
-        public bool Channel4Enabled;
 
         bool allSoundEnabled;
         public bool AllSoundEnabled
@@ -115,10 +103,11 @@ namespace GBEmu.Core
             {
                 if (allSoundEnabled && !value)
                 {
-                    ResetChannel1();
-                    ResetChannel2();
-                    ResetChannel3();
-                    ResetChannel4();
+                    for (int sc = 0; sc < SOUND_CHANNEL_COUNT; sc++)
+                    {
+                        soundChannels[sc].Reset();
+                    }
+
                     ResetControlRegisters();
                 }
 
@@ -132,618 +121,13 @@ namespace GBEmu.Core
             VinOutput1 = false;
             Output2Level = 0;
             VinOutput2 = false;
-            Channel1Output1 = false;
-            Channel2Output1 = false;
-            Channel3Output1 = false;
-            Channel4Output1 = false;
-            Channel1Output2 = false;
-            Channel2Output2 = false;
-            Channel3Output2 = false;
-            Channel4Output2 = false;
-            Channel1Enabled = false;
-            Channel2Enabled = false;
-            Channel3Enabled = false;
-            Channel4Enabled = false;
-        }
 
-        #endregion
-
-        #region Sound Channel 1 - Tone & Sweep
-
-        // FF10 - NR10 - Channel 1 Sweep register (R/W)
-
-        public byte Channel1SweepShift;
-        public SweepTypes Channel1SweepType;
-        public byte Channel1SweepTime;
-
-        // FF11 - NR11 - Channel 1 Sound length/Wave pattern duty (R/W)
-
-        public byte Channel1Length { set => channel1CurrentLength = 64 - value; }
-        public WavePatternDuties Channel1WavePatternDuty;
-
-        // FF12 - NR12 - Channel 1 Volume Envelope (R/W)
-
-        public byte Channel1LengthEnvelopeSteps;
-        public EnvelopeDirections Channel1EnvelopeDirection;
-        public byte Channel1InitialVolume;
-
-        // FF13 - NR13 - Channel 1 Frequency lo (Write Only)
-
-        public byte Channel1FrequencyLo;
-
-        // FF14 - NR14 - Channel 1 Frequency hi (R/W)
-
-        public byte Channel1FrequencyHi;
-        public LengthTypes Channel1LengthType;
-        public bool Channel1Initialize
-        {
-            set => InitializeChannel1(value);
-        }
-
-
-        bool Channel1DACEnabled => Channel1InitialVolume != 0 || Channel1EnvelopeDirection == EnvelopeDirections.Increase;
-
-        // Current state
-
-        int channel1CurrentLength;
-        int channel1EnvelopeTimer;
-        int channel1CurrentVolume;
-        int channel1SweepTimer;
-        int channel1CurrentFrequency;
-        float channel1WaveCycle;
-
-        byte ProcessChannel1(bool updateSample, bool updateLength, bool updateVolume, bool updateSweep)
-        {
-            if (!Channel1DACEnabled)
+            for (int sc = 0; sc < SOUND_CHANNEL_COUNT; sc++)
             {
-                StopChannel1();
-                return 127;
+                soundChannels[sc].Output1 = false;
+                soundChannels[sc].Output2 = false;
+                soundChannels[sc].Enabled = false;
             }
-
-            if (updateLength && Channel1LengthType == LengthTypes.Counter)
-            {
-                channel1CurrentLength--;
-                if (channel1CurrentLength == 0)
-                {
-                    StopChannel1();
-                    return 127;
-                }
-            }
-
-            if (!AllSoundEnabled || !Channel1Enabled)
-            {
-                StopChannel1();
-                return 127;
-            }
-
-            if (updateVolume)
-            {
-                if (Channel1LengthEnvelopeSteps > 0 && channel1EnvelopeTimer > 0)
-                {
-                    channel1EnvelopeTimer--;
-                    if (channel1EnvelopeTimer == 0)
-                    {
-                        channel1EnvelopeTimer = Channel1LengthEnvelopeSteps;
-
-                        if (Channel1EnvelopeDirection == EnvelopeDirections.Decrease)
-                        {
-                            channel1CurrentVolume--;
-                            if (channel1CurrentVolume < 0) channel1CurrentVolume = 0;
-                        }
-                        else
-                        {
-                            channel1CurrentVolume++;
-                            if (channel1CurrentVolume > 0xF) channel1CurrentVolume = 0xF;
-                        }
-                    }
-                }
-            }
-
-            if (updateSweep)
-            {
-                if (Channel1SweepTime > 0 && channel1SweepTimer > 0)
-                {
-                    channel1SweepTimer--;
-                    if (channel1SweepTimer == 0)
-                    {
-                        channel1SweepTimer = Channel1SweepTime;
-
-                        int frequencyDifference = (int)(channel1CurrentFrequency / MathF.Pow(2, Channel1SweepShift));
-
-                        if (Channel1SweepType == SweepTypes.Increase)
-                        {
-                            channel1CurrentFrequency += frequencyDifference;
-                            if (channel1CurrentFrequency > 0x7FF)
-                            {
-                                StopChannel1();
-                                return 127;
-                            }
-                        }
-                        else
-                        {
-                            if (frequencyDifference >= 0 && Channel1SweepShift > 0)
-                            {
-                                channel1CurrentFrequency -= frequencyDifference;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!updateSample) return 127;
-
-            float percentage;
-            switch (Channel1WavePatternDuty)
-            {
-                default:
-                case WavePatternDuties.Percent12_5: percentage = 0.75f; break;
-                case WavePatternDuties.Percent25: percentage = 0.5f; break;
-                case WavePatternDuties.Percent50: percentage = 0.0f; break;
-                case WavePatternDuties.Percent75: percentage = -0.5f; break;
-            }
-
-            float frequency = 131072f / (2048 - channel1CurrentFrequency);
-
-            channel1WaveCycle += (frequency * MathF.PI * 2) / SAMPLE_RATE;
-            channel1WaveCycle %= SAMPLE_RATE;
-
-            float wave = MathF.Sin(channel1WaveCycle);
-            wave = wave > percentage ? 1f : -0.999f;
-            wave *= channel1CurrentVolume / (float)0xF;
-            return (byte)(wave * 128 + 127);
-        }
-
-        void InitializeChannel1(bool reset)
-        {
-            if (reset)
-            {
-                channel1EnvelopeTimer = Channel1LengthEnvelopeSteps;
-                channel1SweepTimer = Channel1SweepTime;
-                channel1WaveCycle = 0;
-
-                Channel1Enabled = true;
-            }
-
-            if (channel1CurrentLength == 0) channel1CurrentLength = 64;
-            channel1CurrentVolume = Channel1InitialVolume;
-            channel1CurrentFrequency = (Channel1FrequencyHi << 8) | Channel1FrequencyLo;
-        }
-
-        void ResetChannel1()
-        {
-            Channel1SweepShift = 0;
-            Channel1SweepType = SweepTypes.Increase;
-            Channel1SweepTime = 0;
-            Channel1Length = 0;
-            Channel1WavePatternDuty = WavePatternDuties.Percent12_5;
-            Channel1LengthEnvelopeSteps = 0;
-            Channel1EnvelopeDirection = EnvelopeDirections.Decrease;
-            Channel1InitialVolume = 0;
-            Channel1FrequencyLo = 0;
-            Channel1FrequencyHi = 0;
-            Channel1LengthType = LengthTypes.Consecutive;
-            Channel1Initialize = false;
-
-            channel1CurrentLength = 0;
-            channel1EnvelopeTimer = 0;
-            channel1CurrentVolume = 0;
-            channel1SweepTimer = 0;
-            channel1CurrentFrequency = 0;
-        }
-
-        void StopChannel1()
-        {
-            if (Channel1Enabled)
-            {
-                Channel1Enabled = false;
-            }
-        }
-
-        #endregion
-
-        #region Sound Channel 2 - Tone
-
-        // FF16 - NR21 - Channel 2 Sound Length/Wave Pattern Duty (R/W)
-
-        public byte Channel2Length { set => channel2CurrentLength = 64 - value; }
-        public WavePatternDuties Channel2WavePatternDuty;
-
-        // FF17 - NR22 - Channel 2 Volume Envelope (R/W)
-
-        public byte Channel2LengthEnvelopeSteps;
-        public EnvelopeDirections Channel2EnvelopeDirection;
-        public byte Channel2InitialVolume;
-
-        // FF18 - NR23 - Channel 2 Frequency lo data (W)
-
-        public byte Channel2FrequencyLo;
-
-        // FF18 - NR23 - Channel 2 Frequency lo data (W)
-
-        public byte Channel2FrequencyHi;
-        public LengthTypes Channel2LengthType;
-        public bool Channel2Initialize
-        {
-            set => InitializeChannel2(value);
-        }
-
-
-        bool Channel2DACEnabled => Channel2InitialVolume != 0 || Channel2EnvelopeDirection == EnvelopeDirections.Increase;
-
-        // Current state
-
-        int channel2CurrentLength;
-        int channel2EnvelopeTimer;
-        int channel2CurrentVolume;
-        float channel2WaveCycle;
-
-        byte ProcessChannel2(bool updateSample, bool updateLength, bool updateVolume)
-        {
-            if (!Channel2DACEnabled)
-            {
-                StopChannel2();
-                return 127;
-            }
-
-            if (updateLength && Channel2LengthType == LengthTypes.Counter)
-            {
-                channel2CurrentLength--;
-                if (channel2CurrentLength == 0)
-                {
-                    StopChannel2();
-                    return 127;
-                }
-            }
-
-            if (!AllSoundEnabled || !Channel2Enabled)
-            {
-                StopChannel2();
-                return 127;
-            }
-
-            if (updateVolume)
-            {
-                if (Channel2LengthEnvelopeSteps > 0 && channel2EnvelopeTimer > 0)
-                {
-                    channel2EnvelopeTimer--;
-                    if (channel2EnvelopeTimer == 0)
-                    {
-                        channel2EnvelopeTimer = Channel2LengthEnvelopeSteps;
-
-                        if (Channel2EnvelopeDirection == EnvelopeDirections.Decrease)
-                        {
-                            channel2CurrentVolume--;
-                            if (channel2CurrentVolume < 0) channel2CurrentVolume = 0;
-                        }
-                        else
-                        {
-                            channel2CurrentVolume++;
-                            if (channel2CurrentVolume > 0xF) channel2CurrentVolume = 0xF;
-                        }
-                    }
-                }
-            }
-
-            if (!updateSample) return 127;
-
-            float percentage;
-            switch (Channel2WavePatternDuty)
-            {
-                default:
-                case WavePatternDuties.Percent12_5: percentage = 0.75f; break;
-                case WavePatternDuties.Percent25: percentage = 0.5f; break;
-                case WavePatternDuties.Percent50: percentage = 0.0f; break;
-                case WavePatternDuties.Percent75: percentage = -0.5f; break;
-            }
-
-            float frequency = 131072f / (2048 - ((Channel2FrequencyHi << 8) | Channel2FrequencyLo));
-
-            channel2WaveCycle += (frequency * MathF.PI * 2) / SAMPLE_RATE;
-            channel2WaveCycle %= SAMPLE_RATE;
-
-            float wave = MathF.Sin(channel2WaveCycle);
-            wave = wave > percentage ? 1f : -0.999f;
-            wave *= channel2CurrentVolume / (float)0xF;
-            return (byte)(wave * 128 + 127);
-        }
-
-        void InitializeChannel2(bool reset)
-        {
-            if (reset)
-            {
-                channel2EnvelopeTimer = Channel2LengthEnvelopeSteps;
-                channel2WaveCycle = 0;
-
-                Channel2Enabled = true;
-            }
-
-            if (channel2CurrentLength == 0) channel2CurrentLength = 64;
-            channel2CurrentVolume = Channel2InitialVolume;
-        }
-
-        void ResetChannel2()
-        {
-            Channel2Length = 0;
-            Channel2WavePatternDuty = WavePatternDuties.Percent12_5;
-            Channel2LengthEnvelopeSteps = 0;
-            Channel2EnvelopeDirection = EnvelopeDirections.Decrease;
-            Channel2InitialVolume = 0;
-            Channel2FrequencyLo = 0;
-            Channel2FrequencyHi = 0;
-            Channel2LengthType = LengthTypes.Consecutive;
-            Channel2Initialize = false;
-
-            channel2CurrentLength = 0;
-            channel2EnvelopeTimer = 0;
-            channel2CurrentVolume = 0;
-        }
-
-        void StopChannel2()
-        {
-            Channel2Enabled = false;
-        }
-
-        #endregion
-
-        #region Sound Channel 3 - Wave Output
-
-        // FF1A - NR30 - Channel 3 Sound on/off (R/W)
-
-        public bool Channel3On;
-
-        // FF1B - NR31 - Channel 3 Sound Length
-
-        public byte Channel3Length { set => channel3CurrentLength = 256 - value; }
-
-        // FF1C - NR32 - Channel 3 Select output level (R/W)
-
-        public byte Channel3Volume;
-
-        // FF1D - NR33 - Channel 3 Frequency's lower data (W)
-
-        public byte Channel3FrequencyLo;
-
-        // FF1E - NR34 - Channel 3 Frequency's higher data (R/W)
-
-        public byte Channel3FrequencyHi;
-        public LengthTypes Channel3LengthType;
-        public bool Channel3Initialize
-        {
-            set => InitializeChannel3(value);
-        }
-
-        // FF30-FF3F - Wave Pattern RAM
-
-        public byte[] Channel3WavePattern = new byte[0x20];
-
-        int channel3CurrentLength;
-        float channel3WaveCycle;
-
-        byte ProcessChannel3(bool updateSample, bool updateLength)
-        {
-            if (!Channel3On)
-            {
-                StopChannel3();
-                return 127;
-            }
-
-            if (updateLength && Channel3LengthType == LengthTypes.Counter)
-            {
-                channel3CurrentLength--;
-                if (channel3CurrentLength == 0)
-                {
-                    StopChannel3();
-                    return 127;
-                }
-            }
-
-            if (!AllSoundEnabled || !Channel3Enabled)
-            {
-                StopChannel3();
-                return 127;
-            }
-
-            if (!updateSample) return 127;
-
-            float volume;
-
-            switch (Channel3Volume)
-            {
-                default:
-                case 0: volume = 0f; break;
-                case 1: volume = 1f; break;
-                case 2: volume = 0.5f; break;
-                case 3: volume = 0.25f; break;
-            }
-
-            float frequency = 65536f / (2048 - ((Channel3FrequencyHi << 8) | Channel3FrequencyLo));
-
-            channel3WaveCycle += frequency / (SAMPLE_RATE >> 5);
-            channel3WaveCycle %= 32f;
-
-            float wave = (Channel3WavePattern[(int)channel3WaveCycle] / 7.5f) - 0.999f;
-            wave *= volume;
-            return (byte)(wave * 128 + 127);
-        }
-
-        void InitializeChannel3(bool reset)
-        {
-            if (reset)
-            {
-                channel3WaveCycle = 0;
-
-                Channel3Enabled = true;
-            }
-
-            if (channel3CurrentLength == 0) channel3CurrentLength = 256;
-        }
-
-        void ResetChannel3()
-        {
-            Channel3On = false;
-            Channel3Length = 0;
-            Channel3Volume = 0;
-            Channel3FrequencyLo = 0;
-            Channel3FrequencyHi = 0;
-            Channel3LengthType = LengthTypes.Consecutive;
-            Channel3Initialize = false;
-
-            channel3CurrentLength = 0;
-        }
-
-        void StopChannel3()
-        {
-            Channel3Enabled = false;
-        }
-
-        #endregion
-
-        #region Sound Channel 4 - Noise
-
-        // FF20 - NR41 - Channel 4 Sound Length (R/W)
-
-        public byte Channel4Length { set => channel4CurrentLength = 64 - value; }
-
-        // FF21 - NR42 - Channel 4 Volume Envelope (R/W)
-
-        public byte Channel4LengthEnvelopeSteps;
-        public EnvelopeDirections Channel4EnvelopeDirection;
-        public byte Channel4InitialVolume;
-
-        // FF22 - NR43 - Channel 4 Polynomial Counter (R/W)
-
-        public byte Channel4DividingRatioFrequencies;
-        public NoiseCounterStepWidths Channel4CounterStepWidth;
-        public byte Channel4ShiftClockFrequency;
-
-        // FF23 - NR44 - Channel 4 Counter/consecutive; Inital (R/W)
-
-        public LengthTypes Channel4LengthType;
-        public bool Channel4Initialize
-        {
-            set => InitializeChannel4(value);
-        }
-
-
-        bool Channel4DACEnabled => Channel4InitialVolume != 0 || Channel4EnvelopeDirection == EnvelopeDirections.Increase;
-
-        // Current state
-
-        int channel4CurrentLength;
-        int channel4EnvelopeTimer;
-        int channel4CurrentVolume;
-        int channel4NoiseClocksToWait;
-        ushort channel4NoiseSequence;
-
-        byte ProcessChannel4(bool updateLength, bool updateVolume)
-        {
-            if (!Channel4DACEnabled)
-            {
-                StopChannel4();
-                return 127;
-            }
-
-            if (updateLength && Channel4LengthType == LengthTypes.Counter)
-            {
-                channel4CurrentLength--;
-                if (channel4CurrentLength == 0)
-                {
-                    StopChannel4();
-                    return 127;
-                }
-            }
-
-            if (!AllSoundEnabled || !Channel4Enabled)
-            {
-                StopChannel4();
-                return 127;
-            }
-
-            if (updateVolume)
-            {
-                if (Channel4LengthEnvelopeSteps > 0 && channel4EnvelopeTimer > 0)
-                {
-                    channel4EnvelopeTimer--;
-                    if (channel4EnvelopeTimer == 0)
-                    {
-                        channel4EnvelopeTimer = Channel4LengthEnvelopeSteps;
-
-                        if (Channel4EnvelopeDirection == EnvelopeDirections.Decrease)
-                        {
-                            channel4CurrentVolume--;
-                            if (channel4CurrentVolume < 0) channel4CurrentVolume = 0;
-                        }
-                        else
-                        {
-                            channel4CurrentVolume++;
-                            if (channel4CurrentVolume > 0xF) channel4CurrentVolume = 0xF;
-                        }
-                    }
-                }
-            }
-
-            channel4NoiseClocksToWait -= 4;
-            if (channel4NoiseClocksToWait <= 0)
-            {
-                float r = Channel4DividingRatioFrequencies == 0 ? 0.5f : Channel4DividingRatioFrequencies;
-                float frequency = 524288f / r / MathF.Pow(2, Channel4ShiftClockFrequency + 1);
-
-                channel4NoiseClocksToWait = (int)(CPU.CPU_CLOCKS / frequency);
-
-                int xor = (channel4NoiseSequence & 0x1) ^ ((channel4NoiseSequence >> 1) & 0x1);
-                channel4NoiseSequence >>= 1;
-                channel4NoiseSequence |= (ushort)(xor << 14);
-                if (Channel4CounterStepWidth == NoiseCounterStepWidths.Bits7)
-                {
-                    channel4NoiseSequence = (ushort)(channel4NoiseSequence & 0b1111_1111_1011_1111);
-                    channel4NoiseSequence |= (ushort)(xor << 6);
-                }
-            }
-
-            int bit = (channel4NoiseSequence & 0x1) ^ 1;
-            float wave = bit != 0 ? 1.0f : -0.999f;
-            wave *= channel4CurrentVolume / (float)0xF;
-            return (byte)(wave * 128 + 127);
-
-            //float wave = (float)(random.NextDouble() * 2 - 1);
-            //wave *= channel4CurrentVolume / (float)0xF;
-            //return (byte)(wave * 128 + 127);
-        }
-
-        void InitializeChannel4(bool reset)
-        {
-            if (reset)
-            {
-                channel4EnvelopeTimer = Channel4LengthEnvelopeSteps;
-                channel4NoiseSequence = (ushort)random.Next(ushort.MinValue, ushort.MaxValue + 1);
-
-                Channel4Enabled = true;
-            }
-
-            if (channel4CurrentLength == 0) channel4CurrentLength = 64;
-            channel4CurrentVolume = Channel4InitialVolume;
-        }
-
-        void ResetChannel4()
-        {
-            Channel4Length = 0;
-            Channel4LengthEnvelopeSteps = 0;
-            Channel4EnvelopeDirection = EnvelopeDirections.Decrease;
-            Channel4InitialVolume = 0;
-            Channel4DividingRatioFrequencies = 0;
-            Channel4CounterStepWidth = 0;
-            Channel4ShiftClockFrequency = 0;
-            Channel4LengthType = LengthTypes.Consecutive;
-            Channel4Initialize = false;
-
-            channel4CurrentLength = 0;
-            channel4EnvelopeTimer = 0;
-            channel4CurrentVolume = 0;
-        }
-
-        void StopChannel4()
-        {
-            Channel4Enabled = false;
         }
 
         #endregion
