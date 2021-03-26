@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <PackageId>DamageBoy</PackageId>
+    <PackageId>DamageBoy.Core</PackageId>
     <Version>0.1.0</Version>
     <Authors>PacoChan</Authors>
     <Company>PacoChan</Company>
