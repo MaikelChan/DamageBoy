@@ -1,11 +1,12 @@
 ﻿using GBEmu.Core.MemoryBankControllers;
+using GBEmu.Core.State;
 using System;
 using System.IO;
 using System.Text;
 
 namespace GBEmu.Core
 {
-    class Cartridge : IDisposable
+    class Cartridge : IDisposable, IState
     {
         readonly byte[] rom;
         readonly byte[] ram;
@@ -158,6 +159,20 @@ namespace GBEmu.Core
                     }
                 }
             }
+        }
+
+        public void GetState(SaveState state)
+        {
+            if (ram != null) Array.Copy(ram, state.ExternalRam, RamSize);
+            state.IsExternalRamEnabled = isRamEnabled;
+            state.MemoryBankControllerState = mbc.GetState();
+        }
+
+        public void SetState(SaveState state)
+        {
+            if (ram != null) Array.Copy(state.ExternalRam, ram, RamSize);
+            isRamEnabled = state.IsExternalRamEnabled;
+            mbc.SetState(state.MemoryBankControllerState);
         }
     }
 }

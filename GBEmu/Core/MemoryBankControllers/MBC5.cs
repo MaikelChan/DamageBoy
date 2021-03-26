@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 
 namespace GBEmu.Core.MemoryBankControllers
 {
@@ -100,6 +101,26 @@ namespace GBEmu.Core.MemoryBankControllers
                     }
                 }
             }
+        }
+
+        public MemoryBankControllerState GetState()
+        {
+            MBC5State mbc5State = new MBC5State();
+
+            mbc5State.RomBankHi = romBankHi;
+            mbc5State.RomBankLo = romBankLo;
+            mbc5State.RamBank = ramBank;
+
+            return mbc5State;
+        }
+
+        public void SetState(MemoryBankControllerState state)
+        {
+            MBC5State mbc5State = (MBC5State)state;
+
+            romBankHi = mbc5State.RomBankHi;
+            romBankLo = mbc5State.RomBankLo;
+            ramBank = mbc5State.RamBank;
         }
     }
 }

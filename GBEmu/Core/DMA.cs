@@ -1,18 +1,18 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 
 namespace GBEmu.Core
 {
-    class DMA
+    class DMA : IState
     {
         readonly Cartridge cartridge;
         readonly RAM ram;
         readonly VRAM vram;
 
-        byte sourceBaseAddress;
         public byte SourceBaseAddress
         {
-            get { return sourceBaseAddress; }
-            set { sourceBaseAddress = value; Begin(); }
+            get { return (byte)(sourceAddress >> 8); }
+            set { sourceAddress = (ushort)(value << 8); Begin(); }
         }
 
         public bool IsBusy => currentOffset < VRAM.OAM_SIZE;
@@ -69,9 +69,7 @@ namespace GBEmu.Core
 
         void Begin()
         {
-            sourceAddress = (ushort)(sourceBaseAddress << 8);
-
-            if (/*sourceAddress < VRAM.VRAM_START_ADDRESS || */sourceAddress >= RAM.INTERNAL_RAM_END_ADDRESS)
+            if (sourceAddress >= RAM.INTERNAL_RAM_END_ADDRESS)
             {
                 throw new InvalidOperationException($"Tried to execute a DMA transfer from an invalid address: 0x{sourceAddress:X4}.");
             }
@@ -80,6 +78,18 @@ namespace GBEmu.Core
             // Setting this to -3 gives enough delay to be able to pass Mooneye's oam_dma_timing test.
             // Probably this is a bit of a hack?
             currentOffset = -3;
+        }
+
+        public void GetState(SaveState state)
+        {
+            state.DmaSourceAddress = sourceAddress;
+            state.DmaCurrentOffset = currentOffset;
+        }
+
+        public void SetState(SaveState state)
+        {
+            sourceAddress = state.DmaSourceAddress;
+            currentOffset = state.DmaCurrentOffset;
         }
     }
 }

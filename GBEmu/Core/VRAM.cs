@@ -1,6 +1,9 @@
-﻿namespace GBEmu.Core
+﻿using GBEmu.Core.State;
+using System;
+
+namespace GBEmu.Core
 {
-    class VRAM
+    class VRAM : IState
     {
         public byte[] VRam { get; }
         public byte[] Oam { get; }
@@ -17,6 +20,18 @@
         {
             VRam = new byte[VRAM_SIZE];
             Oam = new byte[OAM_SIZE];
+        }
+
+        public void GetState(SaveState state)
+        {
+            Array.Copy(VRam, state.VRam, VRAM_SIZE);
+            Array.Copy(Oam, state.Oam, OAM_SIZE);
+        }
+
+        public void SetState(SaveState state)
+        {
+            Array.Copy(state.VRam, VRam, VRAM_SIZE);
+            Array.Copy(state.Oam, Oam, OAM_SIZE);
         }
     }
 }

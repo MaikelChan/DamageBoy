@@ -1,9 +1,10 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace GBEmu.Core
 {
-    class PPU
+    class PPU : IState
     {
         readonly InterruptHandler interruptHandler;
         readonly VRAM vram;
@@ -26,8 +27,8 @@ namespace GBEmu.Core
 
         // LCD Status
 
-        public PPU.Modes LCDStatusMode { get; set; }
-        public PPU.CoincidenceFlagModes LCDStatusCoincidenceFlag { get; set; }
+        public Modes LCDStatusMode { get; set; }
+        public CoincidenceFlagModes LCDStatusCoincidenceFlag { get; set; }
         public bool LCDStatusHorizontalBlankInterrupt { get; set; }
         public bool LCDStatusVerticalBlankInterrupt { get; set; }
         public bool LCDStatusOAMSearchInterrupt { get; set; }
@@ -83,6 +84,8 @@ namespace GBEmu.Core
 
         int clocksToWait;
         int currentBuffer;
+
+        readonly byte[] currentLineColorIndices = new byte[RES_X];
 
         public PPU(InterruptHandler interruptHandler, VRAM vram, Action<byte[]> screenUpdateCallback)
         {
@@ -251,8 +254,6 @@ namespace GBEmu.Core
                 if (spritesAmountInCurrentLine >= MAX_SPRITES_PER_LINE) break;
             }
         }
-
-        readonly byte[] currentLineColorIndices = new byte[RES_X];
 
         void DoPixelTransfer()
         {
@@ -480,6 +481,70 @@ namespace GBEmu.Core
             if (LCDStatusMode == Modes.HorizontalBlank) return true;
             if (LCDStatusMode == Modes.VerticalBlank) return true;
             return false;
+        }
+
+        public void GetState(SaveState state)
+        {
+            state.LCDDisplayEnable = LCDDisplayEnable;
+            state.WindowTileMapDisplaySelect = WindowTileMapDisplaySelect;
+            state.WindowDisplayEnable = WindowDisplayEnable;
+            state.BGAndWindowTileDataSelect = BGAndWindowTileDataSelect;
+            state.BGTileMapDisplaySelect = BGTileMapDisplaySelect;
+            state.OBJSize = OBJSize;
+            state.OBJDisplayEnable = OBJDisplayEnable;
+            state.BGDisplayEnable = BGDisplayEnable;
+
+            state.LCDStatusMode = LCDStatusMode;
+            state.LCDStatusCoincidenceFlag = LCDStatusCoincidenceFlag;
+            state.LCDStatusHorizontalBlankInterrupt = LCDStatusHorizontalBlankInterrupt;
+            state.LCDStatusVerticalBlankInterrupt = LCDStatusVerticalBlankInterrupt;
+            state.LCDStatusOAMSearchInterrupt = LCDStatusOAMSearchInterrupt;
+            state.LCDStatusCoincidenceInterrupt = LCDStatusCoincidenceInterrupt;
+
+            state.ScrollY = ScrollY;
+            state.ScrollX = ScrollX;
+            state.LY = LY;
+            state.LYC = LYC;
+            state.WindowY = WindowY;
+            state.WindowX = WindowX;
+
+            state.BackgroundPalette = BackgroundPalette;
+            state.ObjectPalette0 = ObjectPalette0;
+            state.ObjectPalette1 = ObjectPalette1;
+
+            state.PpuClocksToWait = clocksToWait;
+        }
+
+        public void SetState(SaveState state)
+        {
+            LCDDisplayEnable = state.LCDDisplayEnable;
+            WindowTileMapDisplaySelect = state.WindowTileMapDisplaySelect;
+            WindowDisplayEnable = state.WindowDisplayEnable;
+            BGAndWindowTileDataSelect = state.BGAndWindowTileDataSelect;
+            BGTileMapDisplaySelect = state.BGTileMapDisplaySelect;
+            OBJSize = state.OBJSize;
+            OBJDisplayEnable = state.OBJDisplayEnable;
+            BGDisplayEnable = state.BGDisplayEnable;
+
+            LCDStatusMode = state.LCDStatusMode;
+            LCDStatusCoincidenceFlag = state.LCDStatusCoincidenceFlag;
+            LCDStatusHorizontalBlankInterrupt = state.LCDStatusHorizontalBlankInterrupt;
+            LCDStatusVerticalBlankInterrupt = state.LCDStatusVerticalBlankInterrupt;
+            LCDStatusOAMSearchInterrupt = state.LCDStatusOAMSearchInterrupt;
+            LCDStatusCoincidenceInterrupt = state.LCDStatusCoincidenceInterrupt;
+
+            ScrollY = state.ScrollY;
+            ScrollX = state.ScrollX;
+            LY = state.LY;
+            LYC = state.LYC;
+            WindowY = state.WindowY;
+            WindowX = state.WindowX;
+
+            BackgroundPalette = state.BackgroundPalette;
+            ObjectPalette0 = state.ObjectPalette0;
+            ObjectPalette1 = state.ObjectPalette1;
+
+            clocksToWait = state.PpuClocksToWait;
         }
     }
 }

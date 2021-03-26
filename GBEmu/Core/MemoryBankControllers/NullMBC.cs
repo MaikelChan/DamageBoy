@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 
 namespace GBEmu.Core.MemoryBankControllers
 {
@@ -32,6 +33,16 @@ namespace GBEmu.Core.MemoryBankControllers
                     default: throw new InvalidOperationException($"Tried to write to invalid Cartridge address: 0x{index:X4}");
                 }
             }
+        }
+
+        public MemoryBankControllerState GetState()
+        {
+            return new NullMBCState();
+        }
+
+        public void SetState(MemoryBankControllerState state)
+        {
+
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿namespace GBEmu.Core
+﻿using GBEmu.Core.State;
+
+namespace GBEmu.Core
 {
-    class Timer
+    class Timer : IState
     {
         readonly InterruptHandler interruptHandler;
 
@@ -75,6 +77,36 @@
                     interruptHandler.RequestTimerOverflow = true;
                 }
             }
+        }
+
+        public void GetState(SaveState state)
+        {
+            state.Divider = Divider;
+            state.TimerEnable = TimerEnable;
+            state.TimerClockSpeed = TimerClockSpeed;
+            state.TimerCounter = TimerCounter;
+            state.TimerModulo = TimerModulo;
+
+            state.DividerClocksToWait = dividerClocksToWait;
+            state.TimerClocksToWait = timerClocksToWait;
+
+            state.TimerHasOverflown = timerHasOverflown;
+            state.TimerOverflowWaitCycles = timerOverflowWaitCycles;
+        }
+
+        public void SetState(SaveState state)
+        {
+            Divider = state.Divider;
+            TimerEnable = state.TimerEnable;
+            TimerClockSpeed = state.TimerClockSpeed;
+            TimerCounter = state.TimerCounter;
+            TimerModulo = state.TimerModulo;
+
+            dividerClocksToWait = state.DividerClocksToWait;
+            timerClocksToWait = state.TimerClocksToWait;
+
+            timerHasOverflown = state.TimerHasOverflown;
+            timerOverflowWaitCycles = state.TimerOverflowWaitCycles;
         }
     }
 }

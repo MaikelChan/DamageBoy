@@ -1,4 +1,6 @@
-﻿
+﻿using GBEmu.Core.State;
+using System;
+
 namespace GBEmu.Core.Audio
 {
     class WaveChannel : SoundChannel
@@ -29,9 +31,11 @@ namespace GBEmu.Core.Audio
 
         float currentWaveCycle;
 
+        public const int WAVE_PATTERN_SIZE = 0x20;
+
         public WaveChannel(APU apu) : base(apu)
         {
-            WavePattern = new byte[0x20];
+            WavePattern = new byte[WAVE_PATTERN_SIZE];
         }
 
         protected override ushort InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
@@ -52,7 +56,7 @@ namespace GBEmu.Core.Audio
                 float frequency = 65536f / (2048 - ((FrequencyHi << 8) | FrequencyLo));
 
                 currentWaveCycle += frequency / (APU.SAMPLE_RATE >> 5);
-                currentWaveCycle %= 32f;
+                currentWaveCycle %= WAVE_PATTERN_SIZE;
 
                 float wave = (WavePattern[(int)currentWaveCycle] / 7.5f) - 0.999f;
                 wave *= volume;
@@ -76,14 +80,60 @@ namespace GBEmu.Core.Audio
 
         public override void Reset()
         {
+            base.Reset();
+
             SoundOn = false;
-            Length = 0;
+
             Volume = 0;
+
             FrequencyLo = 0;
             FrequencyHi = 0;
-            LengthType = LengthTypes.Consecutive;
+        }
 
-            currentLength = 0;
+        public override SoundChannelState GetState()
+        {
+            WaveChannelState waveState = new WaveChannelState();
+
+            waveState.Enabled = Enabled;
+            waveState.LengthType = LengthType;
+            waveState.Output2 = Output2;
+            waveState.Output1 = Output1;
+            waveState.CurrentLength = currentLength;
+
+            waveState.SoundOn = SoundOn;
+
+            waveState.Volume = Volume;
+
+            waveState.FrequencyLo = FrequencyLo;
+            waveState.FrequencyHi = FrequencyHi;
+
+            Array.Copy(WavePattern, waveState.WavePattern, WAVE_PATTERN_SIZE);
+
+            waveState.CurrentWaveCycle = currentWaveCycle;
+
+            return waveState;
+        }
+
+        public override void SetState(SoundChannelState state)
+        {
+            WaveChannelState waveState = (WaveChannelState)state;
+
+            Enabled = waveState.Enabled;
+            LengthType = waveState.LengthType;
+            Output2 = waveState.Output2;
+            Output1 = waveState.Output1;
+            currentLength = waveState.CurrentLength;
+
+            SoundOn = waveState.SoundOn;
+
+            Volume = waveState.Volume;
+
+            FrequencyLo = waveState.FrequencyLo;
+            FrequencyHi = waveState.FrequencyHi;
+
+            Array.Copy(waveState.WavePattern, WavePattern, WAVE_PATTERN_SIZE);
+
+            currentWaveCycle = waveState.CurrentWaveCycle;
         }
     }
 }

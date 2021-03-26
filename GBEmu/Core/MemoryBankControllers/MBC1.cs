@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 
 namespace GBEmu.Core.MemoryBankControllers
 {
@@ -8,7 +9,7 @@ namespace GBEmu.Core.MemoryBankControllers
         readonly byte[] rom;
         readonly byte[] ram;
 
-        enum BankingModes : byte { RomMode, RamMode_AdvancedRomMode }
+        public enum BankingModes : byte { RomMode, RamMode_AdvancedRomMode }
 
         byte romBank;
         byte upperRomOrRamBank;
@@ -140,6 +141,26 @@ namespace GBEmu.Core.MemoryBankControllers
                     }
                 }
             }
+        }
+
+        public MemoryBankControllerState GetState()
+        {
+            MBC1State mbc1State = new MBC1State();
+
+            mbc1State.RomBank = romBank;
+            mbc1State.upperRomOrRamBank = upperRomOrRamBank;
+            mbc1State.bankingMode = bankingMode;
+
+            return mbc1State;
+        }
+
+        public void SetState(MemoryBankControllerState state)
+        {
+            MBC1State mbc1State = (MBC1State)state;
+
+            romBank = mbc1State.RomBank;
+            upperRomOrRamBank = mbc1State.upperRomOrRamBank;
+            bankingMode = mbc1State.bankingMode;
         }
     }
 }

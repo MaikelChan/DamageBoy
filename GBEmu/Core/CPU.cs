@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 using System.IO;
 using System.Text;
 
 namespace GBEmu.Core
 {
-    class CPU
+    class CPU : IState
     {
         readonly MMU mmu;
 
@@ -2520,5 +2521,47 @@ namespace GBEmu.Core
         }
 
         #endregion
+
+        public void GetState(SaveState state)
+        {
+            state.A = A;
+            state.B = B;
+            state.C = C;
+            state.D = D;
+            state.E = E;
+            state.F = F;
+            state.H = H;
+            state.L = L;
+
+            state.SP = SP;
+            state.PC = PC;
+
+            state.ClocksToWait = clocksToWait;
+            state.IsHalted = isHalted;
+
+            state.InterruptMasterEnableFlag = interruptMasterEnableFlag;
+            state.InterruptMasterEnablePendingCycles = interruptMasterEnablePendingCycles;
+        }
+
+        public void SetState(SaveState state)
+        {
+            A = state.A;
+            B = state.B;
+            C = state.C;
+            D = state.D;
+            E = state.E;
+            F = state.F;
+            H = state.H;
+            L = state.L;
+
+            SP = state.SP;
+            PC = state.PC;
+
+            clocksToWait = state.ClocksToWait;
+            isHalted = state.IsHalted;
+
+            interruptMasterEnableFlag = state.InterruptMasterEnableFlag;
+            interruptMasterEnablePendingCycles = state.InterruptMasterEnablePendingCycles;
+        }
     }
 }

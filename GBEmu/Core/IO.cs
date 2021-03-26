@@ -1,8 +1,10 @@
 ﻿using GBEmu.Core.Audio;
+using GBEmu.Core.State;
+using System;
 
 namespace GBEmu.Core
 {
-    class IO
+    class IO : IState
     {
         readonly PPU ppu;
         readonly DMA dma;
@@ -24,7 +26,7 @@ namespace GBEmu.Core
             this.apu = apu;
             this.interruptHandler = interruptHandler;
 
-            buttons = new bool[8];
+            buttons = new bool[BUTTON_COUNT];
 
             // TODO: According to BGB, ioPorts are initialized to some default values instead of all zeroes.
             // Need to figure out what to do there and what those values are.
@@ -148,6 +150,8 @@ namespace GBEmu.Core
 
         bool buttonSelect;
         bool directionSelect;
+
+        public const int BUTTON_COUNT = 8;
 
         /// <summary>
         /// FF00 - P1/JOYP - Joypad (R/W). Select either button or direction keys by writing to this register, then read-out bit 0-3.
@@ -1034,5 +1038,21 @@ namespace GBEmu.Core
         public bool BootROMDisabled { get; private set; }
 
         #endregion
+
+        public void GetState(SaveState state)
+        {
+            Array.Copy(buttons, state.Buttons, BUTTON_COUNT);
+
+            state.ButtonSelect = buttonSelect;
+            state.DirectionSelect = directionSelect;
+        }
+
+        public void SetState(SaveState state)
+        {
+            Array.Copy(state.Buttons, buttons, BUTTON_COUNT);
+
+            buttonSelect = state.ButtonSelect;
+            directionSelect = state.DirectionSelect;
+        }
     }
 }

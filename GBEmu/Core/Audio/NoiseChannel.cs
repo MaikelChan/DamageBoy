@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 
 namespace GBEmu.Core.Audio
 {
@@ -100,19 +101,69 @@ namespace GBEmu.Core.Audio
 
         public override void Reset()
         {
-            Length = 0;
+            base.Reset();
+
             LengthEnvelopeSteps = 0;
             EnvelopeDirection = EnvelopeDirections.Decrease;
             InitialVolume = 0;
+
             DividingRatioFrequencies = 0;
             CounterStepWidth = 0;
             ShiftClockFrequency = 0;
-            LengthType = LengthTypes.Consecutive;
 
-            currentLength = 0;
             currentEnvelopeTimer = 0;
             currentVolume = 0;
             currentNoiseSequence = 0;
+        }
+
+        public override SoundChannelState GetState()
+        {
+            NoiseChannelState noiseState = new NoiseChannelState();
+
+            noiseState.Enabled = Enabled;
+            noiseState.LengthType = LengthType;
+            noiseState.Output2 = Output2;
+            noiseState.Output1 = Output1;
+            noiseState.CurrentLength = currentLength;
+
+            noiseState.LengthEnvelopeSteps = LengthEnvelopeSteps;
+            noiseState.EnvelopeDirection = EnvelopeDirection;
+            noiseState.InitialVolume = InitialVolume;
+
+            noiseState.DividingRatioFrequencies = DividingRatioFrequencies;
+            noiseState.CounterStepWidth = CounterStepWidth;
+            noiseState.ShiftClockFrequency = ShiftClockFrequency;
+
+            noiseState.CurrentEnvelopeTimer = currentEnvelopeTimer;
+            noiseState.CurrentVolume = currentVolume;
+            noiseState.CurrentNoiseClocksToWait = currentNoiseClocksToWait;
+            noiseState.CurrentNoiseSequence = currentNoiseSequence;
+
+            return noiseState;
+        }
+
+        public override void SetState(SoundChannelState state)
+        {
+            NoiseChannelState noiseState = (NoiseChannelState)state;
+
+            Enabled = noiseState.Enabled;
+            LengthType = noiseState.LengthType;
+            Output2 = noiseState.Output2;
+            Output1 = noiseState.Output1;
+            currentLength = noiseState.CurrentLength;
+
+            LengthEnvelopeSteps = noiseState.LengthEnvelopeSteps;
+            EnvelopeDirection = noiseState.EnvelopeDirection;
+            InitialVolume = noiseState.InitialVolume;
+
+            DividingRatioFrequencies = noiseState.DividingRatioFrequencies;
+            CounterStepWidth = noiseState.CounterStepWidth;
+            ShiftClockFrequency = noiseState.ShiftClockFrequency;
+
+            currentEnvelopeTimer = noiseState.CurrentEnvelopeTimer;
+            currentVolume = noiseState.CurrentVolume;
+            currentNoiseClocksToWait = noiseState.CurrentNoiseClocksToWait;
+            currentNoiseSequence = noiseState.CurrentNoiseSequence;
         }
     }
 }

@@ -317,10 +317,10 @@ namespace GBEmu
                         StopEmulation();
                         break;
                     case Keys.F5:
-                        //gameBoy.SaveState();
+                        gameBoy.SaveState();
                         break;
                     case Keys.F7:
-                        //gameBoy.LoadState();
+                        gameBoy.LoadState();
                         break;
                 }
             }

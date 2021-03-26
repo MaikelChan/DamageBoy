@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 
 namespace GBEmu.Core.Audio
 {
@@ -151,24 +152,88 @@ namespace GBEmu.Core.Audio
 
         public override void Reset()
         {
+            base.Reset();
+
             SweepShift = 0;
             SweepType = SweepTypes.Increase;
             SweepTime = 0;
-            Length = 0;
+
             PulsePattern = PulsePatterns.Percent12_5;
+
             LengthEnvelopeSteps = 0;
             EnvelopeDirection = EnvelopeDirections.Decrease;
             InitialVolume = 0;
+
             FrequencyLo = 0;
             FrequencyHi = 0;
-            LengthType = LengthTypes.Consecutive;
 
-            currentLength = 0;
             currentEnvelopeTimer = 0;
             currentVolume = 0;
             currentSweepTimer = 0;
             currentFrequency = 0;
             currentWaveCycle = 0f;
+        }
+
+        public override SoundChannelState GetState()
+        {
+            PulseChannelState pulseState = new PulseChannelState();
+
+            pulseState.Enabled = Enabled;
+            pulseState.LengthType = LengthType;
+            pulseState.Output2 = Output2;
+            pulseState.Output1 = Output1;
+            pulseState.CurrentLength = currentLength;
+
+            pulseState.SweepShift = SweepShift;
+            pulseState.SweepType = SweepType;
+            pulseState.SweepTime = SweepTime;
+
+            pulseState.PulsePattern = PulsePattern;
+
+            pulseState.LengthEnvelopeSteps = LengthEnvelopeSteps;
+            pulseState.EnvelopeDirection = EnvelopeDirection;
+            pulseState.InitialVolume = InitialVolume;
+
+            pulseState.FrequencyLo = FrequencyLo;
+            pulseState.FrequencyHi = FrequencyHi;
+
+            pulseState.CurrentEnvelopeTimer = currentEnvelopeTimer;
+            pulseState.CurrentVolume = currentVolume;
+            pulseState.CurrentSweepTimer = currentSweepTimer;
+            pulseState.CurrentFrequency = currentFrequency;
+            pulseState.CurrentWaveCycle = currentWaveCycle;
+
+            return pulseState;
+        }
+
+        public override void SetState(SoundChannelState state)
+        {
+            PulseChannelState pulseState = (PulseChannelState)state;
+
+            Enabled = pulseState.Enabled;
+            LengthType = pulseState.LengthType;
+            Output2 = pulseState.Output2;
+            Output1 = pulseState.Output1;
+            currentLength = pulseState.CurrentLength;
+
+            SweepShift = pulseState.SweepShift;
+            SweepType = pulseState.SweepType;
+            SweepTime = pulseState.SweepTime;
+
+            PulsePattern = pulseState.PulsePattern;
+
+            LengthEnvelopeSteps = pulseState.LengthEnvelopeSteps;
+            EnvelopeDirection = pulseState.EnvelopeDirection;
+            InitialVolume = pulseState.InitialVolume;
+
+            FrequencyLo = pulseState.FrequencyLo;
+            FrequencyHi = pulseState.FrequencyHi;
+
+            currentEnvelopeTimer = pulseState.CurrentEnvelopeTimer;
+            currentVolume = pulseState.CurrentVolume;
+            currentSweepTimer = pulseState.CurrentSweepTimer;
+            currentFrequency = pulseState.CurrentFrequency;
+            currentWaveCycle = pulseState.CurrentWaveCycle;
         }
     }
 }

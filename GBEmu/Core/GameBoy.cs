@@ -1,4 +1,5 @@
-﻿using OpenTK.Windowing.GraphicsLibraryFramework;
+﻿using GBEmu.Core.State;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -77,8 +78,6 @@ namespace GBEmu.Core
 
         void MainLoop()
         {
-            //ProcessSaveState();
-
             EmulationState = EmulationStates.Running;
             Utils.Log(LogType.Info, "Emulation is now running.");
 
@@ -103,6 +102,8 @@ namespace GBEmu.Core
                     if (sw.ElapsedTicks < (4 * Stopwatch.Frequency) / CPU.CPU_CLOCKS) continue;
                     sw.Restart();
                 }
+
+                ProcessSaveState();
 
 #if !DEBUG
                 try
@@ -159,90 +160,78 @@ namespace GBEmu.Core
 
         #region Save States
 
-        //State saveState = null;
-        //SaveStateAction saveStateAction = SaveStateAction.None;
+        SaveState saveState = null;
+        SaveStateAction saveStateAction = SaveStateAction.None;
 
-        //enum SaveStateAction { None, SavePending, LoadPending }
+        enum SaveStateAction { None, SavePending, LoadPending }
 
         public void SaveState()
         {
-            //    if (EmulationState != EmulationStates.Running) return;
+            if (EmulationState != EmulationStates.Running) return;
+            if (!io.BootROMDisabled) return;
 
-            //    saveStateAction = SaveStateAction.SavePending;
+            saveStateAction = SaveStateAction.SavePending;
         }
 
         public void LoadState()
         {
-            //    if (EmulationState != EmulationStates.Running) return;
+            if (EmulationState != EmulationStates.Running) return;
+            if (!io.BootROMDisabled) return;
 
-            //    saveStateAction = SaveStateAction.LoadPending;
+            saveStateAction = SaveStateAction.LoadPending;
         }
 
-        //void DoSaveState()
-        //{
-        //    if (saveState == null) saveState = new State(this);
-        //    saveState.Save();
-        //    Utils.Log(LogType.Info, "Finished saving save state.");
-        //}
+        void DoSaveState()
+        {
+            if (saveState == null)
+            {
+                IState[] componentsStates = new IState[]
+                {
+                    cartridge,
+                    ram,
+                    vram,
+                    interruptHandler,
+                    dma,
+                    timer,
+                    apu,
+                    ppu,
+                    io,
+                    cpu
+                };
 
-        //void DoLoadState()
-        //{
-        //    if (saveState == null)
-        //    {
-        //        Utils.Log(LogType.Info, "There's no save state to load.");
-        //        return;
-        //    }
+                saveState = new SaveState(componentsStates, cartridge.RamSize);
+            }
 
-        //    saveState.Load();
-        //    Utils.Log(LogType.Info, "Finished loading save state.");
-        //}
+            saveState.Save();
+            Utils.Log(LogType.Info, "Finished saving save state.");
+        }
 
-        //void ProcessSaveState()
-        //{
-        //    switch (saveStateAction)
-        //    {
-        //        case SaveStateAction.SavePending:
-        //            DoSaveState();
-        //            break;
-        //        case SaveStateAction.LoadPending:
-        //            DoLoadState();
-        //            break;
-        //    }
+        void DoLoadState()
+        {
+            if (saveState == null)
+            {
+                Utils.Log(LogType.Info, "There's no save state to load.");
+                return;
+            }
 
-        //    saveStateAction = SaveStateAction.None;
-        //}
+            saveState.Load();
+            Utils.Log(LogType.Info, "Finished loading save state.");
+        }
 
-        //class State
-        //{
-        //    public CPUState cpuState;
-        //    public byte[] ram;
-        //    public byte[] pixels;
+        void ProcessSaveState()
+        {
+            switch (saveStateAction)
+            {
+                case SaveStateAction.SavePending:
+                    DoSaveState();
+                    break;
+                case SaveStateAction.LoadPending:
+                    DoLoadState();
+                    break;
+            }
 
-        //    readonly GameBoy chip8;
-
-        //    public State(GameBoy chip8)
-        //    {
-        //        this.chip8 = chip8;
-
-        //        cpuState = new CPUState();
-        //        ram = new byte[Memory.RAM_SIZE];
-        //        pixels = new byte[Screen.RES_X * Screen.RES_Y];
-        //    }
-
-        //    public void Save()
-        //    {
-        //        chip8.cpu.GetCPUState(cpuState);
-        //        Array.Copy(chip8.memory.ram, ram, Memory.RAM_SIZE);
-        //        Array.Copy(chip8.screen.pixels, pixels, Screen.RES_X * Screen.RES_Y);
-        //    }
-
-        //    public void Load()
-        //    {
-        //        chip8.cpu.SetCPUState(cpuState);
-        //        Array.Copy(ram, chip8.memory.ram, Memory.RAM_SIZE);
-        //        Array.Copy(pixels, chip8.screen.pixels, Screen.RES_X * Screen.RES_Y);
-        //    }
-        //}
+            saveStateAction = SaveStateAction.None;
+        }
 
         #endregion
     }

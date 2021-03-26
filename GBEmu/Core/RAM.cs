@@ -1,6 +1,9 @@
-﻿namespace GBEmu.Core
+﻿using GBEmu.Core.State;
+using System;
+
+namespace GBEmu.Core
 {
-    class RAM
+    class RAM : IState
     {
         public byte[] InternalRam { get; }
         public byte[] HighRam { get; }
@@ -17,6 +20,18 @@
         {
             InternalRam = new byte[INTERNAL_RAM_SIZE];
             HighRam = new byte[HIGH_RAM_SIZE];
+        }
+
+        public void GetState(SaveState state)
+        {
+            Array.Copy(InternalRam, state.InternalRam, INTERNAL_RAM_SIZE);
+            Array.Copy(HighRam, state.HighRam, HIGH_RAM_SIZE);
+        }
+
+        public void SetState(SaveState state)
+        {
+            Array.Copy(state.InternalRam, InternalRam, INTERNAL_RAM_SIZE);
+            Array.Copy(state.HighRam, HighRam, HIGH_RAM_SIZE);
         }
     }
 }

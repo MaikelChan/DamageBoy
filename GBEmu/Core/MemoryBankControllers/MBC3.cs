@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBEmu.Core.State;
+using System;
 
 namespace GBEmu.Core.MemoryBankControllers
 {
@@ -145,6 +146,38 @@ namespace GBEmu.Core.MemoryBankControllers
                     }
                 }
             }
+        }
+
+        public MemoryBankControllerState GetState()
+        {
+            MBC3State mbc3State = new MBC3State();
+
+            mbc3State.RomBank = romBank;
+            mbc3State.RamOrRtcBank = ramOrRtcBank;
+
+            mbc3State.IsRtcLatched = isRtcLatched;
+            mbc3State.LatchedSeconds = latchedSeconds;
+            mbc3State.LatchedMinutes = latchedMinutes;
+            mbc3State.LatchedHours = latchedHours;
+            mbc3State.LatchedDaysLo = latchedDaysLo;
+            mbc3State.LatchedDaysHi = latchedDaysHi;
+
+            return mbc3State;
+        }
+
+        public void SetState(MemoryBankControllerState state)
+        {
+            MBC3State mbc3State = (MBC3State)state;
+
+            romBank = mbc3State.RomBank;
+            ramOrRtcBank = mbc3State.RamOrRtcBank;
+
+            isRtcLatched = mbc3State.IsRtcLatched;
+            latchedSeconds = mbc3State.LatchedSeconds;
+            latchedMinutes = mbc3State.LatchedMinutes;
+            latchedHours = mbc3State.LatchedHours;
+            latchedDaysLo = mbc3State.LatchedDaysLo;
+            latchedDaysHi = mbc3State.LatchedDaysHi;
         }
     }
 }

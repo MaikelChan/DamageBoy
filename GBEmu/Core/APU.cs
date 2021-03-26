@@ -1,9 +1,10 @@
 ﻿using GBEmu.Core.Audio;
+using GBEmu.Core.State;
 using System;
 
 namespace GBEmu.Core
 {
-    class APU
+    class APU : IState
     {
         readonly Action<ushort[]> soundUpdateCallback;
 
@@ -131,5 +132,45 @@ namespace GBEmu.Core
         }
 
         #endregion
+
+        public void GetState(SaveState state)
+        {
+            for (int sc = 0; sc < SOUND_CHANNEL_COUNT; sc++)
+            {
+                state.SoundChannelsStates[sc] = soundChannels[sc].GetState();
+            }
+
+            state.ApuSampleClocksToWait = sampleClocksToWait;
+            state.ApuLengthControlClocksToWait = lengthControlClocksToWait;
+            state.ApuVolumeEnvelopeClocksToWait = volumeEnvelopeClocksToWait;
+            state.ApuSweepClocksToWait = sweepClocksToWait;
+
+            state.Output1Level = Output1Level;
+            state.VinOutput1 = VinOutput1;
+            state.Output2Level = Output2Level;
+            state.VinOutput2 = VinOutput2;
+
+            state.AllSoundEnabled = allSoundEnabled;
+        }
+
+        public void SetState(SaveState state)
+        {
+            for (int sc = 0; sc < SOUND_CHANNEL_COUNT; sc++)
+            {
+                soundChannels[sc].SetState(state.SoundChannelsStates[sc]);
+            }
+
+            sampleClocksToWait = state.ApuSampleClocksToWait;
+            lengthControlClocksToWait = state.ApuLengthControlClocksToWait;
+            volumeEnvelopeClocksToWait = state.ApuVolumeEnvelopeClocksToWait;
+            sweepClocksToWait = state.ApuSweepClocksToWait;
+
+            Output1Level = state.Output1Level;
+            VinOutput1 = state.VinOutput1;
+            Output2Level = state.Output2Level;
+            VinOutput2 = state.VinOutput2;
+
+            allSoundEnabled = state.AllSoundEnabled;
+        }
     }
 }

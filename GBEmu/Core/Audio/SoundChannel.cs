@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using GBEmu.Core.State;
+using System.Runtime.CompilerServices;
 
 namespace GBEmu.Core.Audio
 {
@@ -70,7 +71,12 @@ namespace GBEmu.Core.Audio
 
         public abstract void Initialize(bool reset);
 
-        public abstract void Reset();
+        public virtual void Reset()
+        {
+            LengthType = LengthTypes.Consecutive;
+
+            currentLength = 0;
+        }
 
         protected abstract ushort InternalProcess(bool updateSample, bool updateVolumeEnvelope, bool updateSweep);
 
@@ -90,5 +96,9 @@ namespace GBEmu.Core.Audio
 
             return (ushort)((left << 8) | right);
         }
+
+        public abstract SoundChannelState GetState();
+
+        public abstract void SetState(SoundChannelState state);
     }
 }
