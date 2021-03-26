@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <PackageId>DamageBoy</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>PacoChan</Authors>
+    <Company>PacoChan</Company>
+    <Product>DamageBoy</Product>
+    <Description>Experimental GameBoy emulator written in C#, and it uses OpenGL for rendering, OpenAL for audio and ImGui for UI.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+</Project>

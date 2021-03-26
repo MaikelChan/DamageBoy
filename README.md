@@ -1,12 +1,13 @@
-# GBEmu
-`GBEmu` is a really unoriginal name for `Yet Another™` Experimental GameBoy emulator created as a learning exercise. It is written in C#, it uses OpenGL for rendering, OpenAL for audio and ImGui for UI. It requires a boot ROM (BIOS) file named `gb_boot_rom` and located in the same path as the GBEmu executable.
+# DamageBoy
+`DamageBoy` is the name of `Yet Another™` Experimental GameBoy emulator created for learning purposes. It comes from `DMG`, which is the original codename for the GameBoy, which stands for `Dot Matrix Game`. The emulator is written in C#, it uses OpenGL for rendering, OpenAL for audio and ImGui for UI. Despite being optional, it's recommended to have a boot ROM (BIOS) file named `dmg_boot_rom` and put it in the same path as the DamageBoy executable.
 
 ## Features
 - It can run games with no MBC, MBC1, MBC3 and MBC5.
-- Basic graphics features are supported: background, window, sprites, scrolling and mid-scanline effects.
+- Most graphics features are supported: background, window, sprites, scrolling and mid-scanline effects.
+- Audio mostly implemented, but there could be small audio errors here and there.
 - It supports saving and loading. Saves are stored in the `Saves` subfolder in the emulator path.
-- Audio mostly implemented, but there are still some sounds that don't play correctly.
-- It's still not too accurate, so there are some timer / interrupt issues. `Super Mario Land` can randomly crash. Though I've been able to play other games like `Super Mario Land 2` and `Link's Awakening` for a while without issues.
+- It has a basic save state implementation.
+- It's still not too accurate, so there are some timer / interrupt issues. Though I've been able to play several games like `Super Mario Land 2` and `Link's Awakening` for a while without issues.
 
 ## Requirements
 
