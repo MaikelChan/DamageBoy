@@ -137,6 +137,7 @@ namespace GBEmu.Core.Audio
         {
             if (reset)
             {
+                currentVolume = InitialVolume;
                 currentEnvelopeTimer = LengthEnvelopeSteps;
                 currentSweepTimer = SweepTime;
                 currentWaveCycle = 0;
@@ -144,9 +145,8 @@ namespace GBEmu.Core.Audio
                 Enabled = true;
             }
 
-            if (currentLength == 0) currentLength = 64;
-            currentVolume = InitialVolume;
             currentFrequency = (FrequencyHi << 8) | FrequencyLo;
+            if (currentLength == 0) currentLength = 64;
         }
 
         public override void Reset()

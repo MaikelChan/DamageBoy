@@ -88,6 +88,7 @@ namespace GBEmu.Core.Audio
         {
             if (reset)
             {
+                currentVolume = InitialVolume;
                 currentEnvelopeTimer = LengthEnvelopeSteps;
                 currentNoiseSequence = (ushort)random.Next(ushort.MinValue, ushort.MaxValue + 1);
 
@@ -95,7 +96,6 @@ namespace GBEmu.Core.Audio
             }
 
             if (currentLength == 0) currentLength = 64;
-            currentVolume = InitialVolume;
         }
 
         public override void Reset()
