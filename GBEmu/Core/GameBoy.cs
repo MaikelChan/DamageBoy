@@ -35,13 +35,13 @@ namespace GBEmu.Core
         readonly Action<byte[]> screenUpdateCallback;
 
         readonly Cartridge cartridge;
-        readonly Action<byte[]> soundUpdateCallback;
+        readonly Action<ushort[]> soundUpdateCallback;
 
         public EmulationStates EmulationState { get; private set; }
 
         FrameLimiterStates frameLimiterState;
 
-        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<byte[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
+        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<ushort[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
         {
             cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
             this.soundUpdateCallback = soundUpdateCallback;

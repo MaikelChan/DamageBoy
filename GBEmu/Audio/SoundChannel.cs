@@ -17,7 +17,7 @@ namespace GBEmu.Audio
         public Sound.BufferStates BufferState { get; private set; }
 
         public const int BUFFERS_PER_CHANNEL = 2;
-        public const int BUFFER_SIZE = 1024;
+        public const int BUFFER_SIZE = 2048;
 
         public SoundChannel()
         {
@@ -43,14 +43,15 @@ namespace GBEmu.Audio
             DeleteSource();
         }
 
-        public void ProcessChannel(byte? data)
+        public void ProcessChannel(ushort? data)
         {
             if (audioState == AudioStates.Buffering)
             {
                 if (!data.HasValue) return;
 
-                soundData[soundDataPosition] = data.Value;
-                soundDataPosition++;
+                soundData[soundDataPosition + 0] = (byte)(data.Value >> 8);
+                soundData[soundDataPosition + 1] = (byte)(data.Value & 0xFF);
+                soundDataPosition += 2;
 
                 if (soundDataPosition < BUFFERS_PER_CHANNEL * BUFFER_SIZE) return;
 
@@ -59,7 +60,7 @@ namespace GBEmu.Audio
 
                 for (int b = 0; b < BUFFERS_PER_CHANNEL; b++)
                 {
-                    AL.BufferData(alBuffers[b], ALFormat.Mono8, ref soundData[b * BUFFER_SIZE], BUFFER_SIZE, APU.SAMPLE_RATE);
+                    AL.BufferData(alBuffers[b], ALFormat.Stereo8, ref soundData[b * BUFFER_SIZE], BUFFER_SIZE, APU.SAMPLE_RATE);
                     AL.SourceQueueBuffer(alSource, alBuffers[b]);
                 }
 
@@ -82,8 +83,9 @@ namespace GBEmu.Audio
 
                 if (soundDataPosition < BUFFER_SIZE && data.HasValue)
                 {
-                    soundData[soundDataPosition] = data.Value;
-                    soundDataPosition++;
+                    soundData[soundDataPosition + 0] = (byte)(data.Value >> 8);
+                    soundData[soundDataPosition + 1] = (byte)(data.Value & 0xFF);
+                    soundDataPosition += 2;
                 }
 
                 AL.GetSource(alSource, ALGetSourcei.BuffersProcessed, out int buffersProcessed);
@@ -105,7 +107,7 @@ namespace GBEmu.Audio
 
                     int unqueuedBuffer = AL.SourceUnqueueBuffer(alSource);
 
-                    AL.BufferData(unqueuedBuffer, ALFormat.Mono8, ref soundData[0], BUFFER_SIZE, APU.SAMPLE_RATE);
+                    AL.BufferData(unqueuedBuffer, ALFormat.Stereo8, ref soundData[0], BUFFER_SIZE, APU.SAMPLE_RATE);
                     AL.SourceQueueBuffer(alSource, unqueuedBuffer);
 
                     soundDataPosition = 0;

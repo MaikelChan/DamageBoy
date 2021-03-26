@@ -51,7 +51,7 @@ namespace GBEmu.Core.Audio
 
         }
 
-        protected override byte InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
+        protected override ushort InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
         {
             if (updateVolume)
             {
@@ -127,7 +127,7 @@ namespace GBEmu.Core.Audio
                 float wave = MathF.Sin(currentWaveCycle);
                 wave = wave > percentage ? 1f : -0.999f;
                 wave *= currentVolume / (float)0xF;
-                return FloatWaveToByte(wave);
+                return FloatWaveToUInt16(wave);
             }
 
             return WAVE_SILENCE;

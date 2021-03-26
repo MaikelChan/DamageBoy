@@ -1,5 +1,4 @@
-﻿using GBEmu.Audio;
-using GBEmu.Core;
+﻿using GBEmu.Core;
 using GBEmu.Graphics;
 using GBEmu.UI;
 using OpenTK.Mathematics;
@@ -191,7 +190,7 @@ namespace GBEmu
             renderer.ScreenUpdate(pixels);
         }
 
-        void SoundUpdate(byte[] data)
+        void SoundUpdate(ushort[] data)
         {
             if (IsExiting) return;
 

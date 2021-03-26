@@ -34,7 +34,7 @@ namespace GBEmu.Core.Audio
             WavePattern = new byte[0x20];
         }
 
-        protected override byte InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
+        protected override ushort InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
         {
             if (updateSample)
             {
@@ -56,7 +56,7 @@ namespace GBEmu.Core.Audio
 
                 float wave = (WavePattern[(int)currentWaveCycle] / 7.5f) - 0.999f;
                 wave *= volume;
-                return FloatWaveToByte(wave);
+                return FloatWaveToUInt16(wave);
             }
 
             return WAVE_SILENCE;

@@ -35,7 +35,7 @@ namespace GBEmu.Core.Audio
             random = new Random();
         }
 
-        protected override byte InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
+        protected override ushort InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
         {
             if (updateVolume)
             {
@@ -81,7 +81,7 @@ namespace GBEmu.Core.Audio
             int bit = (currentNoiseSequence & 0x1) ^ 1;
             float wave = bit != 0 ? 1.0f : -0.999f;
             wave *= currentVolume / (float)0xF;
-            return FloatWaveToByte(wave);
+            return FloatWaveToUInt16(wave);
         }
 
         public override void Initialize(bool reset)

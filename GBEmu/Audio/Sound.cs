@@ -85,7 +85,7 @@ namespace GBEmu.Audio
             ALC.CloseDevice(device);
         }
 
-        public BufferStates Update(byte[] data)
+        public BufferStates Update(ushort[] data)
         {
             if (!isInitialized) return BufferStates.Uninitialized;
 

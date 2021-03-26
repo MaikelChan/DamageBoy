@@ -5,7 +5,7 @@ namespace GBEmu.Core
 {
     class APU
     {
-        readonly Action<byte[]> soundUpdateCallback;
+        readonly Action<ushort[]> soundUpdateCallback;
 
         readonly SoundChannel[] soundChannels;
 
@@ -26,7 +26,7 @@ namespace GBEmu.Core
         public const int SAMPLE_RATE = CPU.CPU_CLOCKS >> 7; // 32768Hz
         public const int SOUND_CHANNEL_COUNT = 4;
 
-        public APU(Action<byte[]> soundUpdateCallback)
+        public APU(Action<ushort[]> soundUpdateCallback)
         {
             this.soundUpdateCallback = soundUpdateCallback;
 
@@ -72,7 +72,7 @@ namespace GBEmu.Core
                 updateSweep = true;
             }
 
-            byte[] data = new byte[SOUND_CHANNEL_COUNT];
+            ushort[] data = new ushort[SOUND_CHANNEL_COUNT];
             data[0] = soundChannels[0].Process(updateSample, updateLength, updateVolume, updateSweep);
             data[1] = soundChannels[1].Process(updateSample, updateLength, updateVolume, false);
             data[2] = soundChannels[2].Process(updateSample, updateLength, false, false);

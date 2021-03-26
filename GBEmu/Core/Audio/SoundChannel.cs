@@ -20,8 +20,8 @@ namespace GBEmu.Core.Audio
 
         // Outputs
 
-        public bool Output1 { get; set; }
-        public bool Output2 { get; set; }
+        public bool Output2 { get; set; } // Left Speaker
+        public bool Output1 { get; set; } // Right Speaker
 
         // Helper properties
 
@@ -34,14 +34,14 @@ namespace GBEmu.Core.Audio
 
         // Constants
 
-        protected const byte WAVE_SILENCE = 127;
+        protected const ushort WAVE_SILENCE = 0x7f7f;
 
         public SoundChannel(APU apu)
         {
             this.apu = apu;
         }
 
-        public byte Process(bool updateSample, bool updateLength, bool updateVolumeEnvelope, bool updateSweep)
+        public ushort Process(bool updateSample, bool updateLength, bool updateVolumeEnvelope, bool updateSweep)
         {
             if (!IsDACEnabled)
             {
@@ -72,7 +72,7 @@ namespace GBEmu.Core.Audio
 
         public abstract void Reset();
 
-        protected abstract byte InternalProcess(bool updateSample, bool updateVolumeEnvelope, bool updateSweep);
+        protected abstract ushort InternalProcess(bool updateSample, bool updateVolumeEnvelope, bool updateSweep);
 
         protected void Stop()
         {
@@ -80,9 +80,15 @@ namespace GBEmu.Core.Audio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static byte FloatWaveToByte(float value)
+        protected ushort FloatWaveToUInt16(float value)
         {
-            return (byte)(value * 128 + 127);
+            float leftValue = Output2 ? value * (apu.Output2Level / 7f) : 0f;
+            float rightValue = Output1 ? value * (apu.Output1Level / 7f) : 0f;
+
+            byte left = (byte)(leftValue * 128 + 127);
+            byte right = (byte)(rightValue * 128 + 127);
+
+            return (ushort)((left << 8) | right);
         }
     }
 }
