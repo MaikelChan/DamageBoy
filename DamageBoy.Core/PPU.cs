@@ -16,7 +16,16 @@ namespace DamageBoy.Core
 
         // LCD Control
 
-        public bool LCDDisplayEnable { get; set; }
+        bool lcdDisplayEnable;
+        public bool LCDDisplayEnable
+        {
+            get { return lcdDisplayEnable; }
+            set
+            {
+                if (lcdDisplayEnable && !value) ClearScreen();
+                lcdDisplayEnable = value;
+            }
+        }
         public bool WindowTileMapDisplaySelect { get; set; }
         public bool WindowDisplayEnable { get; set; }
         public bool BGAndWindowTileDataSelect { get; set; }
@@ -160,7 +169,12 @@ namespace DamageBoy.Core
 
         public void Update()
         {
-            if (!LCDDisplayEnable) return;
+            if (!LCDDisplayEnable)
+            {
+                LCDStatusMode = Modes.HorizontalBlank;
+                LY = 0;
+                return;
+            }
 
             clocksToWait -= 4;
             if (clocksToWait > 0) return;
@@ -211,7 +225,6 @@ namespace DamageBoy.Core
                     else
                     {
                         CheckLYC();
-                        LCDStatusMode = Modes.VerticalBlank;
                         clocksToWait = VERTICAL_BLANK_CLOCKS;
                     }
 
@@ -478,6 +491,13 @@ namespace DamageBoy.Core
             if (LCDStatusMode == Modes.HorizontalBlank) return true;
             if (LCDStatusMode == Modes.VerticalBlank) return true;
             return false;
+        }
+
+        void ClearScreen()
+        {
+            for (int p = 0; p < Constants.RES_X * Constants.RES_Y; p++) lcdPixelBuffers[currentBuffer][p] = 255;
+            screenUpdateCallback?.Invoke(lcdPixelBuffers[currentBuffer]);
+            currentBuffer ^= 1;
         }
 
         public void GetState(SaveState state)
