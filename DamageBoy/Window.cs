@@ -5,6 +5,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -165,7 +166,15 @@ namespace DamageBoy
                 }
 
                 Utils.Log(LogType.Info, $"ROM file successfully loaded: {selectedRomFile}");
-                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
+
+                try
+                {
+                    gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
+                }
+                catch (Exception ex)
+                {
+                    Utils.Log(LogType.Error, ex.Message);
+                }
             }
         }
 
