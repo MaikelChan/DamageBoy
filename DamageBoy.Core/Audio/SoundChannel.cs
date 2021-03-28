@@ -69,7 +69,10 @@ namespace DamageBoy.Core.Audio
             return InternalProcess(updateSample, updateVolumeEnvelope, updateSweep);
         }
 
-        public abstract void Initialize(bool reset);
+        public virtual void Initialize(bool reset)
+        {
+            if (currentLength == 0) currentLength = MaxLength;
+        }
 
         public virtual void Reset()
         {

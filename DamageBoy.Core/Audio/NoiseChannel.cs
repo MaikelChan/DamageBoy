@@ -87,6 +87,8 @@ namespace DamageBoy.Core.Audio
 
         public override void Initialize(bool reset)
         {
+            base.Initialize(reset);
+
             if (reset)
             {
                 currentVolume = InitialVolume;
@@ -95,8 +97,6 @@ namespace DamageBoy.Core.Audio
 
                 Enabled = true;
             }
-
-            if (currentLength == 0) currentLength = 64;
         }
 
         public override void Reset()

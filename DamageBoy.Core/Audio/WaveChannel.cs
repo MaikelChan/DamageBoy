@@ -68,14 +68,14 @@ namespace DamageBoy.Core.Audio
 
         public override void Initialize(bool reset)
         {
+            base.Initialize(reset);
+
             if (reset)
             {
                 currentWaveCycle = 0;
 
                 Enabled = true;
             }
-
-            if (currentLength == 0) currentLength = 256;
         }
 
         public override void Reset()
