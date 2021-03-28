@@ -12,7 +12,7 @@ Here you can check game compatibility. Games not listed here have not been teste
 | ROM Name | Status |
 | -- | -- |
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
-| F-1 Race (W) (V1.1) [!] | :x: (MBC2 not implemented) |
+| F-1 Race (W) (V1.1) [!] | :heavy_check_mark: |
 | Ferrari - Grand Prix Challenge (U) [!] | :heavy_check_mark: |
 | Kirby's Dream Land (UE) [!] | :large_blue_diamond: (Some minor sound effects issues) |
 | Kirby's Dream Land 2 (U) [S][!] | :large_blue_diamond: (Some minor sound effects issues) |
@@ -157,13 +157,13 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | emulator-only/mbc1/rom_8Mb.gb | :heavy_check_mark: |
 | emulator-only/mbc1/rom_16Mb.gb | :heavy_check_mark: |
 | emulator-only/mbc1/rom_512kb.gb | :heavy_check_mark: |
-| emulator-only/mbc2/bits_ramg.gb | :x: |
-| emulator-only/mbc2/bits_romb.gb | :x: |
-| emulator-only/mbc2/bits_unused.gb | :x: |
-| emulator-only/mbc2/ram.gb | :x: |
-| emulator-only/mbc2/rom_1Mb.gb | :x: |
-| emulator-only/mbc2/rom_2Mb.gb | :x: |
-| emulator-only/mbc2/rom_512kb.gb | :x: |
+| emulator-only/mbc2/bits_ramg.gb | :heavy_check_mark: |
+| emulator-only/mbc2/bits_romb.gb | :heavy_check_mark: |
+| emulator-only/mbc2/bits_unused.gb | :heavy_check_mark: |
+| emulator-only/mbc2/ram.gb | :heavy_check_mark: |
+| emulator-only/mbc2/rom_1Mb.gb | :heavy_check_mark: |
+| emulator-only/mbc2/rom_2Mb.gb | :heavy_check_mark: |
+| emulator-only/mbc2/rom_512kb.gb | :heavy_check_mark: |
 | emulator-only/mbc5/rom_1Mb.gb | :heavy_check_mark: |
 | emulator-only/mbc5/rom_2Mb.gb | :heavy_check_mark: |
 | emulator-only/mbc5/rom_4Mb.gb | :heavy_check_mark: |

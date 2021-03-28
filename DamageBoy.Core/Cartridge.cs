@@ -40,7 +40,7 @@ namespace DamageBoy.Core
                 switch (rom[0x148])
                 {
                     case >= 0 and < 9: return 32768 << rom[0x148];
-                    default: throw new NotImplementedException($"ROM of size ID; 0x{rom[0x148]:X2} is not implemented");
+                    default: throw new NotImplementedException($"ROM of size ID; 0x{rom[0x148]:X2} is not implemented.");
                 }
             }
         }
@@ -52,12 +52,12 @@ namespace DamageBoy.Core
                 switch (rom[0x149])
                 {
                     case 0: return 0;
-                    case 1: throw new InvalidDataException($"Cartridge with MBC1 and RAM with ID: 0x{rom[0x149]:X2} shouldn't be valid"); // return 1024 * 2;
+                    case 1: throw new InvalidDataException($"Cartridge with RAM of size ID: 0x{rom[0x149]:X2} shouldn't be valid."); // return 1024 * 2;
                     case 2: return 1024 * 8;
                     case 3: return 1024 * 32;
                     case 4: return 1024 * 128;
                     case 5: return 1024 * 64;
-                    default: throw new NotImplementedException($"Cartridge with MBC1 and RAM with ID: 0x{rom[0x149]:X2} is not implemented");
+                    default: throw new NotImplementedException($"Cartridge with RAM of size ID: 0x{rom[0x149]:X2} is not implemented.");
                 }
             }
         }
@@ -91,6 +91,12 @@ namespace DamageBoy.Core
                 case 0x3:
                     ram = GetInitializedRam(saveData);
                     mbc = new MBC1(this, romData, ram);
+                    break;
+
+                case 0x5:
+                case 0x6:
+                    if (RamSize != 0) throw new InvalidDataException($"Cartridge with MBC2 and RAM of size ID: 0x{rom[0x149]:X2} shouldn't be valid.");
+                    mbc = new MBC2(this, romData, saveUpdateCallback);
                     break;
 
                 case 0x11:
