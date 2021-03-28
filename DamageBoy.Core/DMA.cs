@@ -33,6 +33,8 @@ namespace DamageBoy.Core
         {
             get
             {
+                if (index >= 0xE000) index -= 0x2000;
+
                 switch (index)
                 {
                     case >= Cartridge.ROM_BANK_START_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
@@ -69,11 +71,6 @@ namespace DamageBoy.Core
 
         void Begin()
         {
-            if (sourceAddress >= RAM.INTERNAL_RAM_END_ADDRESS)
-            {
-                throw new InvalidOperationException($"Tried to execute a DMA transfer from an invalid address: 0x{sourceAddress:X4}.");
-            }
-
             // DMA transfer doesn't start right away.
             // Setting this to -3 gives enough delay to be able to pass Mooneye's oam_dma_timing test.
             // Probably this is a bit of a hack?

@@ -14,8 +14,6 @@ namespace DamageBoy.Core
         public const ushort BOOT_ROM_START_ADDRESS = 0x0;
         public const ushort BOOT_ROM_END_ADDRESS = 0x100;
 
-        public const ushort INTERNAL_RAM_ECHO_START_ADDRESS = 0xE000;
-        public const ushort INTERNAL_RAM_ECHO_END_ADDRESS = 0xFE00;
         public const ushort UNUSABLE_START_ADDRESS = 0xFEA0;
         public const ushort UNUSABLE_END_ADDRESS = 0xFF00;
 
@@ -46,7 +44,7 @@ namespace DamageBoy.Core
                     case >= VRAM.VRAM_START_ADDRESS and < VRAM.VRAM_END_ADDRESS: return ppu[index];
                     case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: return cartridge[index];
                     case >= RAM.INTERNAL_RAM_START_ADDRESS and < RAM.INTERNAL_RAM_END_ADDRESS: return ram.InternalRam[index - RAM.INTERNAL_RAM_START_ADDRESS];
-                    case >= INTERNAL_RAM_ECHO_START_ADDRESS and < INTERNAL_RAM_ECHO_END_ADDRESS: return ram.InternalRam[index - INTERNAL_RAM_ECHO_START_ADDRESS];
+                    case >= RAM.INTERNAL_RAM_ECHO_START_ADDRESS and < RAM.INTERNAL_RAM_ECHO_END_ADDRESS: return ram.InternalRam[index - RAM.INTERNAL_RAM_ECHO_START_ADDRESS];
                     case >= VRAM.OAM_START_ADDRESS and < VRAM.OAM_END_ADDRESS: return ppu[index];
                     case >= UNUSABLE_START_ADDRESS and < UNUSABLE_END_ADDRESS: return 0xFF;
                     case >= IO.IO_PORTS_START_ADDRESS and < IO.IO_PORTS_END_ADDRESS: return io[index - IO.IO_PORTS_START_ADDRESS];
@@ -71,7 +69,7 @@ namespace DamageBoy.Core
                     case >= VRAM.VRAM_START_ADDRESS and < VRAM.VRAM_END_ADDRESS: ppu[index] = value; break;
                     case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: cartridge[index] = value; break;
                     case >= RAM.INTERNAL_RAM_START_ADDRESS and < RAM.INTERNAL_RAM_END_ADDRESS: ram.InternalRam[index - RAM.INTERNAL_RAM_START_ADDRESS] = value; break;
-                    case >= INTERNAL_RAM_ECHO_START_ADDRESS and < INTERNAL_RAM_ECHO_END_ADDRESS: ram.InternalRam[index - INTERNAL_RAM_ECHO_START_ADDRESS] = value; break;
+                    case >= RAM.INTERNAL_RAM_ECHO_START_ADDRESS and < RAM.INTERNAL_RAM_ECHO_END_ADDRESS: ram.InternalRam[index - RAM.INTERNAL_RAM_ECHO_START_ADDRESS] = value; break;
                     case >= VRAM.OAM_START_ADDRESS and < VRAM.OAM_END_ADDRESS: ppu[index] = value; break;
                     case >= UNUSABLE_START_ADDRESS and < UNUSABLE_END_ADDRESS: break;
                     case >= IO.IO_PORTS_START_ADDRESS and < IO.IO_PORTS_END_ADDRESS: io[index - IO.IO_PORTS_START_ADDRESS] = value; break;

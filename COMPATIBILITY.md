@@ -117,7 +117,7 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | acceptance/interrupts/ie_push.gb | :x: |
 | acceptance/oam_dma/basic.gb | :heavy_check_mark: |
 | acceptance/oam_dma/reg_read.gb | :heavy_check_mark: |
-| acceptance/oam_dma/sources-GS.gb | :x: (Crashes) |
+| acceptance/oam_dma/sources-GS.gb | :heavy_check_mark: |
 | acceptance/ppu/hblank_ly_scx_timing-GS.gb | :x: |
 | acceptance/ppu/intr_1_2_timing-GS-GS.gb | :x: |
 | acceptance/ppu/intr_2_0_timing.gb | :x: |

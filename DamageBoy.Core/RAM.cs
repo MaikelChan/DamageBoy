@@ -12,6 +12,9 @@ namespace DamageBoy.Core
         public const ushort INTERNAL_RAM_END_ADDRESS = 0xE000;
         public const ushort INTERNAL_RAM_SIZE = INTERNAL_RAM_END_ADDRESS - INTERNAL_RAM_START_ADDRESS;
 
+        public const ushort INTERNAL_RAM_ECHO_START_ADDRESS = 0xE000;
+        public const ushort INTERNAL_RAM_ECHO_END_ADDRESS = 0xFE00;
+
         public const ushort HIGH_RAM_START_ADDRESS = 0xFF80;
         public const ushort HIGH_RAM_END_ADDRESS = 0xFFFF;
         public const ushort HIGH_RAM_SIZE = HIGH_RAM_END_ADDRESS - HIGH_RAM_START_ADDRESS;
