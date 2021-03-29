@@ -102,6 +102,8 @@ namespace DamageBoy.Graphics
                 viewportX = 0;
                 viewportY = (height - viewportHeight) >> 1;
             }
+
+            globalUniforms.WindowSize = new Vector2(width, height);
         }
 
         public override void ScreenUpdate(byte[] pixels)
