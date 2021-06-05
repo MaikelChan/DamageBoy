@@ -14,7 +14,7 @@ namespace DamageBoy.Graphics
             DefineUniform("uMainTexture", UniformTypes.Sampler2D);
             DefineUniform("uOffColor", UniformTypes.Float3);
             DefineUniform("uOnColor", UniformTypes.Float3);
-            DefineUniform("uWindowSize", UniformTypes.Float2);
+            DefineUniform("uViewportSize", UniformTypes.Float2);
             //DefineUniform("uTime", UniformTypes.Float1);
         }
 
@@ -23,7 +23,7 @@ namespace DamageBoy.Graphics
             SetUniform("uMainTexture", TextureTarget.Texture2D, 0, MainTexture);
             SetUniform("uOffColor", new Vector3(OffColor.R, OffColor.G, OffColor.B));
             SetUniform("uOnColor", new Vector3(OnColor.R, OnColor.G, OnColor.B));
-            SetUniform("uWindowSize", globalUniforms.WindowSize);
+            SetUniform("uViewportSize", globalUniforms.ViewportSize);
             //SetUniform("uTime", globalUniforms.Time);
         }
 
@@ -45,7 +45,7 @@ in vec2 uv0;
 uniform sampler2D uMainTexture;
 uniform vec3 uOffColor;
 uniform vec3 uOnColor;
-uniform vec2 uWindowSize;
+uniform vec2 uViewportSize;
 //uniform float uTime;
 
 out vec4 fragColor;
@@ -80,7 +80,7 @@ void main()
     float grid = pow(cos((uv0.y * HEIGHT * PI * 2) + PI) * 0.5 + 0.5, DOTS_POWER);
     grid *= pow(cos((uv0.x * WIDTH * PI * 2) + PI) * 0.5 + 0.5, DOTS_POWER);
     grid = grid * 0.2 + 0.8;
-    float gridVisibility = clamp(Remap(uWindowSize.y, GRID_VISIBILITY_MIN_HEIGHT, GRID_FADE_MAX_HEIGHT, 0.0, 1.0), 0.0, 1.0);
+    float gridVisibility = clamp(Remap(uViewportSize.y, GRID_VISIBILITY_MIN_HEIGHT, GRID_FADE_MAX_HEIGHT, 0.0, 1.0), 0.0, 1.0);
     color *= mix(1, grid, gridVisibility);
 
     fragColor = vec4(color, 1);
