@@ -81,8 +81,8 @@ namespace DamageBoy
         public void OpenROM(string romFile)
         {
             settings.Data.LastRomDirectory = Path.GetDirectoryName(romFile);
-            selectedRomFile = romFile;
             StopEmulation();
+            selectedRomFile = romFile;
             RunEmulation();
 
             SetWindowTitle();
@@ -137,8 +137,6 @@ namespace DamageBoy
                                 using (Stream s = zip.Entries[z].Open())
                                 using (MemoryStream romStream = new MemoryStream())
                                 {
-                                    //romData = new byte[s.Length];
-                                    //s.Read(romData, 0, romData.Length);
                                     s.CopyTo(romStream);
                                     romData = romStream.ToArray();
                                 }
