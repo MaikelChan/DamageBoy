@@ -24,24 +24,6 @@ namespace DamageBoy.Core
             return (variable & (1 << bit)) != 0;
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static bool GetHalfCarryFromAdd(byte value1, byte value2)
-        //{
-        //    return (((value1 & 0xF) + (value2 & 0xF)) & 0x10) != 0;
-        //}
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static bool GetHalfCarryFromAddWithCarry(byte value1, byte value2, bool carry)
-        //{
-        //    return ((value1 & 0xF) + (value2 & 0xF)) >= (carry ? 0xF : 0x10);
-        //}
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static bool GetCarryFromAdd(byte value1, byte value2)
-        //{
-        //    return (value1 + value2) > 0xFF;
-        //}
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte Add(byte value1, byte value2, out bool halfCarry, out bool carry)
         {

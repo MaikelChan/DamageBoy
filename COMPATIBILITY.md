@@ -4,13 +4,26 @@ Here you can check game compatibility. Games not listed here have not been teste
 
 - :heavy_check_mark: Works fine
 - :large_blue_diamond: Works, but has some minor issues
-- :heavy_exclamation_mark: Game boots, but has major issues
+- :warning: Game boots, but has major issues
 - :x: Doesn't work
 
 ## Licensed Games
 
 | ROM Name | Status |
 | -- | -- |
+| 3 Choume no Tama - Tama and Friends - 3 Choume Obake Panic!! (J) | :heavy_check_mark: |
+| 3-pun Yosou - Umaban Club (J) | :heavy_check_mark: |
+| 4-in-1 Fun Pak (JUE) | :heavy_check_mark: |
+| 4-in-1 Fun Pak Volume II (UE) | :x: (Volume of some music instruments is not correct, no input, crashes in title screen) |
+| A-mazing Tater (U) | :heavy_check_mark: |
+| Aa Harimanada (J) | :heavy_check_mark: |
+| Addams Family, The (JUE) | :heavy_check_mark: |
+| Addams Family, The - Pugsley's Scavenger Hunt (UE) | :heavy_check_mark: |
+| Adventure Island (UE) | :heavy_check_mark: |
+| Adventure Island II - Aliens in Paradise (UE) | :heavy_check_mark: |
+| Adventures of Lolo (E) | :large_blue_diamond: (Black screen during transitions) |
+| Adventures of Rocky and Bullwinkle and Friends, The (U) | :heavy_check_mark: |
+| Adventures of Star Saver, The (UE) | :heavy_check_mark: |
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
 | F-1 Race (W) (V1.1) [!] | :heavy_check_mark: |
 | Ferrari - Grand Prix Challenge (U) [!] | :heavy_check_mark: |
@@ -62,8 +75,6 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | interrupt_time/interrupt_time.gb | :x: |
 | mem_timing/mem_timing.gb | :x: |
 | mem_timing-2/mem_timing.gb | :x: |
-| interrupt_time/interrupt_time.gb | :x: |
-| interrupt_time/interrupt_time.gb | :x: |
 
 ### Mooneye's Hardware Tests
 
