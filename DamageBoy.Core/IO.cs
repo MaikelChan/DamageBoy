@@ -224,7 +224,18 @@ namespace DamageBoy.Core
         /// </summary>
         byte SB
         {
-            get => sb;
+            get
+            {
+                // HACK: If no GameBoy is connected while trying to receive data, it should be 0xFF;
+                // ... Or something like that? Dunno what I'm doing to be honest.
+
+                if (stcTransferStartFlag == STCTransferStartFlag.TransferInProgressOrRequested && stcShiftClock == STCShiftClock.ExternalClock)
+                {
+                    return 0xFF;
+                }
+
+                return sb;
+            }
             set => sb = value;
         }
 
@@ -255,6 +266,14 @@ namespace DamageBoy.Core
                 stcShiftClock = Helpers.GetBit(value, 0) ? STCShiftClock.InternalClock : STCShiftClock.ExternalClock;
                 // stcClockSpeed = Helpers.GetBit(value, 1) ? STCClockSpeed.Fast : STCClockSpeed.Normal;  // Only in CGB
                 stcTransferStartFlag = Helpers.GetBit(value, 7) ? STCTransferStartFlag.TransferInProgressOrRequested : STCTransferStartFlag.NoTransferInProgressOrRequested;
+
+                // HACK: Absolutely filthy hack for having serial interrupts. Some games require them.
+
+                if (stcTransferStartFlag == STCTransferStartFlag.TransferInProgressOrRequested && stcShiftClock == STCShiftClock.InternalClock)
+                {
+                    stcTransferStartFlag = STCTransferStartFlag.NoTransferInProgressOrRequested;
+                    interruptHandler.RequestSerialTransferCompletion = true;
+                }
             }
         }
 
