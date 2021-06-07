@@ -81,6 +81,8 @@ namespace DamageBoy
         public void OpenROM(string romFile)
         {
             settings.Data.LastRomDirectory = Path.GetDirectoryName(romFile);
+            settings.Save();
+
             StopEmulation();
             selectedRomFile = romFile;
             RunEmulation();
