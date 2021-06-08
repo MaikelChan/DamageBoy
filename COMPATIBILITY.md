@@ -24,6 +24,19 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Adventures of Lolo (E) | :large_blue_diamond: (Black screen during transitions) |
 | Adventures of Rocky and Bullwinkle and Friends, The (U) | :heavy_check_mark: |
 | Adventures of Star Saver, The (UE) | :heavy_check_mark: |
+| Aerostar (JUE) | :heavy_check_mark: |
+| After Burst (J) | :heavy_check_mark: |
+| Agro Soar (Australia) | :heavy_check_mark: |
+| Akazukin Chacha (J) | :heavy_check_mark: |
+| Akumajou Dracula - Shikkoku Taru Zensoukyoku - Dark Night Prelude (J) | :heavy_check_mark: |
+| Akumajou Special - Boku Dracula-kun (J) | :heavy_check_mark: |
+| Aladdin (UE) | :heavy_check_mark: |
+| Alfred Chicken (JUE) | :heavy_check_mark: |
+| Alien 3 (JUE) | :heavy_check_mark: |
+| Alien Olympics (E) | :heavy_check_mark: |
+| Alien vs Predator - The Last of His Clan (JU) | :heavy_check_mark: |
+| Alleyway (World) | :heavy_check_mark: |
+| All-Star Baseball 99 (U) | :heavy_check_mark: |
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
 | F-1 Race (W) (V1.1) [!] | :heavy_check_mark: |
 | Ferrari - Grand Prix Challenge (U) [!] | :heavy_check_mark: |

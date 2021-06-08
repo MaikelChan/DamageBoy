@@ -226,15 +226,10 @@ namespace DamageBoy.Core
         {
             get
             {
-                // HACK: If no GameBoy is connected while trying to receive data, it should be 0xFF;
-                // ... Or something like that? Dunno what I'm doing to be honest.
+                // HACK: If no GameBoy is connected while trying to receive data, it should be 0xFF.
+                // Let's have it always that way.
 
-                if (stcTransferStartFlag == STCTransferStartFlag.TransferInProgressOrRequested && stcShiftClock == STCShiftClock.ExternalClock)
-                {
-                    return 0xFF;
-                }
-
-                return sb;
+                return 0xFF;
             }
             set => sb = value;
         }
