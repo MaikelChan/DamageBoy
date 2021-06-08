@@ -24,6 +24,7 @@ namespace DamageBoy.Core
         readonly RAM ram;
         readonly VRAM vram;
         readonly InterruptHandler interruptHandler;
+        readonly Serial serial;
         readonly DMA dma;
         readonly Timer timer;
         readonly APU apu;
@@ -51,11 +52,12 @@ namespace DamageBoy.Core
             ram = new RAM();
             vram = new VRAM();
             interruptHandler = new InterruptHandler();
+            serial = new Serial(interruptHandler);
             dma = new DMA(cartridge, ram, vram);
             timer = new Timer(interruptHandler);
             apu = new APU(soundUpdateCallback);
             ppu = new PPU(interruptHandler, vram, ScreenUpdate);
-            io = new IO(ppu, dma, timer, apu, interruptHandler);
+            io = new IO(ppu, dma, timer, apu, serial, interruptHandler);
             mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
             cpu = new CPU(mmu, bootRom != null);
 
@@ -115,6 +117,7 @@ namespace DamageBoy.Core
                 apu.Update();
                 ppu.Update();
                 cpu.Update();
+                serial.Update();
                 dma.Update();
 #if !DEBUG
                 }
@@ -183,6 +186,7 @@ namespace DamageBoy.Core
                     ram,
                     vram,
                     interruptHandler,
+                    serial,
                     dma,
                     timer,
                     apu,

@@ -50,6 +50,18 @@ namespace DamageBoy.Core.State
 
         #endregion
 
+        #region Serial
+
+        public Serial.STCShiftClock ShiftClock { get; set; }
+        //public Serial.STCClockSpeed ClockSpeed; // Only in CGB
+        public Serial.STCTransferStartFlag TransferStartFlag { get; set; }
+        public byte TransferData { get; set; }
+
+        public int SerialClocksToWait { get; set; }
+        public byte SerialBitsPendingToBeTransfered { get; set; }
+
+        #endregion
+
         #region Timer
 
         public byte Divider { get; set; }

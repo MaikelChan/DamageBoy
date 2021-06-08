@@ -22,6 +22,7 @@ namespace DamageBoy.Core
         readonly DMA dma;
         readonly Timer timer;
         readonly APU apu;
+        readonly Serial serial;
         readonly InterruptHandler interruptHandler;
 
         public const ushort IO_PORTS_START_ADDRESS = 0xFF00;
@@ -30,12 +31,13 @@ namespace DamageBoy.Core
 
         public const ushort INTERRUPT_ENABLE_REGISTER_ADDRESS = 0xFFFF;
 
-        public IO(PPU ppu, DMA dma, Timer timer, APU apu, InterruptHandler interruptHandler)
+        public IO(PPU ppu, DMA dma, Timer timer, APU apu, Serial serial, InterruptHandler interruptHandler)
         {
             this.ppu = ppu;
             this.dma = dma;
             this.timer = timer;
             this.apu = apu;
+            this.serial = serial;
             this.interruptHandler = interruptHandler;
 
             buttons = new bool[BUTTON_COUNT];
@@ -217,30 +219,14 @@ namespace DamageBoy.Core
 
         #region Serial
 
-        byte sb;
-
         /// <summary>
         /// FF01 - SB - Serial transfer data (R/W)
         /// </summary>
         byte SB
         {
-            get
-            {
-                // HACK: If no GameBoy is connected while trying to receive data, it should be 0xFF.
-                // Let's have it always that way.
-
-                return 0xFF;
-            }
-            set => sb = value;
+            get => serial.TransferData;
+            set => serial.TransferData = value;
         }
-
-        enum STCShiftClock : byte { ExternalClock, InternalClock }
-        //enum STCClockSpeed : byte { Normal, Fast }
-        enum STCTransferStartFlag : byte { NoTransferInProgressOrRequested, TransferInProgressOrRequested }
-
-        STCShiftClock stcShiftClock;
-        //STCClockSpeed stcClockSpeed; // Only in CGB
-        STCTransferStartFlag stcTransferStartFlag;
 
         /// <summary>
         /// FF02 - SC - Serial Transfer Control (R/W)
@@ -250,25 +236,17 @@ namespace DamageBoy.Core
             get
             {
                 byte register = 0b0111_1110;
-                Helpers.SetBit(ref register, 0, stcShiftClock == STCShiftClock.InternalClock);
-                //Helpers.SetBit(ref register, 1, stcClockSpeed == STCClockSpeed.Fast);  // Only in CGB
-                Helpers.SetBit(ref register, 7, stcTransferStartFlag == STCTransferStartFlag.TransferInProgressOrRequested);
+                Helpers.SetBit(ref register, 0, serial.ShiftClock == Serial.STCShiftClock.InternalClock);
+                //Helpers.SetBit(ref register, 1, serial.ClockSpeed == STCClockSpeed.Fast);  // Only in CGB
+                Helpers.SetBit(ref register, 7, serial.TransferStartFlag == Serial.STCTransferStartFlag.TransferInProgressOrRequested);
                 return register;
             }
 
             set
             {
-                stcShiftClock = Helpers.GetBit(value, 0) ? STCShiftClock.InternalClock : STCShiftClock.ExternalClock;
-                // stcClockSpeed = Helpers.GetBit(value, 1) ? STCClockSpeed.Fast : STCClockSpeed.Normal;  // Only in CGB
-                stcTransferStartFlag = Helpers.GetBit(value, 7) ? STCTransferStartFlag.TransferInProgressOrRequested : STCTransferStartFlag.NoTransferInProgressOrRequested;
-
-                // HACK: Absolutely filthy hack for having serial interrupts. Some games require them.
-
-                if (stcTransferStartFlag == STCTransferStartFlag.TransferInProgressOrRequested && stcShiftClock == STCShiftClock.InternalClock)
-                {
-                    stcTransferStartFlag = STCTransferStartFlag.NoTransferInProgressOrRequested;
-                    interruptHandler.RequestSerialTransferCompletion = true;
-                }
+                serial.ShiftClock = Helpers.GetBit(value, 0) ? Serial.STCShiftClock.InternalClock : Serial.STCShiftClock.ExternalClock;
+                // serial.ClockSpeed = Helpers.GetBit(value, 1) ? STCClockSpeed.Fast : STCClockSpeed.Normal;  // Only in CGB
+                serial.TransferStartFlag = Helpers.GetBit(value, 7) ? Serial.STCTransferStartFlag.TransferInProgressOrRequested : Serial.STCTransferStartFlag.NoTransferInProgressOrRequested;
             }
         }
 
