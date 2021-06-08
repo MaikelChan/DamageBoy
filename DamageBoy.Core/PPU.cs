@@ -173,6 +173,11 @@ namespace DamageBoy.Core
             {
                 LCDStatusMode = Modes.HorizontalBlank;
                 LY = 0;
+
+                // HACK: Extra clocks than usual for when reenabling the LCD.
+                // Value found by trial and error.
+                // This is the one that makes the test oam_bug/rom_singles/1-lcd_sync.gb to pass.
+                clocksToWait = 452;
                 return;
             }
 

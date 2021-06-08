@@ -48,11 +48,13 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Metroid II - Return of Samus (W) [!] | :heavy_check_mark: |
 | Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
 | Pokemon - Yellow Version (UE) [C][!] | :heavy_check_mark: |
+| Road Rash (UE) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
 | Super Mario Land (W) (V1.1) [!] | :heavy_check_mark: |
 | Super Mario Land 2 - 6 Golden Coins (UE) (V1.0) [!] | :heavy_check_mark: |
 | Tetris (W) (V1.1) [!] | :heavy_check_mark: |
 | Wario Land - Super Mario Land 3 (W) [!] | :heavy_check_mark: |
 | Wario Land II (UE) [S][!] | :heavy_check_mark: |
+| Zerd no Densetsu (J) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
 
 ## Unlicensed Games
 
@@ -86,8 +88,17 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | dmg_sound/rom_singles/12-wave_write_while_on.gb | :x: |
 | instr_timing/instr_timing.gb | :heavy_check_mark: |
 | interrupt_time/interrupt_time.gb | :x: |
+| halt_bug.gb | :x: |
 | mem_timing/mem_timing.gb | :x: |
 | mem_timing-2/mem_timing.gb | :x: |
+| oam_bug/rom_singles/1-lcd_sync.gb | :heavy_check_mark: |
+| oam_bug/rom_singles/2-causes.gb | :x: |
+| oam_bug/rom_singles/3-non_causes.gb | :heavy_check_mark: |
+| oam_bug/rom_singles/4-scanline_timing.gb | :x: |
+| oam_bug/rom_singles/5-timing_bug.gb | :x: |
+| oam_bug/rom_singles/6-timing_no_bug.gb | :heavy_check_mark: |
+| oam_bug/rom_singles/7-timing_effect.gb | :x: |
+| oam_bug/rom_singles/8-instr_effect.gb | :x: |
 
 ### Mooneye's Hardware Tests
 
