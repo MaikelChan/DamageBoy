@@ -76,6 +76,16 @@ namespace DamageBoy.UI
                         window.LoadState();
                     }
 
+                    ImGui.EndMenu();
+                }
+
+                if (ImGui.BeginMenu("Debug"))
+                {
+                    if (ImGui.MenuItem("Trace Log", null, window.IsTraceLogEnabled))
+                    {
+                        window.ToggleTraceLog();
+                    }
+
                     //ImGui.Separator();
 
                     //if (ImGui.MenuItem("Debug...", null, debugWindowUI.IsVisible))

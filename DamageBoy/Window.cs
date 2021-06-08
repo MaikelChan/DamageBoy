@@ -98,6 +98,15 @@ namespace DamageBoy
 
         #region GameBoy
 
+        public bool IsTraceLogEnabled
+        {
+            get
+            {
+                if (gameBoy != null) return gameBoy.IsTraceLogEnabled;
+                return false;
+            }
+        }
+
         public void RunEmulation()
         {
             if (gameBoy != null) return;
@@ -197,6 +206,12 @@ namespace DamageBoy
         {
             if (gameBoy == null) return;
             gameBoy.LoadState();
+        }
+
+        public void ToggleTraceLog()
+        {
+            if (gameBoy == null) return;
+            gameBoy.ToggleTraceLog();
         }
 
         #endregion

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DamageBoy.Core
 {
-    class CPU : IState
+    class CPU : IDisposable, IState
     {
         readonly MMU mmu;
 
@@ -121,6 +121,11 @@ namespace DamageBoy.Core
             }
         }
 
+        public void Dispose()
+        {
+            DisableTraceLog();
+        }
+
         public void Update()
         {
             clocksToWait -= 4;
@@ -132,40 +137,18 @@ namespace DamageBoy.Core
             }
             else
             {
+                ProcessTraceLog();
                 ProcessOpcodes();
             }
 
             ProcessInterrupts();
         }
 
-        //StreamWriter sw = new StreamWriter("LogDamageBoy.txt", false, Encoding.UTF8);
-        //bool isBootrom = true;
-
         void ProcessOpcodes()
         {
-            //if (PC == 0xa5)
-            //{
-            //    int a = 0;
-            //}
-
             //if (PC == 0xdef8 && mmu[PC] == 0xE8 && AF == 0x1200 && mmu[SP + 1] == 0xc3 && mmu[SP] == 0x00)
             //{
             //    int a = 0;
-            //}
-
-            //if (PC >= 0x100) isBootrom = false;
-            //if (!isBootrom)
-            //{
-            //    try
-            //    {
-            //        sw.WriteLine($"PC = {PC:X4} ({mmu[PC]:X2}), AF = {AF:X4}, BC = {BC:X4}, DE = {DE:X4}, HL = {HL:X4}, SP = {SP:X4} ({(ushort)((mmu[SP + 1] << 8) | mmu[SP]):X4})");
-            //    }
-            //    catch (Exception)
-            //    {
-            //        sw.WriteLine($"PC = {PC:X4} ({mmu[PC]:X2}), AF = {AF:X4}, BC = {BC:X4}, DE = {DE:X4}, HL = {HL:X4}, SP = {SP:X4}");
-            //    }
-
-            //    sw.Flush();
             //}
 
             switch (mmu[PC])
@@ -2522,6 +2505,8 @@ namespace DamageBoy.Core
 
         #endregion
 
+        #region State
+
         public void GetState(SaveState state)
         {
             state.A = A;
@@ -2563,5 +2548,43 @@ namespace DamageBoy.Core
             interruptMasterEnableFlag = state.InterruptMasterEnableFlag;
             interruptMasterEnablePendingCycles = state.InterruptMasterEnablePendingCycles;
         }
+
+        #endregion
+
+        #region TraceLog
+
+        public bool IsTraceLogEnabled => traceLogStreamWriter != null;
+
+        StreamWriter traceLogStreamWriter;
+
+        public void EnableTraceLog(string fileName)
+        {
+            if (IsTraceLogEnabled) return;
+
+            traceLogStreamWriter = new StreamWriter(fileName, false, Encoding.UTF8);
+        }
+
+        public void DisableTraceLog()
+        {
+            if (!IsTraceLogEnabled) return;
+
+            traceLogStreamWriter.Flush();
+            traceLogStreamWriter.Dispose();
+            traceLogStreamWriter = null;
+        }
+
+        void ProcessTraceLog()
+        {
+            try
+            {
+                traceLogStreamWriter?.WriteLine($"PC = {PC:X4} ({mmu[PC]:X2}), AF = {AF:X4}, BC = {BC:X4}, DE = {DE:X4}, HL = {HL:X4}, SP = {SP:X4} ({(ushort)((mmu[SP + 1] << 8) | mmu[SP]):X4})");
+            }
+            catch (Exception)
+            {
+                traceLogStreamWriter?.WriteLine($"PC = {PC:X4} ({mmu[PC]:X2}), AF = {AF:X4}, BC = {BC:X4}, DE = {DE:X4}, HL = {HL:X4}, SP = {SP:X4}");
+            }
+        }
+
+        #endregion
     }
 }

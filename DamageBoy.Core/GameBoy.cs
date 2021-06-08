@@ -71,6 +71,7 @@ namespace DamageBoy.Core
         {
             if (EmulationState != EmulationStates.Running) return;
 
+            cpu.Dispose();
             cartridge.Dispose();
 
             EmulationState = EmulationStates.Stopped;
@@ -222,6 +223,20 @@ namespace DamageBoy.Core
             }
 
             saveStateAction = SaveStateAction.None;
+        }
+
+        #endregion
+
+        #region TraceLog
+
+        public bool IsTraceLogEnabled => cpu.IsTraceLogEnabled;
+
+        public void ToggleTraceLog()
+        {
+            if (cpu.IsTraceLogEnabled)
+                cpu.DisableTraceLog();
+            else
+                cpu.EnableTraceLog("LogDamageBoy.txt");
         }
 
         #endregion
