@@ -3,12 +3,17 @@ using DamageBoy.Graphics;
 using DamageBoy.UI;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using Image = OpenTK.Windowing.Common.Input.Image;
 using Sound = DamageBoy.Audio.Sound;
 
 namespace DamageBoy
@@ -52,6 +57,7 @@ namespace DamageBoy
             mainUI.IsVisible = true;
 
             SetWindowTitle();
+            SetWindowIcon();
         }
 
         protected override void Dispose(bool disposing)
@@ -93,7 +99,38 @@ namespace DamageBoy
         void SetWindowTitle()
         {
             string gameName = gameBoy != null ? gameBoy.GameTitle : "(No game loaded)";
-            Title = $"{Assembly.GetExecutingAssembly().GetName().Name} - {gameName}";
+            string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            Title = $"{assemblyName} v{version.Major}.{version.Minor}.{version.Build} - {gameName}";
+        }
+
+        void SetWindowIcon()
+        {
+            const int width = 16;
+            const int height = 16;
+            const int pixelCount = width * height;
+            const int size = width * height * 4;
+
+            BitmapData bData = Resources.WindowIcon.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, Resources.WindowIcon.PixelFormat);
+            byte[] pixels = new byte[size];
+            Marshal.Copy(bData.Scan0, pixels, 0, size);
+            // Resources.WindowIcon.UnlockBits(bData);
+
+            for (int p = 0; p < pixelCount; p++)
+            {
+                byte b = pixels[p * 4 + 0];
+                byte g = pixels[p * 4 + 1];
+                byte r = pixels[p * 4 + 2];
+                byte a = pixels[p * 4 + 3];
+
+                pixels[p * 4 + 0] = r;
+                pixels[p * 4 + 1] = g;
+                pixels[p * 4 + 2] = b;
+                pixels[p * 4 + 3] = a;
+            }
+
+            Image image = new Image(width, height, pixels);
+            Icon = new WindowIcon(image);
         }
 
         #region GameBoy
