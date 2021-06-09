@@ -91,7 +91,7 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | halt_bug.gb | :x: |
 | mem_timing/mem_timing.gb | :x: |
 | mem_timing-2/mem_timing.gb | :x: |
-| oam_bug/rom_singles/1-lcd_sync.gb | :heavy_check_mark: |
+| oam_bug/rom_singles/1-lcd_sync.gb | :x: |
 | oam_bug/rom_singles/2-causes.gb | :x: |
 | oam_bug/rom_singles/3-non_causes.gb | :heavy_check_mark: |
 | oam_bug/rom_singles/4-scanline_timing.gb | :x: |
