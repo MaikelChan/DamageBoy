@@ -101,7 +101,7 @@ namespace DamageBoy
             string gameName = gameBoy != null ? gameBoy.GameTitle : "(No game loaded)";
             string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
-            Title = $"{assemblyName} v{version.Major}.{version.Minor}.{version.Build} - {gameName}";
+            Title = $"{assemblyName} v{version.Major}.{version.Minor}.{version.Build}   -   {gameName}";
         }
 
         void SetWindowIcon()
