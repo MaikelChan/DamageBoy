@@ -11,20 +11,18 @@ namespace DamageBoy.Graphics
 
         public ScreenMaterial(BaseRenderer renderer) : base(renderer, vsSource, fsSource)
         {
+            DefineUniform("uViewportSize", UniformTypes.Float2);
             DefineUniform("uMainTexture", UniformTypes.Sampler2D);
             DefineUniform("uOffColor", UniformTypes.Float3);
             DefineUniform("uOnColor", UniformTypes.Float3);
-            DefineUniform("uViewportSize", UniformTypes.Float2);
-            //DefineUniform("uTime", UniformTypes.Float1);
         }
 
         public override void SetUniforms(GlobalUniforms globalUniforms)
         {
+            SetUniform("uViewportSize", globalUniforms.ViewportSize);
             SetUniform("uMainTexture", TextureTarget.Texture2D, 0, MainTexture);
             SetUniform("uOffColor", new Vector3(OffColor.R, OffColor.G, OffColor.B));
             SetUniform("uOnColor", new Vector3(OnColor.R, OnColor.G, OnColor.B));
-            SetUniform("uViewportSize", globalUniforms.ViewportSize);
-            //SetUniform("uTime", globalUniforms.Time);
         }
 
         const string vsSource = @"#version 330 core
@@ -42,11 +40,10 @@ void main()
         const string fsSource = @"#version 330 core
 in vec2 uv0;
 
+uniform vec2 uViewportSize;
 uniform sampler2D uMainTexture;
 uniform vec3 uOffColor;
 uniform vec3 uOnColor;
-uniform vec2 uViewportSize;
-//uniform float uTime;
 
 out vec4 fragColor;
 
@@ -54,8 +51,6 @@ const float WIDTH = 160f;
 const float HEIGHT = 144f;
 const float PI = 3.1415926535897932384626433832795f;
 const float DOTS_POWER = 1 / 3f;
-const float FADE_SPEED = 0.2f;
-const float FADE_SCALE = 1f / 2f;
 const float GRID_VISIBILITY_MIN_HEIGHT = 400.0;
 const float GRID_FADE_MAX_HEIGHT = 800.0;
 
@@ -68,12 +63,7 @@ void main()
 {
     float pixels = texture(uMainTexture, uv0).r;
 
-    //float fadeCoords = uv0.y; //floor(uv0.y * HEIGHT) / HEIGHT;
-    //float fade = 1 - (fadeCoords * FADE_SCALE);
-    //vec3 fadeColor = mix(uOffColor, uOnColor, 0.95);
-
     vec3 off = mix(uOffColor * 0.5, uOffColor * 1.2, uv0.y);
-    //vec3 on = mix(uOnColor * 1.1, fadeColor, fract(fade + (uTime * FADE_SPEED)));
     vec3 on = uOnColor;
 
     vec3 color = mix(off, on, pixels);

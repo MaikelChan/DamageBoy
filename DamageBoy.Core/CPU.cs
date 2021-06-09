@@ -1161,6 +1161,9 @@ namespace DamageBoy.Core
         /// </summary>
         void LDD_A_AddressHL()
         {
+            // OAM Bug
+            // mmu.CorruptOAM(HL);
+
             A = mmu[HL];
             HL--;
 
@@ -1174,6 +1177,9 @@ namespace DamageBoy.Core
         /// </summary>
         void LDI_A_AddressHL()
         {
+            // OAM Bug
+            // mmu.CorruptOAM(HL);
+
             A = mmu[HL];
             HL++;
 
@@ -1326,6 +1332,9 @@ namespace DamageBoy.Core
         /// </summary>
         void PUSH(ushort register)
         {
+            // OAM Bug
+            // mmu.CorruptOAM(register);
+
             SP -= 2;
             mmu[SP + 1] = (byte)(register >> 8);
             mmu[SP + 0] = (byte)(register & 0xFF);
@@ -1341,6 +1350,9 @@ namespace DamageBoy.Core
         {
             SP += 2;
             ushort register = (ushort)((mmu[SP - 1] << 8) | mmu[SP - 2]);
+
+            // OAM Bug
+            // mmu.CorruptOAM(register);
 
             PC += 1;
             clocksToWait = 12;
@@ -1920,6 +1932,9 @@ namespace DamageBoy.Core
         /// </summary>
         ushort INC(ushort register)
         {
+            // OAM Bug
+            // mmu.CorruptOAM(register);
+
             ushort result = (ushort)(register + 1);
 
             PC += 1;
@@ -1933,10 +1948,15 @@ namespace DamageBoy.Core
         /// </summary>
         ushort DEC(ushort register)
         {
+            // OAM Bug
+            // mmu.CorruptOAM(register);
+
+            ushort result = (ushort)(register - 1);
+
             PC += 1;
             clocksToWait = 8;
 
-            return (ushort)(register - 1);
+            return result;
         }
 
         #endregion

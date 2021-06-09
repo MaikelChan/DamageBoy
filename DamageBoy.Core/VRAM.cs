@@ -16,6 +16,9 @@ namespace DamageBoy.Core
         public const ushort OAM_END_ADDRESS = 0xFEA0;
         public const ushort OAM_SIZE = OAM_END_ADDRESS - OAM_START_ADDRESS;
 
+        public const ushort UNUSABLE_START_ADDRESS = 0xFEA0;
+        public const ushort UNUSABLE_END_ADDRESS = 0xFF00;
+
         public VRAM()
         {
             VRam = new byte[VRAM_SIZE];

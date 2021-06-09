@@ -237,6 +237,21 @@ namespace DamageBoy.Core
             }
         }
 
+        /// <summary>
+        /// This is for the OAM Bug in DMG.
+        /// </summary>
+        public void CorruptOAM(ushort modifiedAddress)
+        {
+            if (!LCDDisplayEnable) return;
+            if (LCDStatusMode != Modes.OamSearch) return;
+            if (modifiedAddress < VRAM.OAM_START_ADDRESS || modifiedAddress >= VRAM.UNUSABLE_END_ADDRESS - 1) return;
+
+            for (int m = 0; m < VRAM.OAM_SIZE; m++)
+            {
+                vram.Oam[m] = (byte)m;
+            }
+        }
+
         void DoOAMSearch()
         {
             LCDStatusMode = Modes.OamSearch;
