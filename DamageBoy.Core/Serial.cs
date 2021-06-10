@@ -1,4 +1,5 @@
 ﻿using DamageBoy.Core.State;
+using System.IO;
 
 namespace DamageBoy.Core
 {
@@ -79,24 +80,14 @@ namespace DamageBoy.Core
             return true;
         }
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            state.ShiftClock = ShiftClock;
-            state.TransferStartFlag = TransferStartFlag;
-            state.TransferData = TransferData;
+            ShiftClock = (STCShiftClock)SaveState.SaveLoadValue(bw, br, save, (byte)ShiftClock);
+            TransferStartFlag = (STCTransferStartFlag)SaveState.SaveLoadValue(bw, br, save, (byte)TransferStartFlag);
+            TransferData = SaveState.SaveLoadValue(bw, br, save, TransferData);
 
-            state.SerialClocksToWait = clocksToWait;
-            state.SerialBitsPendingToBeTransfered = bitsPendingToBeTransfered;
-        }
-
-        public void SetState(SaveState state)
-        {
-            ShiftClock = state.ShiftClock;
-            TransferStartFlag = state.TransferStartFlag;
-            TransferData = state.TransferData;
-
-            clocksToWait = state.SerialClocksToWait;
-            bitsPendingToBeTransfered = state.SerialBitsPendingToBeTransfered;
+            clocksToWait = SaveState.SaveLoadValue(bw, br, save, clocksToWait);
+            bitsPendingToBeTransfered = SaveState.SaveLoadValue(bw, br, save, bitsPendingToBeTransfered);
         }
     }
 }

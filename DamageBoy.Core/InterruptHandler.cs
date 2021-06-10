@@ -1,4 +1,5 @@
 ﻿using DamageBoy.Core.State;
+using System.IO;
 
 namespace DamageBoy.Core
 {
@@ -18,38 +19,21 @@ namespace DamageBoy.Core
 
         public byte EnableUnusedBits { get; set; } // In this case, unused bits are actually writable and readable
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            state.RequestVerticalBlanking = RequestVerticalBlanking;
-            state.RequestLCDCSTAT = RequestLCDCSTAT;
-            state.RequestTimerOverflow = RequestTimerOverflow;
-            state.RequestSerialTransferCompletion = RequestSerialTransferCompletion;
-            state.RequestJoypad = RequestJoypad;
+            RequestVerticalBlanking = SaveState.SaveLoadValue(bw, br, save, RequestVerticalBlanking);
+            RequestLCDCSTAT = SaveState.SaveLoadValue(bw, br, save, RequestLCDCSTAT);
+            RequestTimerOverflow = SaveState.SaveLoadValue(bw, br, save, RequestTimerOverflow);
+            RequestSerialTransferCompletion = SaveState.SaveLoadValue(bw, br, save, RequestSerialTransferCompletion);
+            RequestJoypad = SaveState.SaveLoadValue(bw, br, save, RequestJoypad);
 
-            state.EnableVerticalBlanking = EnableVerticalBlanking;
-            state.EnableLCDCSTAT = EnableLCDCSTAT;
-            state.EnableTimerOverflow = EnableTimerOverflow;
-            state.EnableSerialTransferCompletion = EnableSerialTransferCompletion;
-            state.EnableJoypad = EnableJoypad;
+            EnableVerticalBlanking = SaveState.SaveLoadValue(bw, br, save, EnableVerticalBlanking);
+            EnableLCDCSTAT = SaveState.SaveLoadValue(bw, br, save, EnableLCDCSTAT);
+            EnableTimerOverflow = SaveState.SaveLoadValue(bw, br, save, EnableTimerOverflow);
+            EnableSerialTransferCompletion = SaveState.SaveLoadValue(bw, br, save, EnableSerialTransferCompletion);
+            EnableJoypad = SaveState.SaveLoadValue(bw, br, save, EnableJoypad);
 
-            state.EnableUnusedBits = EnableUnusedBits;
-        }
-
-        public void SetState(SaveState state)
-        {
-            RequestVerticalBlanking = state.RequestVerticalBlanking;
-            RequestLCDCSTAT = state.RequestLCDCSTAT;
-            RequestTimerOverflow = state.RequestTimerOverflow;
-            RequestSerialTransferCompletion = state.RequestSerialTransferCompletion;
-            RequestJoypad = state.RequestJoypad;
-
-            EnableVerticalBlanking = state.EnableVerticalBlanking;
-            EnableLCDCSTAT = state.EnableLCDCSTAT;
-            EnableTimerOverflow = state.EnableTimerOverflow;
-            EnableSerialTransferCompletion = state.EnableSerialTransferCompletion;
-            EnableJoypad = state.EnableJoypad;
-
-            EnableUnusedBits = state.EnableUnusedBits;
+            EnableUnusedBits = SaveState.SaveLoadValue(bw, br, save, EnableUnusedBits);
         }
     }
 }

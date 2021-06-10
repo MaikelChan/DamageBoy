@@ -1,10 +1,11 @@
 ﻿using DamageBoy.Core.State;
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace DamageBoy.Core
 {
-    class PPU : IState
+    class PPU : IDisposable, IState
     {
         readonly InterruptHandler interruptHandler;
         readonly VRAM vram;
@@ -521,68 +522,36 @@ namespace DamageBoy.Core
             currentBuffer ^= 1;
         }
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            state.LCDDisplayEnable = LCDDisplayEnable;
-            state.WindowTileMapDisplaySelect = WindowTileMapDisplaySelect;
-            state.WindowDisplayEnable = WindowDisplayEnable;
-            state.BGAndWindowTileDataSelect = BGAndWindowTileDataSelect;
-            state.BGTileMapDisplaySelect = BGTileMapDisplaySelect;
-            state.OBJSize = OBJSize;
-            state.OBJDisplayEnable = OBJDisplayEnable;
-            state.BGDisplayEnable = BGDisplayEnable;
+            LCDDisplayEnable = SaveState.SaveLoadValue(bw, br, save, LCDDisplayEnable);
+            WindowTileMapDisplaySelect = SaveState.SaveLoadValue(bw, br, save, WindowTileMapDisplaySelect);
+            WindowDisplayEnable = SaveState.SaveLoadValue(bw, br, save, WindowDisplayEnable);
+            BGAndWindowTileDataSelect = SaveState.SaveLoadValue(bw, br, save, BGAndWindowTileDataSelect);
+            BGTileMapDisplaySelect = SaveState.SaveLoadValue(bw, br, save, BGTileMapDisplaySelect);
+            OBJSize = SaveState.SaveLoadValue(bw, br, save, OBJSize);
+            OBJDisplayEnable = SaveState.SaveLoadValue(bw, br, save, OBJDisplayEnable);
+            BGDisplayEnable = SaveState.SaveLoadValue(bw, br, save, BGDisplayEnable);
 
-            state.LCDStatusMode = LCDStatusMode;
-            state.LCDStatusCoincidenceFlag = LCDStatusCoincidenceFlag;
-            state.LCDStatusHorizontalBlankInterrupt = LCDStatusHorizontalBlankInterrupt;
-            state.LCDStatusVerticalBlankInterrupt = LCDStatusVerticalBlankInterrupt;
-            state.LCDStatusOAMSearchInterrupt = LCDStatusOAMSearchInterrupt;
-            state.LCDStatusCoincidenceInterrupt = LCDStatusCoincidenceInterrupt;
+            LCDStatusMode = (Modes)SaveState.SaveLoadValue(bw, br, save, (byte)LCDStatusMode);
+            LCDStatusCoincidenceFlag = (CoincidenceFlagModes)SaveState.SaveLoadValue(bw, br, save, (byte)LCDStatusCoincidenceFlag);
+            LCDStatusHorizontalBlankInterrupt = SaveState.SaveLoadValue(bw, br, save, LCDStatusHorizontalBlankInterrupt);
+            LCDStatusVerticalBlankInterrupt = SaveState.SaveLoadValue(bw, br, save, LCDStatusVerticalBlankInterrupt);
+            LCDStatusOAMSearchInterrupt = SaveState.SaveLoadValue(bw, br, save, LCDStatusOAMSearchInterrupt);
+            LCDStatusCoincidenceInterrupt = SaveState.SaveLoadValue(bw, br, save, LCDStatusCoincidenceInterrupt);
 
-            state.ScrollY = ScrollY;
-            state.ScrollX = ScrollX;
-            state.LY = LY;
-            state.LYC = LYC;
-            state.WindowY = WindowY;
-            state.WindowX = WindowX;
+            ScrollY = SaveState.SaveLoadValue(bw, br, save, ScrollY);
+            ScrollX = SaveState.SaveLoadValue(bw, br, save, ScrollX);
+            LY = SaveState.SaveLoadValue(bw, br, save, LY);
+            LYC = SaveState.SaveLoadValue(bw, br, save, LYC);
+            WindowY = SaveState.SaveLoadValue(bw, br, save, WindowY);
+            WindowX = SaveState.SaveLoadValue(bw, br, save, WindowX);
 
-            state.BackgroundPalette = BackgroundPalette;
-            state.ObjectPalette0 = ObjectPalette0;
-            state.ObjectPalette1 = ObjectPalette1;
+            BackgroundPalette = SaveState.SaveLoadValue(bw, br, save, BackgroundPalette);
+            ObjectPalette0 = SaveState.SaveLoadValue(bw, br, save, ObjectPalette0);
+            ObjectPalette1 = SaveState.SaveLoadValue(bw, br, save, ObjectPalette1);
 
-            state.PpuClocksToWait = clocksToWait;
-        }
-
-        public void SetState(SaveState state)
-        {
-            LCDDisplayEnable = state.LCDDisplayEnable;
-            WindowTileMapDisplaySelect = state.WindowTileMapDisplaySelect;
-            WindowDisplayEnable = state.WindowDisplayEnable;
-            BGAndWindowTileDataSelect = state.BGAndWindowTileDataSelect;
-            BGTileMapDisplaySelect = state.BGTileMapDisplaySelect;
-            OBJSize = state.OBJSize;
-            OBJDisplayEnable = state.OBJDisplayEnable;
-            BGDisplayEnable = state.BGDisplayEnable;
-
-            LCDStatusMode = state.LCDStatusMode;
-            LCDStatusCoincidenceFlag = state.LCDStatusCoincidenceFlag;
-            LCDStatusHorizontalBlankInterrupt = state.LCDStatusHorizontalBlankInterrupt;
-            LCDStatusVerticalBlankInterrupt = state.LCDStatusVerticalBlankInterrupt;
-            LCDStatusOAMSearchInterrupt = state.LCDStatusOAMSearchInterrupt;
-            LCDStatusCoincidenceInterrupt = state.LCDStatusCoincidenceInterrupt;
-
-            ScrollY = state.ScrollY;
-            ScrollX = state.ScrollX;
-            LY = state.LY;
-            LYC = state.LYC;
-            WindowY = state.WindowY;
-            WindowX = state.WindowX;
-
-            BackgroundPalette = state.BackgroundPalette;
-            ObjectPalette0 = state.ObjectPalette0;
-            ObjectPalette1 = state.ObjectPalette1;
-
-            clocksToWait = state.PpuClocksToWait;
+            clocksToWait = SaveState.SaveLoadValue(bw, br, save, clocksToWait);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core.State;
 using System;
+using System.IO;
 
 namespace DamageBoy.Core.Audio
 {
@@ -116,54 +117,26 @@ namespace DamageBoy.Core.Audio
             currentNoiseSequence = 0;
         }
 
-        public override SoundChannelState GetState()
+        public override void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            NoiseChannelState noiseState = new NoiseChannelState();
+            Enabled = SaveState.SaveLoadValue(bw, br, save, Enabled);
+            LengthType = (LengthTypes)SaveState.SaveLoadValue(bw, br, save, (byte)LengthType);
+            Output2 = SaveState.SaveLoadValue(bw, br, save, Output2);
+            Output1 = SaveState.SaveLoadValue(bw, br, save, Output1);
+            currentLength = SaveState.SaveLoadValue(bw, br, save, currentLength);
 
-            noiseState.Enabled = Enabled;
-            noiseState.LengthType = LengthType;
-            noiseState.Output2 = Output2;
-            noiseState.Output1 = Output1;
-            noiseState.CurrentLength = currentLength;
+            LengthEnvelopeSteps = SaveState.SaveLoadValue(bw, br, save, LengthEnvelopeSteps);
+            EnvelopeDirection = (EnvelopeDirections)SaveState.SaveLoadValue(bw, br, save, (byte)EnvelopeDirection);
+            InitialVolume = SaveState.SaveLoadValue(bw, br, save, InitialVolume);
 
-            noiseState.LengthEnvelopeSteps = LengthEnvelopeSteps;
-            noiseState.EnvelopeDirection = EnvelopeDirection;
-            noiseState.InitialVolume = InitialVolume;
+            DividingRatioFrequencies = SaveState.SaveLoadValue(bw, br, save, DividingRatioFrequencies);
+            CounterStepWidth = (NoiseCounterStepWidths)SaveState.SaveLoadValue(bw, br, save, (byte)CounterStepWidth);
+            ShiftClockFrequency = SaveState.SaveLoadValue(bw, br, save, ShiftClockFrequency);
 
-            noiseState.DividingRatioFrequencies = DividingRatioFrequencies;
-            noiseState.CounterStepWidth = CounterStepWidth;
-            noiseState.ShiftClockFrequency = ShiftClockFrequency;
-
-            noiseState.CurrentEnvelopeTimer = currentEnvelopeTimer;
-            noiseState.CurrentVolume = currentVolume;
-            noiseState.CurrentNoiseClocksToWait = currentNoiseClocksToWait;
-            noiseState.CurrentNoiseSequence = currentNoiseSequence;
-
-            return noiseState;
-        }
-
-        public override void SetState(SoundChannelState state)
-        {
-            NoiseChannelState noiseState = (NoiseChannelState)state;
-
-            Enabled = noiseState.Enabled;
-            LengthType = noiseState.LengthType;
-            Output2 = noiseState.Output2;
-            Output1 = noiseState.Output1;
-            currentLength = noiseState.CurrentLength;
-
-            LengthEnvelopeSteps = noiseState.LengthEnvelopeSteps;
-            EnvelopeDirection = noiseState.EnvelopeDirection;
-            InitialVolume = noiseState.InitialVolume;
-
-            DividingRatioFrequencies = noiseState.DividingRatioFrequencies;
-            CounterStepWidth = noiseState.CounterStepWidth;
-            ShiftClockFrequency = noiseState.ShiftClockFrequency;
-
-            currentEnvelopeTimer = noiseState.CurrentEnvelopeTimer;
-            currentVolume = noiseState.CurrentVolume;
-            currentNoiseClocksToWait = noiseState.CurrentNoiseClocksToWait;
-            currentNoiseSequence = noiseState.CurrentNoiseSequence;
+            currentEnvelopeTimer = SaveState.SaveLoadValue(bw, br, save, currentEnvelopeTimer);
+            currentVolume = SaveState.SaveLoadValue(bw, br, save, currentVolume);
+            currentNoiseClocksToWait = SaveState.SaveLoadValue(bw, br, save, currentNoiseClocksToWait);
+            currentNoiseSequence = SaveState.SaveLoadValue(bw, br, save, currentNoiseSequence);
         }
     }
 }

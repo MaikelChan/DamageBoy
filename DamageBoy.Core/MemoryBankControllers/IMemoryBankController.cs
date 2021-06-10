@@ -2,12 +2,8 @@
 
 namespace DamageBoy.Core.MemoryBankControllers
 {
-    interface IMemoryBankController
+    interface IMemoryBankController: IState
     {
         byte this[int index] { get; set; }
-
-        MemoryBankControllerState GetState();
-
-        void SetState(MemoryBankControllerState state);
     }
 }

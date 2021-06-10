@@ -157,61 +157,67 @@ namespace DamageBoy.Core
 
         SaveState saveState = null;
         SaveStateAction saveStateAction = SaveStateAction.None;
+        string saveStateFileName = string.Empty;
 
         enum SaveStateAction { None, SavePending, LoadPending }
 
-        public void SaveState()
+        public void SaveState(string fileName)
         {
             if (EmulationState != EmulationStates.Running) return;
             if (!io.BootROMDisabled) return;
+            if (string.IsNullOrWhiteSpace(fileName)) return;
 
+            saveStateFileName = fileName;
             saveStateAction = SaveStateAction.SavePending;
         }
 
-        public void LoadState()
+        public void LoadState(string fileName)
         {
             if (EmulationState != EmulationStates.Running) return;
             if (!io.BootROMDisabled) return;
+            if (string.IsNullOrWhiteSpace(fileName)) return;
 
+            saveStateFileName = fileName;
             saveStateAction = SaveStateAction.LoadPending;
+        }
+
+        void InitializeSaveState()
+        {
+            if (saveState != null) return;
+
+            // After any change in this array,
+            // remember to increase SAVE_SATATE_FORMAT_VERSION in SaveState 
+
+            IState[] componentsStates = new IState[]
+            {
+                cartridge,
+                ram,
+                vram,
+                interruptHandler,
+                serial,
+                dma,
+                timer,
+                apu,
+                ppu,
+                io,
+                cpu
+            };
+
+            saveState = new SaveState(componentsStates, cartridge);
         }
 
         void DoSaveState()
         {
-            if (saveState == null)
-            {
-                IState[] componentsStates = new IState[]
-                {
-                    cartridge,
-                    ram,
-                    vram,
-                    interruptHandler,
-                    serial,
-                    dma,
-                    timer,
-                    apu,
-                    ppu,
-                    io,
-                    cpu
-                };
-
-                saveState = new SaveState(componentsStates, cartridge.RamSize);
-            }
-
-            saveState.Save();
-            Utils.Log(LogType.Info, "Finished saving save state.");
+            InitializeSaveState();
+            bool success = saveState.Save(saveStateFileName);
+            if (success) Utils.Log(LogType.Info, "Finished saving save state.");
         }
 
         void DoLoadState()
         {
-            if (saveState == null)
-            {
-                Utils.Log(LogType.Info, "There's no save state to load.");
-                return;
-            }
-
-            saveState.Load();
-            Utils.Log(LogType.Info, "Finished loading save state.");
+            InitializeSaveState();
+            bool success = saveState.Load(saveStateFileName);
+            if (success) Utils.Log(LogType.Info, "Finished loading save state.");
         }
 
         void ProcessSaveState()

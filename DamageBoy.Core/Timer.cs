@@ -1,4 +1,5 @@
 ﻿using DamageBoy.Core.State;
+using System.IO;
 
 namespace DamageBoy.Core
 {
@@ -79,34 +80,19 @@ namespace DamageBoy.Core
             }
         }
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            state.Divider = Divider;
-            state.TimerEnable = TimerEnable;
-            state.TimerClockSpeed = TimerClockSpeed;
-            state.TimerCounter = TimerCounter;
-            state.TimerModulo = TimerModulo;
+            Divider = SaveState.SaveLoadValue(bw, br, save, Divider);
+            TimerEnable = SaveState.SaveLoadValue(bw, br, save, TimerEnable);
+            TimerClockSpeed = (TimerClockSpeeds)SaveState.SaveLoadValue(bw, br, save, (byte)TimerClockSpeed);
+            TimerCounter = SaveState.SaveLoadValue(bw, br, save, TimerCounter);
+            TimerModulo = SaveState.SaveLoadValue(bw, br, save, TimerModulo);
 
-            state.DividerClocksToWait = dividerClocksToWait;
-            state.TimerClocksToWait = timerClocksToWait;
+            dividerClocksToWait = SaveState.SaveLoadValue(bw, br, save, dividerClocksToWait);
+            timerClocksToWait = SaveState.SaveLoadValue(bw, br, save, timerClocksToWait);
 
-            state.TimerHasOverflown = timerHasOverflown;
-            state.TimerOverflowWaitCycles = timerOverflowWaitCycles;
-        }
-
-        public void SetState(SaveState state)
-        {
-            Divider = state.Divider;
-            TimerEnable = state.TimerEnable;
-            TimerClockSpeed = state.TimerClockSpeed;
-            TimerCounter = state.TimerCounter;
-            TimerModulo = state.TimerModulo;
-
-            dividerClocksToWait = state.DividerClocksToWait;
-            timerClocksToWait = state.TimerClocksToWait;
-
-            timerHasOverflown = state.TimerHasOverflown;
-            timerOverflowWaitCycles = state.TimerOverflowWaitCycles;
+            timerHasOverflown = SaveState.SaveLoadValue(bw, br, save, timerHasOverflown);
+            timerOverflowWaitCycles = SaveState.SaveLoadValue(bw, br, save, timerOverflowWaitCycles);
         }
     }
 }

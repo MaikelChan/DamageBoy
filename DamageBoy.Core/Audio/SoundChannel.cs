@@ -1,4 +1,5 @@
 ﻿using DamageBoy.Core.State;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace DamageBoy.Core.Audio
@@ -9,7 +10,7 @@ namespace DamageBoy.Core.Audio
         Counter
     }
 
-    abstract class SoundChannel
+    abstract class SoundChannel : IState
     {
         readonly APU apu;
 
@@ -100,8 +101,6 @@ namespace DamageBoy.Core.Audio
             return (ushort)((left << 8) | right);
         }
 
-        public abstract SoundChannelState GetState();
-
-        public abstract void SetState(SoundChannelState state);
+        public abstract void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save);
     }
 }

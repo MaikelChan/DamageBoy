@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core.State;
 using System;
+using System.IO;
 
 namespace DamageBoy.Core.MemoryBankControllers
 {
@@ -148,36 +149,17 @@ namespace DamageBoy.Core.MemoryBankControllers
             }
         }
 
-        public MemoryBankControllerState GetState()
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            MBC3State mbc3State = new MBC3State();
+            romBank = SaveState.SaveLoadValue(bw, br, save, romBank);
+            ramOrRtcBank = SaveState.SaveLoadValue(bw, br, save, ramOrRtcBank);
 
-            mbc3State.RomBank = romBank;
-            mbc3State.RamOrRtcBank = ramOrRtcBank;
-
-            mbc3State.IsRtcLatched = isRtcLatched;
-            mbc3State.LatchedSeconds = latchedSeconds;
-            mbc3State.LatchedMinutes = latchedMinutes;
-            mbc3State.LatchedHours = latchedHours;
-            mbc3State.LatchedDaysLo = latchedDaysLo;
-            mbc3State.LatchedDaysHi = latchedDaysHi;
-
-            return mbc3State;
-        }
-
-        public void SetState(MemoryBankControllerState state)
-        {
-            MBC3State mbc3State = (MBC3State)state;
-
-            romBank = mbc3State.RomBank;
-            ramOrRtcBank = mbc3State.RamOrRtcBank;
-
-            isRtcLatched = mbc3State.IsRtcLatched;
-            latchedSeconds = mbc3State.LatchedSeconds;
-            latchedMinutes = mbc3State.LatchedMinutes;
-            latchedHours = mbc3State.LatchedHours;
-            latchedDaysLo = mbc3State.LatchedDaysLo;
-            latchedDaysHi = mbc3State.LatchedDaysHi;
+            isRtcLatched = SaveState.SaveLoadValue(bw, br, save, isRtcLatched);
+            latchedSeconds = SaveState.SaveLoadValue(bw, br, save, latchedSeconds);
+            latchedMinutes = SaveState.SaveLoadValue(bw, br, save, latchedMinutes);
+            latchedHours = SaveState.SaveLoadValue(bw, br, save, latchedHours);
+            latchedDaysLo = SaveState.SaveLoadValue(bw, br, save, latchedDaysLo);
+            latchedDaysHi = SaveState.SaveLoadValue(bw, br, save, latchedDaysHi);
         }
     }
 }

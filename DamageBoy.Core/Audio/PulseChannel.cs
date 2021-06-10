@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core.State;
 using System;
+using System.IO;
 
 namespace DamageBoy.Core.Audio
 {
@@ -175,66 +176,32 @@ namespace DamageBoy.Core.Audio
             currentWaveCycle = 0f;
         }
 
-        public override SoundChannelState GetState()
+        public override void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            PulseChannelState pulseState = new PulseChannelState();
+            Enabled = SaveState.SaveLoadValue(bw, br, save, Enabled);
+            LengthType = (LengthTypes)SaveState.SaveLoadValue(bw, br, save, (byte)LengthType);
+            Output2 = SaveState.SaveLoadValue(bw, br, save, Output2);
+            Output1 = SaveState.SaveLoadValue(bw, br, save, Output1);
+            currentLength = SaveState.SaveLoadValue(bw, br, save, currentLength);
 
-            pulseState.Enabled = Enabled;
-            pulseState.LengthType = LengthType;
-            pulseState.Output2 = Output2;
-            pulseState.Output1 = Output1;
-            pulseState.CurrentLength = currentLength;
+            SweepShift = SaveState.SaveLoadValue(bw, br, save, SweepShift);
+            SweepType = (SweepTypes)SaveState.SaveLoadValue(bw, br, save, (byte)SweepType);
+            SweepTime = SaveState.SaveLoadValue(bw, br, save, SweepTime);
 
-            pulseState.SweepShift = SweepShift;
-            pulseState.SweepType = SweepType;
-            pulseState.SweepTime = SweepTime;
+            PulsePattern = (PulsePatterns)SaveState.SaveLoadValue(bw, br, save, (byte)PulsePattern);
 
-            pulseState.PulsePattern = PulsePattern;
+            LengthEnvelopeSteps = SaveState.SaveLoadValue(bw, br, save, LengthEnvelopeSteps);
+            EnvelopeDirection = (EnvelopeDirections)SaveState.SaveLoadValue(bw, br, save, (byte)EnvelopeDirection);
+            InitialVolume = SaveState.SaveLoadValue(bw, br, save, InitialVolume);
 
-            pulseState.LengthEnvelopeSteps = LengthEnvelopeSteps;
-            pulseState.EnvelopeDirection = EnvelopeDirection;
-            pulseState.InitialVolume = InitialVolume;
+            FrequencyLo = SaveState.SaveLoadValue(bw, br, save, FrequencyLo);
+            FrequencyHi = SaveState.SaveLoadValue(bw, br, save, FrequencyHi);
 
-            pulseState.FrequencyLo = FrequencyLo;
-            pulseState.FrequencyHi = FrequencyHi;
-
-            pulseState.CurrentEnvelopeTimer = currentEnvelopeTimer;
-            pulseState.CurrentVolume = currentVolume;
-            pulseState.CurrentSweepTimer = currentSweepTimer;
-            pulseState.CurrentFrequency = currentFrequency;
-            pulseState.CurrentWaveCycle = currentWaveCycle;
-
-            return pulseState;
-        }
-
-        public override void SetState(SoundChannelState state)
-        {
-            PulseChannelState pulseState = (PulseChannelState)state;
-
-            Enabled = pulseState.Enabled;
-            LengthType = pulseState.LengthType;
-            Output2 = pulseState.Output2;
-            Output1 = pulseState.Output1;
-            currentLength = pulseState.CurrentLength;
-
-            SweepShift = pulseState.SweepShift;
-            SweepType = pulseState.SweepType;
-            SweepTime = pulseState.SweepTime;
-
-            PulsePattern = pulseState.PulsePattern;
-
-            LengthEnvelopeSteps = pulseState.LengthEnvelopeSteps;
-            EnvelopeDirection = pulseState.EnvelopeDirection;
-            InitialVolume = pulseState.InitialVolume;
-
-            FrequencyLo = pulseState.FrequencyLo;
-            FrequencyHi = pulseState.FrequencyHi;
-
-            currentEnvelopeTimer = pulseState.CurrentEnvelopeTimer;
-            currentVolume = pulseState.CurrentVolume;
-            currentSweepTimer = pulseState.CurrentSweepTimer;
-            currentFrequency = pulseState.CurrentFrequency;
-            currentWaveCycle = pulseState.CurrentWaveCycle;
+            currentEnvelopeTimer = SaveState.SaveLoadValue(bw, br, save, currentEnvelopeTimer);
+            currentVolume = SaveState.SaveLoadValue(bw, br, save, currentVolume);
+            currentSweepTimer = SaveState.SaveLoadValue(bw, br, save, currentSweepTimer);
+            currentFrequency = SaveState.SaveLoadValue(bw, br, save, currentFrequency);
+            currentWaveCycle = SaveState.SaveLoadValue(bw, br, save, currentWaveCycle);
         }
     }
 }

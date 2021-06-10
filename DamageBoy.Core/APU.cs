@@ -1,6 +1,7 @@
 ﻿using DamageBoy.Core.Audio;
 using DamageBoy.Core.State;
 using System;
+using System.IO;
 
 namespace DamageBoy.Core
 {
@@ -130,44 +131,24 @@ namespace DamageBoy.Core
 
         #endregion
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
+            sampleClocksToWait = SaveState.SaveLoadValue(bw, br, save, sampleClocksToWait);
+            lengthControlClocksToWait = SaveState.SaveLoadValue(bw, br, save, lengthControlClocksToWait);
+            volumeEnvelopeClocksToWait = SaveState.SaveLoadValue(bw, br, save, volumeEnvelopeClocksToWait);
+            sweepClocksToWait = SaveState.SaveLoadValue(bw, br, save, sweepClocksToWait);
+
+            Output1Level = SaveState.SaveLoadValue(bw, br, save, Output1Level);
+            VinOutput1 = SaveState.SaveLoadValue(bw, br, save, VinOutput1);
+            Output2Level = SaveState.SaveLoadValue(bw, br, save, Output2Level);
+            VinOutput2 = SaveState.SaveLoadValue(bw, br, save, VinOutput2);
+
+            AllSoundEnabled = SaveState.SaveLoadValue(bw, br, save, AllSoundEnabled);
+
             for (int sc = 0; sc < Constants.SOUND_CHANNEL_COUNT; sc++)
             {
-                state.SoundChannelsStates[sc] = soundChannels[sc].GetState();
+                soundChannels[sc].LoadSaveState(stream, bw, br, save);
             }
-
-            state.ApuSampleClocksToWait = sampleClocksToWait;
-            state.ApuLengthControlClocksToWait = lengthControlClocksToWait;
-            state.ApuVolumeEnvelopeClocksToWait = volumeEnvelopeClocksToWait;
-            state.ApuSweepClocksToWait = sweepClocksToWait;
-
-            state.Output1Level = Output1Level;
-            state.VinOutput1 = VinOutput1;
-            state.Output2Level = Output2Level;
-            state.VinOutput2 = VinOutput2;
-
-            state.AllSoundEnabled = allSoundEnabled;
-        }
-
-        public void SetState(SaveState state)
-        {
-            for (int sc = 0; sc < Constants.SOUND_CHANNEL_COUNT; sc++)
-            {
-                soundChannels[sc].SetState(state.SoundChannelsStates[sc]);
-            }
-
-            sampleClocksToWait = state.ApuSampleClocksToWait;
-            lengthControlClocksToWait = state.ApuLengthControlClocksToWait;
-            volumeEnvelopeClocksToWait = state.ApuVolumeEnvelopeClocksToWait;
-            sweepClocksToWait = state.ApuSweepClocksToWait;
-
-            Output1Level = state.Output1Level;
-            VinOutput1 = state.VinOutput1;
-            Output2Level = state.Output2Level;
-            VinOutput2 = state.VinOutput2;
-
-            allSoundEnabled = state.AllSoundEnabled;
         }
     }
 }

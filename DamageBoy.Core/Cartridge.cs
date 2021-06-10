@@ -13,6 +13,9 @@ namespace DamageBoy.Core
         readonly IMemoryBankController mbc;
         readonly Action<byte[]> saveUpdateCallback;
 
+        public const int RAW_TITLE_LENGTH = 16;
+
+        public byte[] RawTitle { get; }
         public string Title { get; }
 
         public bool IsRamEnabled
@@ -78,7 +81,10 @@ namespace DamageBoy.Core
             rom = romData;
             this.saveUpdateCallback = saveUpdateCallback;
 
-            Title = Encoding.ASCII.GetString(romData, 0x134, 0xF).TrimEnd('\0');
+            RawTitle = new byte[RAW_TITLE_LENGTH];
+            Array.Copy(romData, 0x134, RawTitle, 0, RAW_TITLE_LENGTH);
+
+            Title = Encoding.ASCII.GetString(romData, 0x134, RAW_TITLE_LENGTH).TrimEnd('\0');
 
             switch (romData[0x147])
             {
@@ -167,18 +173,11 @@ namespace DamageBoy.Core
             }
         }
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            if (ram != null) Array.Copy(ram, state.ExternalRam, RamSize);
-            state.IsExternalRamEnabled = isRamEnabled;
-            state.MemoryBankControllerState = mbc.GetState();
-        }
-
-        public void SetState(SaveState state)
-        {
-            if (ram != null) Array.Copy(state.ExternalRam, ram, RamSize);
-            isRamEnabled = state.IsExternalRamEnabled;
-            mbc.SetState(state.MemoryBankControllerState);
+            if (ram != null) SaveState.SaveLoadArray(stream, save, ram, RamSize);
+            isRamEnabled = SaveState.SaveLoadValue(bw, br, save, isRamEnabled);
+            mbc.LoadSaveState(stream, bw, br, save);
         }
     }
 }

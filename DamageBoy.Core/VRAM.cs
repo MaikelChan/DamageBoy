@@ -1,5 +1,5 @@
 ﻿using DamageBoy.Core.State;
-using System;
+using System.IO;
 
 namespace DamageBoy.Core
 {
@@ -25,16 +25,10 @@ namespace DamageBoy.Core
             Oam = new byte[OAM_SIZE];
         }
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            Array.Copy(VRam, state.VRam, VRAM_SIZE);
-            Array.Copy(Oam, state.Oam, OAM_SIZE);
-        }
-
-        public void SetState(SaveState state)
-        {
-            Array.Copy(state.VRam, VRam, VRAM_SIZE);
-            Array.Copy(state.Oam, Oam, OAM_SIZE);
+            SaveState.SaveLoadArray(stream, save, VRam, VRAM_SIZE);
+            SaveState.SaveLoadArray(stream, save, Oam, OAM_SIZE);
         }
     }
 }

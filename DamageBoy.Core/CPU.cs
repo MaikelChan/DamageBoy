@@ -2527,46 +2527,25 @@ namespace DamageBoy.Core
 
         #region State
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            state.A = A;
-            state.B = B;
-            state.C = C;
-            state.D = D;
-            state.E = E;
-            state.F = F;
-            state.H = H;
-            state.L = L;
+            A = SaveState.SaveLoadValue(bw, br, save, A);
+            B = SaveState.SaveLoadValue(bw, br, save, B);
+            C = SaveState.SaveLoadValue(bw, br, save, C);
+            D = SaveState.SaveLoadValue(bw, br, save, D);
+            E = SaveState.SaveLoadValue(bw, br, save, E);
+            F = SaveState.SaveLoadValue(bw, br, save, F);
+            H = SaveState.SaveLoadValue(bw, br, save, H);
+            L = SaveState.SaveLoadValue(bw, br, save, L);
 
-            state.SP = SP;
-            state.PC = PC;
+            SP = SaveState.SaveLoadValue(bw, br, save, SP);
+            PC = SaveState.SaveLoadValue(bw, br, save, PC);
 
-            state.ClocksToWait = clocksToWait;
-            state.IsHalted = isHalted;
+            clocksToWait = SaveState.SaveLoadValue(bw, br, save, clocksToWait);
+            isHalted = SaveState.SaveLoadValue(bw, br, save, isHalted);
 
-            state.InterruptMasterEnableFlag = interruptMasterEnableFlag;
-            state.InterruptMasterEnablePendingCycles = interruptMasterEnablePendingCycles;
-        }
-
-        public void SetState(SaveState state)
-        {
-            A = state.A;
-            B = state.B;
-            C = state.C;
-            D = state.D;
-            E = state.E;
-            F = state.F;
-            H = state.H;
-            L = state.L;
-
-            SP = state.SP;
-            PC = state.PC;
-
-            clocksToWait = state.ClocksToWait;
-            isHalted = state.IsHalted;
-
-            interruptMasterEnableFlag = state.InterruptMasterEnableFlag;
-            interruptMasterEnablePendingCycles = state.InterruptMasterEnablePendingCycles;
+            interruptMasterEnableFlag = SaveState.SaveLoadValue(bw, br, save, interruptMasterEnableFlag);
+            interruptMasterEnablePendingCycles = SaveState.SaveLoadValue(bw, br, save, interruptMasterEnablePendingCycles);
         }
 
         #endregion

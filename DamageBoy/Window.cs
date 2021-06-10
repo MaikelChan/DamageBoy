@@ -233,18 +233,6 @@ namespace DamageBoy
             sound.Stop();
         }
 
-        public void SaveState()
-        {
-            if (gameBoy == null) return;
-            gameBoy.SaveState();
-        }
-
-        public void LoadState()
-        {
-            if (gameBoy == null) return;
-            gameBoy.LoadState();
-        }
-
         public void ToggleTraceLog()
         {
             if (gameBoy == null) return;
@@ -323,6 +311,27 @@ namespace DamageBoy
             gameBoy?.SetInput(inputState);
         }
 
+
+        #endregion
+
+        #region Save States
+
+        string SaveStateFilePath => Path.Combine(SAVE_STATES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFile) + ".sst");
+        const string SAVE_STATES_FOLDER = "SaveStates";
+
+        public void SaveState()
+        {
+            if (gameBoy == null) return;
+            if (!Directory.Exists(SAVE_STATES_FOLDER)) Directory.CreateDirectory(SAVE_STATES_FOLDER);
+            gameBoy.SaveState(SaveStateFilePath);
+        }
+
+        public void LoadState()
+        {
+            if (gameBoy == null) return;
+            if (!Directory.Exists(SAVE_STATES_FOLDER)) Directory.CreateDirectory(SAVE_STATES_FOLDER);
+            gameBoy.LoadState(SaveStateFilePath);
+        }
 
         #endregion
 
@@ -413,10 +422,10 @@ namespace DamageBoy
                         StopEmulation();
                         break;
                     case Keys.F5:
-                        gameBoy.SaveState();
+                        SaveState();
                         break;
                     case Keys.F7:
-                        gameBoy.LoadState();
+                        LoadState();
                         break;
                 }
             }

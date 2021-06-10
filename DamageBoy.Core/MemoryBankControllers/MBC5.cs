@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core.State;
 using System;
+using System.IO;
 
 namespace DamageBoy.Core.MemoryBankControllers
 {
@@ -103,24 +104,11 @@ namespace DamageBoy.Core.MemoryBankControllers
             }
         }
 
-        public MemoryBankControllerState GetState()
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            MBC5State mbc5State = new MBC5State();
-
-            mbc5State.RomBankHi = romBankHi;
-            mbc5State.RomBankLo = romBankLo;
-            mbc5State.RamBank = ramBank;
-
-            return mbc5State;
-        }
-
-        public void SetState(MemoryBankControllerState state)
-        {
-            MBC5State mbc5State = (MBC5State)state;
-
-            romBankHi = mbc5State.RomBankHi;
-            romBankLo = mbc5State.RomBankLo;
-            ramBank = mbc5State.RamBank;
+            romBankHi = SaveState.SaveLoadValue(bw, br, save, romBankHi);
+            romBankLo = SaveState.SaveLoadValue(bw, br, save, romBankLo);
+            ramBank = SaveState.SaveLoadValue(bw, br, save, ramBank);
         }
     }
 }

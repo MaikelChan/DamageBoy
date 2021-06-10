@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core.State;
 using System;
+using System.IO;
 
 namespace DamageBoy.Core.Audio
 {
@@ -90,50 +91,24 @@ namespace DamageBoy.Core.Audio
             FrequencyHi = 0;
         }
 
-        public override SoundChannelState GetState()
+        public override void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            WaveChannelState waveState = new WaveChannelState();
+            Enabled = SaveState.SaveLoadValue(bw, br, save, Enabled);
+            LengthType = (LengthTypes)SaveState.SaveLoadValue(bw, br, save, (byte)LengthType);
+            Output2 = SaveState.SaveLoadValue(bw, br, save, Output2);
+            Output1 = SaveState.SaveLoadValue(bw, br, save, Output1);
+            currentLength = SaveState.SaveLoadValue(bw, br, save, currentLength);
 
-            waveState.Enabled = Enabled;
-            waveState.LengthType = LengthType;
-            waveState.Output2 = Output2;
-            waveState.Output1 = Output1;
-            waveState.CurrentLength = currentLength;
+            SoundOn = SaveState.SaveLoadValue(bw, br, save, SoundOn);
 
-            waveState.SoundOn = SoundOn;
+            Volume = SaveState.SaveLoadValue(bw, br, save, Volume);
 
-            waveState.Volume = Volume;
+            FrequencyLo = SaveState.SaveLoadValue(bw, br, save, FrequencyLo);
+            FrequencyHi = SaveState.SaveLoadValue(bw, br, save, FrequencyHi);
 
-            waveState.FrequencyLo = FrequencyLo;
-            waveState.FrequencyHi = FrequencyHi;
+            SaveState.SaveLoadArray(stream, save, WavePattern, WAVE_PATTERN_SIZE);
 
-            Array.Copy(WavePattern, waveState.WavePattern, WAVE_PATTERN_SIZE);
-
-            waveState.CurrentWaveCycle = currentWaveCycle;
-
-            return waveState;
-        }
-
-        public override void SetState(SoundChannelState state)
-        {
-            WaveChannelState waveState = (WaveChannelState)state;
-
-            Enabled = waveState.Enabled;
-            LengthType = waveState.LengthType;
-            Output2 = waveState.Output2;
-            Output1 = waveState.Output1;
-            currentLength = waveState.CurrentLength;
-
-            SoundOn = waveState.SoundOn;
-
-            Volume = waveState.Volume;
-
-            FrequencyLo = waveState.FrequencyLo;
-            FrequencyHi = waveState.FrequencyHi;
-
-            Array.Copy(waveState.WavePattern, WavePattern, WAVE_PATTERN_SIZE);
-
-            currentWaveCycle = waveState.CurrentWaveCycle;
+            currentWaveCycle = SaveState.SaveLoadValue(bw, br, save, currentWaveCycle);
         }
     }
 }

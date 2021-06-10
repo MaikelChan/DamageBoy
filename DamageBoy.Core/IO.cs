@@ -1,6 +1,6 @@
 ﻿using DamageBoy.Core.Audio;
 using DamageBoy.Core.State;
-using System;
+using System.IO;
 
 namespace DamageBoy.Core
 {
@@ -1041,20 +1041,15 @@ namespace DamageBoy.Core
 
         #endregion
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            Array.Copy(buttons, state.Buttons, BUTTON_COUNT);
+            if (save)
+                for (int b = 0; b < BUTTON_COUNT; b++) bw.Write(buttons[b]);
+            else
+                for (int b = 0; b < BUTTON_COUNT; b++) buttons[b] = br.ReadBoolean();
 
-            state.ButtonSelect = buttonSelect;
-            state.DirectionSelect = directionSelect;
-        }
-
-        public void SetState(SaveState state)
-        {
-            Array.Copy(state.Buttons, buttons, BUTTON_COUNT);
-
-            buttonSelect = state.ButtonSelect;
-            directionSelect = state.DirectionSelect;
+            buttonSelect = SaveState.SaveLoadValue(bw, br, save, buttonSelect);
+            directionSelect = SaveState.SaveLoadValue(bw, br, save, directionSelect);
         }
     }
 }

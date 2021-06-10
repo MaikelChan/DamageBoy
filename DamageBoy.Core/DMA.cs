@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core.State;
 using System;
+using System.IO;
 
 namespace DamageBoy.Core
 {
@@ -77,16 +78,10 @@ namespace DamageBoy.Core
             currentOffset = -3;
         }
 
-        public void GetState(SaveState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            state.DmaSourceAddress = sourceAddress;
-            state.DmaCurrentOffset = currentOffset;
-        }
-
-        public void SetState(SaveState state)
-        {
-            sourceAddress = state.DmaSourceAddress;
-            currentOffset = state.DmaCurrentOffset;
+            sourceAddress = SaveState.SaveLoadValue(bw, br, save, sourceAddress);
+            currentOffset = SaveState.SaveLoadValue(bw, br, save, currentOffset);
         }
     }
 }

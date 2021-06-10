@@ -1,199 +1,192 @@
-﻿
+﻿using System.IO;
+using System.IO.Compression;
+
 namespace DamageBoy.Core.State
 {
     internal class SaveState
     {
-        #region Cartridge
+        readonly IState[] componentsStates;
+        readonly Cartridge cartridge;
 
-        public byte[] ExternalRam { get; }
-        public bool IsExternalRamEnabled { get; set; }
-        public MemoryBankControllerState MemoryBankControllerState { get; set; }
+        const uint SAVE_SATATE_FORMAT_VERSION = 1;
 
-        #endregion
-
-        #region RAM
-
-        public byte[] InternalRam { get; }
-        public byte[] HighRam { get; }
-
-        #endregion
-
-        #region VRAM
-
-        public byte[] VRam { get; }
-        public byte[] Oam { get; }
-
-        #endregion
-
-        #region Interrupt
-
-        public bool RequestVerticalBlanking { get; set; }
-        public bool RequestLCDCSTAT { get; set; }
-        public bool RequestTimerOverflow { get; set; }
-        public bool RequestSerialTransferCompletion { get; set; }
-        public bool RequestJoypad { get; set; }
-
-        public bool EnableVerticalBlanking { get; set; }
-        public bool EnableLCDCSTAT { get; set; }
-        public bool EnableTimerOverflow { get; set; }
-        public bool EnableSerialTransferCompletion { get; set; }
-        public bool EnableJoypad { get; set; }
-
-        public byte EnableUnusedBits { get; set; }
-
-        #endregion
-
-        #region DMA
-
-        public ushort DmaSourceAddress { get; set; }
-        public int DmaCurrentOffset { get; set; }
-
-        #endregion
-
-        #region Serial
-
-        public Serial.STCShiftClock ShiftClock { get; set; }
-        //public Serial.STCClockSpeed ClockSpeed; // Only in CGB
-        public Serial.STCTransferStartFlag TransferStartFlag { get; set; }
-        public byte TransferData { get; set; }
-
-        public int SerialClocksToWait { get; set; }
-        public byte SerialBitsPendingToBeTransfered { get; set; }
-
-        #endregion
-
-        #region Timer
-
-        public byte Divider { get; set; }
-        public bool TimerEnable { get; set; }
-        public Timer.TimerClockSpeeds TimerClockSpeed { get; set; }
-        public byte TimerCounter { get; set; }
-        public byte TimerModulo { get; set; }
-
-        public int DividerClocksToWait { get; set; }
-        public int TimerClocksToWait { get; set; }
-
-        public bool TimerHasOverflown { get; set; }
-        public int TimerOverflowWaitCycles { get; set; }
-
-        #endregion
-
-        #region APU
-
-        public SoundChannelState[] SoundChannelsStates { get; }
-
-        public int ApuSampleClocksToWait { get; set; }
-        public int ApuLengthControlClocksToWait { get; set; }
-        public int ApuVolumeEnvelopeClocksToWait { get; set; }
-        public int ApuSweepClocksToWait { get; set; }
-
-        public byte Output1Level { get; set; }
-        public bool VinOutput1 { get; set; }
-        public byte Output2Level { get; set; }
-        public bool VinOutput2 { get; set; }
-
-        public bool AllSoundEnabled { get; set; }
-
-        #endregion
-
-        #region PPU
-
-        public bool LCDDisplayEnable { get; set; }
-        public bool WindowTileMapDisplaySelect { get; set; }
-        public bool WindowDisplayEnable { get; set; }
-        public bool BGAndWindowTileDataSelect { get; set; }
-        public bool BGTileMapDisplaySelect { get; set; }
-        public bool OBJSize { get; set; }
-        public bool OBJDisplayEnable { get; set; }
-        public bool BGDisplayEnable { get; set; }
-
-        public PPU.Modes LCDStatusMode { get; set; }
-        public PPU.CoincidenceFlagModes LCDStatusCoincidenceFlag { get; set; }
-        public bool LCDStatusHorizontalBlankInterrupt { get; set; }
-        public bool LCDStatusVerticalBlankInterrupt { get; set; }
-        public bool LCDStatusOAMSearchInterrupt { get; set; }
-        public bool LCDStatusCoincidenceInterrupt { get; set; }
-
-        public byte ScrollY { get; set; }
-        public byte ScrollX { get; set; }
-        public byte LY { get; set; }
-        public byte LYC { get; set; }
-        public byte WindowY { get; set; }
-        public byte WindowX { get; set; }
-
-        public byte BackgroundPalette { get; set; }
-        public byte ObjectPalette0 { get; set; }
-        public byte ObjectPalette1 { get; set; }
-
-        public int PpuClocksToWait { get; set; }
-
-        #endregion
-
-        #region IO
-
-        public bool[] Buttons { get; }
-
-        public bool ButtonSelect { get; set; }
-        public bool DirectionSelect { get; set; }
-
-        #endregion
-
-        #region CPU
-
-        public byte A { get; set; }
-        public byte B { get; set; }
-        public byte C { get; set; }
-        public byte D { get; set; }
-        public byte E { get; set; }
-        public byte F { get; set; }
-        public byte H { get; set; }
-        public byte L { get; set; }
-
-        public ushort SP { get; set; }
-        public ushort PC { get; set; }
-
-        public int ClocksToWait { get; set; }
-        public bool IsHalted { get; set; }
-
-
-        public bool InterruptMasterEnableFlag { get; set; }
-        public int InterruptMasterEnablePendingCycles { get; set; }
-
-        #endregion
-
-        IState[] componentsStates;
-
-        public SaveState(IState[] componentsStates, int externalRamSize)
+        public SaveState(IState[] componentsStates, Cartridge cartridge)
         {
             this.componentsStates = componentsStates;
-
-            if (externalRamSize > 0) ExternalRam = new byte[externalRamSize];
-
-            InternalRam = new byte[RAM.INTERNAL_RAM_SIZE];
-            HighRam = new byte[RAM.HIGH_RAM_SIZE];
-
-            VRam = new byte[VRAM.VRAM_SIZE];
-            Oam = new byte[VRAM.OAM_SIZE];
-
-            SoundChannelsStates = new SoundChannelState[Constants.SOUND_CHANNEL_COUNT];
-
-            Buttons = new bool[IO.BUTTON_COUNT];
+            this.cartridge = cartridge;
         }
 
-        public void Save()
+        public bool Save(string fileName)
         {
-            for (int cs = 0; cs < componentsStates.Length; cs++)
+            if (string.IsNullOrWhiteSpace(fileName))
             {
-                componentsStates[cs].GetState(this);
+                Utils.Log(LogType.Error, "Save state file name cannot be null or empty.");
+                return false;
+            }
+
+            using (FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+            using (BinaryWriter fsBw = new BinaryWriter(fs))
+            {
+                fsBw.Write(SAVE_SATATE_FORMAT_VERSION);
+
+                fs.Position = 0x10;
+                fs.Write(cartridge.RawTitle, 0, Cartridge.RAW_TITLE_LENGTH);
+
+                // Write state of all components with GZip compression
+
+                using (GZipStream gzip = new GZipStream(fs, CompressionMode.Compress, true))
+                using (BinaryWriter gzipBw = new BinaryWriter(gzip))
+                {
+                    for (int cs = 0; cs < componentsStates.Length; cs++)
+                    {
+                        componentsStates[cs].LoadSaveState(gzip, gzipBw, null, true);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public bool Load(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                Utils.Log(LogType.Error, "Save state file name cannot be null or empty.");
+                return false;
+            }
+
+            if (!File.Exists(fileName))
+            {
+                Utils.Log(LogType.Info, $"Save state \"{fileName}\" doesn't exist.");
+                return false;
+            }
+
+            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            using (BinaryReader br = new BinaryReader(fs))
+            {
+                uint version = br.ReadUInt32();
+
+                if (version != SAVE_SATATE_FORMAT_VERSION)
+                {
+                    Utils.Log(LogType.Error, $"Save state \"{fileName}\" is version {version} but version {SAVE_SATATE_FORMAT_VERSION} is expected.");
+                    return false;
+                }
+
+                fs.Position = 0x10;
+
+                byte[] rawTitle = new byte[Cartridge.RAW_TITLE_LENGTH];
+                fs.Read(rawTitle, 0, Cartridge.RAW_TITLE_LENGTH);
+
+                for (int t = 0; t < Cartridge.RAW_TITLE_LENGTH; t++)
+                {
+                    if (rawTitle[t] != cartridge.RawTitle[t])
+                    {
+                        Utils.Log(LogType.Error, $"Save state \"{fileName}\" is from a different game or a different version of the game.");
+                        return false;
+                    }
+                }
+
+                // Read state of all components
+
+                using (GZipStream gzip = new GZipStream(fs, CompressionMode.Decompress, true))
+                using (BinaryReader gzipBr = new BinaryReader(gzip))
+                {
+                    for (int cs = 0; cs < componentsStates.Length; cs++)
+                    {
+                        componentsStates[cs].LoadSaveState(gzip, null, gzipBr, false);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        #region Save / Load Helpers
+
+        public static bool SaveLoadValue(BinaryWriter bw, BinaryReader br, bool save, bool value)
+        {
+            if (save)
+            {
+                bw.Write(value);
+                return value;
+            }
+            else
+            {
+                return br.ReadBoolean();
             }
         }
 
-        public void Load()
+        public static byte SaveLoadValue(BinaryWriter bw, BinaryReader br, bool save, byte value)
         {
-            for (int cs = 0; cs < componentsStates.Length; cs++)
+            if (save)
             {
-                componentsStates[cs].SetState(this);
+                bw.Write(value);
+                return value;
+            }
+            else
+            {
+                return br.ReadByte();
             }
         }
+
+        public static ushort SaveLoadValue(BinaryWriter bw, BinaryReader br, bool save, ushort value)
+        {
+            if (save)
+            {
+                bw.Write(value);
+                return value;
+            }
+            else
+            {
+                return br.ReadUInt16();
+            }
+        }
+
+        public static int SaveLoadValue(BinaryWriter bw, BinaryReader br, bool save, int value)
+        {
+            if (save)
+            {
+                bw.Write(value);
+                return value;
+            }
+            else
+            {
+                return br.ReadInt32();
+            }
+        }
+
+        public static uint SaveLoadValue(BinaryWriter bw, BinaryReader br, bool save, uint value)
+        {
+            if (save)
+            {
+                bw.Write(value);
+                return value;
+            }
+            else
+            {
+                return br.ReadUInt32();
+            }
+        }
+
+        public static float SaveLoadValue(BinaryWriter bw, BinaryReader br, bool save, float value)
+        {
+            if (save)
+            {
+                bw.Write(value);
+                return value;
+            }
+            else
+            {
+                return br.ReadSingle();
+            }
+        }
+
+        public static void SaveLoadArray(Stream stream, bool save, byte[] array, int count)
+        {
+            if (save) stream.Write(array, 0, count);
+            else stream.Read(array, 0, count);
+        }
+
+        #endregion
     }
 }

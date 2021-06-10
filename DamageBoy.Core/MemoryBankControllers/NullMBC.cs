@@ -1,5 +1,5 @@
-﻿using DamageBoy.Core.State;
-using System;
+﻿using System;
+using System.IO;
 
 namespace DamageBoy.Core.MemoryBankControllers
 {
@@ -35,12 +35,7 @@ namespace DamageBoy.Core.MemoryBankControllers
             }
         }
 
-        public MemoryBankControllerState GetState()
-        {
-            return new NullMBCState();
-        }
-
-        public void SetState(MemoryBankControllerState state)
+        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
 
         }
