@@ -1,7 +1,9 @@
 # DamageBoy
+
 <p align="center">
   <img title="DamageBoy Icon" src="/Icon.png">
 </p>
+
 `DamageBoy` is the name of `Yet Another™` Experimental GameBoy emulator created for learning purposes. It comes from `DMG`, which is the original codename for the GameBoy, which stands for `Dot Matrix Game`. The emulator is written in C#, it uses OpenGL for rendering, OpenAL for audio and ImGui for UI. Despite being optional, it's recommended to have a boot ROM (BIOS) file named `dmg_boot_rom` and put it in the same path as the DamageBoy executable.
 
 ## Features
