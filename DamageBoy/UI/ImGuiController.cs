@@ -310,7 +310,7 @@ namespace DamageBoy.UI
 
                 _vertexBufferSize = newSize;
 
-                Utils.Log(LogType.Info, $"ImGui: Resized vertex buffer to new size {_vertexBufferSize}");
+                //Utils.Log(LogType.Info, $"ImGui: Resized vertex buffer to new size {_vertexBufferSize}");
             }
 
             uint totalIBSize = (uint)(draw_data.TotalIdxCount * sizeof(ushort));
@@ -324,7 +324,7 @@ namespace DamageBoy.UI
 
                 _indexBufferSize = newSize;
 
-                Utils.Log(LogType.Info, $"ImGui: Resized index buffer to new size {_indexBufferSize}");
+                //Utils.Log(LogType.Info, $"ImGui: Resized index buffer to new size {_indexBufferSize}");
             }
 
             for (int i = 0; i < draw_data.CmdListsCount; i++)
