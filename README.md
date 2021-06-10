@@ -10,6 +10,7 @@
 - It can run games with no MBC, MBC1, MBC2, MBC3 and MBC5.
 - Most graphics features are supported: background, window, sprites, scrolling and mid-scanline effects.
 - Audio mostly implemented, but there could be small audio errors here and there.
+- It can be played with keyboard or with an XInput compatible controller.
 - It supports saving and loading. Saves are stored in the `Saves` subfolder in the emulator path.
 - It also has save state functionality. They are stored in the `SaveStates` subfolder.
 - Most games I've tried work perfect or almost perfect. But there are still games that don't work or have severe issues.
