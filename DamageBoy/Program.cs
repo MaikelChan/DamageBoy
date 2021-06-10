@@ -9,8 +9,9 @@ namespace DamageBoy
 {
     class Program
     {
+        const int INITIAL_SIZE_MULTIPLIER = 6;
         const int INITIAL_WIDTH = (int)((INITIAL_HEIGHT - MainUI.MAIN_MENU_DEFAULT_HEIGHT) * Constants.ASPECT_RATIO);
-        const int INITIAL_HEIGHT = 1080;
+        const int INITIAL_HEIGHT = (Constants.RES_Y * INITIAL_SIZE_MULTIPLIER) + MainUI.MAIN_MENU_DEFAULT_HEIGHT;
 
         static void Main(string[] args)
         {
