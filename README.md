@@ -1,4 +1,7 @@
 # DamageBoy
+<p align="center">
+  <img title="DamageBoy Icon" src="/Icon.png">
+</p>
 `DamageBoy` is the name of `Yet Another™` Experimental GameBoy emulator created for learning purposes. It comes from `DMG`, which is the original codename for the GameBoy, which stands for `Dot Matrix Game`. The emulator is written in C#, it uses OpenGL for rendering, OpenAL for audio and ImGui for UI. Despite being optional, it's recommended to have a boot ROM (BIOS) file named `dmg_boot_rom` and put it in the same path as the DamageBoy executable.
 
 ## Features
@@ -19,11 +22,13 @@ It requires [.NET 5.0 Runtime](https://dotnet.microsoft.com/download), [OpenAL 1
 
 ## Screenshots
 
-![Tetris - Screenshot](/00.png)
-![Super Mario Land 2 - Screenshot](/01.png)
-![Wario Land - Screenshot](/02.png)
-![Zelda Link's Awakening - Screenshot](/03.png)
-![Donkey Kong Land - Screenshot](/04.png)
-![Pokemon Red - Screenshot](/05.png)
-![Kirby's Dreamland - Screenshot](/06.png)
-![Metroid II Samus Returns - Screenshot](/06.png)
+<p align="center">
+  <img title="Tetris - Screenshot" src="/00.png">
+  <img title="Super Mario Land 2 - Screenshot" src="/01.png">
+  <img title="Wario Land - Screenshot" src="/02.png">
+  <img title="Zelda Link's Awakening - Screenshot" src="/03.png">
+  <img title="Donkey Kong Land - Screenshot" src="/04.png">
+  <img title="Pokemon Red - Screenshot" src="/05.png">
+  <img title="Kirby's Dreamland - Screenshot" src="/06.png">
+  <img title="Metroid II Samus Returns - Screenshot" src="/07.png">
+</p>
