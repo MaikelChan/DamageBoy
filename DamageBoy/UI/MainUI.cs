@@ -42,6 +42,19 @@ namespace DamageBoy.UI
                         OpenFileBrowser();
                     }
 
+                    if (ImGui.BeginMenu("Open Recent"))
+                    {
+                        for (int r = 0; r < settings.Data.RecentRoms.Count; r++)
+                        {
+                            if (ImGui.MenuItem(settings.Data.RecentRoms[r]))
+                            {
+                                window.OpenROM(settings.Data.RecentRoms[r]);
+                            }
+                        }
+
+                        ImGui.EndMenu();
+                    }
+
                     ImGui.Separator();
 
                     if (ImGui.MenuItem("Quit", "Ctrl+Q"))

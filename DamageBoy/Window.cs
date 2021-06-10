@@ -7,6 +7,7 @@ using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -32,14 +33,12 @@ namespace DamageBoy
 
         GameBoy gameBoy;
 
-        string selectedRomFile = string.Empty;
-
         int lastMainMenuHeight = -1;
 
         bool isCloseRequested;
         bool isDisposed;
 
-        string SaveFilePath => Path.Combine(SAVES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFile) + ".sav");
+        string SaveFilePath => Path.Combine(SAVES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFileName) + ".sav");
         const string SAVES_FOLDER = "Saves";
 
         const string BOOT_ROM_FILE_NAME = "dmg_boot_rom";
@@ -47,6 +46,7 @@ namespace DamageBoy
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
         {
             settings = new Settings();
+            CleanupRecentROMs();
 
             renderer = new Renderer();
             sound = new Sound();
@@ -84,14 +84,15 @@ namespace DamageBoy
             isCloseRequested = true;
         }
 
-        public void OpenROM(string romFile)
+        public void OpenROM(string romFileName)
         {
-            settings.Data.LastRomDirectory = Path.GetDirectoryName(romFile);
-            settings.Save();
-
             StopEmulation();
-            selectedRomFile = romFile;
-            RunEmulation();
+            selectedRomFileName = romFileName;
+            if (!RunEmulation()) return;
+
+            settings.Data.LastRomDirectory = Path.GetDirectoryName(romFileName);
+            AddRecentROM(romFileName);
+            settings.Save();
 
             SetWindowTitle();
         }
@@ -144,84 +145,85 @@ namespace DamageBoy
             }
         }
 
-        public void RunEmulation()
+        public bool RunEmulation()
         {
-            if (gameBoy != null) return;
+            if (gameBoy != null) return false;
 
-            if (string.IsNullOrWhiteSpace(selectedRomFile))
+            if (string.IsNullOrWhiteSpace(selectedRomFileName))
             {
                 Utils.Log(LogType.Error, $"There's no ROM file opened.");
+                return false;
             }
-            else
+
+            byte[] bootRom = null;
+
+            if (File.Exists(BOOT_ROM_FILE_NAME))
             {
-                byte[] bootRom = null;
+                bootRom = File.ReadAllBytes(BOOT_ROM_FILE_NAME);
 
-                if (File.Exists(BOOT_ROM_FILE_NAME))
+                if (bootRom.Length != 256)
                 {
-                    bootRom = File.ReadAllBytes(BOOT_ROM_FILE_NAME);
-
-                    if (bootRom.Length != 256)
-                    {
-                        Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be 256. Ignoring it.");
-                        bootRom = null;
-                    }
+                    Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be 256. Ignoring it.");
+                    bootRom = null;
                 }
+            }
 
-                byte[] romData = null;
+            byte[] romData = null;
 
-                string extension = Path.GetExtension(selectedRomFile).ToLower();
-                switch (extension)
-                {
-                    case ".gb":
-                        romData = File.ReadAllBytes(selectedRomFile);
-                        break;
+            string extension = Path.GetExtension(selectedRomFileName).ToLower();
+            switch (extension)
+            {
+                case ".gb":
+                    romData = File.ReadAllBytes(selectedRomFileName);
+                    break;
 
-                    case ".zip":
-                        ZipArchive zip = ZipFile.OpenRead(selectedRomFile);
-                        for (int z = 0; z < zip.Entries.Count; z++)
+                case ".zip":
+                    ZipArchive zip = ZipFile.OpenRead(selectedRomFileName);
+                    for (int z = 0; z < zip.Entries.Count; z++)
+                    {
+                        if (Path.GetExtension(zip.Entries[z].Name) == ".gb")
                         {
-                            if (Path.GetExtension(zip.Entries[z].Name) == ".gb")
+                            using (Stream s = zip.Entries[z].Open())
+                            using (MemoryStream romStream = new MemoryStream())
                             {
-                                using (Stream s = zip.Entries[z].Open())
-                                using (MemoryStream romStream = new MemoryStream())
-                                {
-                                    s.CopyTo(romStream);
-                                    romData = romStream.ToArray();
-                                }
+                                s.CopyTo(romStream);
+                                romData = romStream.ToArray();
                             }
                         }
-                        break;
+                    }
+                    break;
 
-                    default:
-                        Utils.Log(LogType.Error, $"Extension \"{extension}\" is not supported.");
-                        return;
-                }
-
-                if (romData == null)
-                {
-                    Utils.Log(LogType.Error, $"A valid GameBoy ROM has not been found in \"{selectedRomFile}\"");
-                    return;
-                }
-
-                byte[] saveData = null;
-
-                if (File.Exists(SaveFilePath))
-                {
-                    Utils.Log(LogType.Info, $"A file save for this ROM has been found at \"{SaveFilePath}\"");
-                    saveData = File.ReadAllBytes(SaveFilePath);
-                }
-
-                Utils.Log(LogType.Info, $"ROM file successfully loaded: {selectedRomFile}");
-
-                try
-                {
-                    gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
-                }
-                catch (Exception ex)
-                {
-                    Utils.Log(LogType.Error, ex.Message);
-                }
+                default:
+                    Utils.Log(LogType.Error, $"Extension \"{extension}\" is not supported.");
+                    return false;
             }
+
+            if (romData == null)
+            {
+                Utils.Log(LogType.Error, $"A valid GameBoy ROM has not been found in \"{selectedRomFileName}\"");
+                return false;
+            }
+
+            byte[] saveData = null;
+
+            if (File.Exists(SaveFilePath))
+            {
+                Utils.Log(LogType.Info, $"A file save for this ROM has been found at \"{SaveFilePath}\"");
+                saveData = File.ReadAllBytes(SaveFilePath);
+            }
+
+            Utils.Log(LogType.Info, $"ROM file successfully loaded: {selectedRomFileName}");
+
+            try
+            {
+                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
+            }
+            catch (Exception ex)
+            {
+                Utils.Log(LogType.Error, ex.Message);
+            }
+
+            return true;
         }
 
         public void StopEmulation()
@@ -316,7 +318,7 @@ namespace DamageBoy
 
         #region Save States
 
-        string SaveStateFilePath => Path.Combine(SAVE_STATES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFile) + ".sst");
+        string SaveStateFilePath => Path.Combine(SAVE_STATES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFileName) + ".sst");
         const string SAVE_STATES_FOLDER = "SaveStates";
 
         public void SaveState()
@@ -443,6 +445,39 @@ namespace DamageBoy
             base.OnMouseWheel(e);
 
             imguiController.MouseScroll(e.Offset);
+        }
+
+        #endregion
+
+        #region Current / Recent ROMs
+
+        string selectedRomFileName = string.Empty;
+
+        public const int MAX_RECENT_ROMS = 10;
+
+        public void CleanupRecentROMs()
+        {
+            List<string> cleanedRecentROMs = new List<string>(10);
+
+            for (int r = 0; r < settings.Data.RecentRoms.Count; r++)
+            {
+                if (string.IsNullOrWhiteSpace(settings.Data.RecentRoms[r])) continue;
+                if (!File.Exists(settings.Data.RecentRoms[r])) continue;
+                if (!cleanedRecentROMs.Contains(settings.Data.RecentRoms[r]))
+                {
+                    cleanedRecentROMs.Add(settings.Data.RecentRoms[r]);
+                    if (cleanedRecentROMs.Count == MAX_RECENT_ROMS) break;
+                }
+            }
+
+            settings.Data.RecentRoms = cleanedRecentROMs;
+        }
+
+        void AddRecentROM(string romFileName)
+        {
+            settings.Data.RecentRoms.Remove(romFileName);
+            settings.Data.RecentRoms.Insert(0, romFileName);
+            CleanupRecentROMs();
         }
 
         #endregion

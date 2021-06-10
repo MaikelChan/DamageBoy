@@ -1,5 +1,7 @@
 ﻿using DamageBoy.Core;
+using DamageBoy.UI;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
@@ -51,10 +53,12 @@ namespace DamageBoy
     class SettingsData
     {
         public string LastRomDirectory { get; set; }
+        public List<string> RecentRoms { get; set; }
 
         public SettingsData()
         {
             LastRomDirectory = Environment.CurrentDirectory;
+            RecentRoms = new List<string>(Window.MAX_RECENT_ROMS);
         }
     }
 }
