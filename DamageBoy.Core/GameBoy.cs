@@ -72,11 +72,12 @@ namespace DamageBoy.Core
         public void Dispose()
         {
             if (EmulationState != EmulationStates.Running) return;
+            EmulationState = EmulationStates.Stopped;
 
             cpu.Dispose();
+            ppu.Dispose();
             cartridge.Dispose();
 
-            EmulationState = EmulationStates.Stopped;
             Utils.Log(LogType.Info, "Emulation is now stopped.");
         }
 

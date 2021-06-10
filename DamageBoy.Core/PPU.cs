@@ -168,6 +168,16 @@ namespace DamageBoy.Core
             }
         }
 
+        public void Dispose()
+        {
+            for (int p = 0; p < Constants.RES_X * Constants.RES_Y; p++)
+            {
+                lcdPixelBuffers[currentBuffer][p] = 0;
+            }
+
+            screenUpdateCallback?.Invoke(lcdPixelBuffers[currentBuffer]);
+        }
+
         public void Update()
         {
             if (!LCDDisplayEnable)
