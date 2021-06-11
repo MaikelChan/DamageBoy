@@ -34,14 +34,14 @@ namespace DamageBoy.UI
             ImGui.Text("Experimental GameBoy emulator written in C#, and it uses OpenGL for rendering,\nOpenAL for audio and ImGui for UI.\n\n");
 
             ImGui.Text("Keyboard controls:");
-            ImGui.Text("   Up Arrow:    D-pad Up");
-            ImGui.Text("   Right Arrow: D-pad Right");
-            ImGui.Text("   Down Arrow:  D-pad Down");
-            ImGui.Text("   Left Arrow:  D-pad Left");
-            ImGui.Text("   Z:           B");
-            ImGui.Text("   X:           A");
-            ImGui.Text("   Enter:       Start");
-            ImGui.Text("   Right Shift: Select\n\n");
+            ImGui.Text("   Up Arrow     : D-pad Up");
+            ImGui.Text("   Right Arrow  : D-pad Right");
+            ImGui.Text("   Down Arrow   : D-pad Down");
+            ImGui.Text("   Left Arrow   : D-pad Left");
+            ImGui.Text("   Z            : B");
+            ImGui.Text("   X            : A");
+            ImGui.Text("   Enter        : Start");
+            ImGui.Text("   Right Shift  : Select\n\n");
             ImGui.Text("It can also be played with an XInput compatible controller.");
             ImGui.End();
         }
