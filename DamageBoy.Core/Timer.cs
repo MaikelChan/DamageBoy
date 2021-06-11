@@ -80,7 +80,7 @@ namespace DamageBoy.Core
             }
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             Divider = SaveState.SaveLoadValue(bw, br, save, Divider);
             TimerEnable = SaveState.SaveLoadValue(bw, br, save, TimerEnable);

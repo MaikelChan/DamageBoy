@@ -91,7 +91,7 @@ namespace DamageBoy.Core.Audio
             FrequencyHi = 0;
         }
 
-        public override void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public override void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             Enabled = SaveState.SaveLoadValue(bw, br, save, Enabled);
             LengthType = (LengthTypes)SaveState.SaveLoadValue(bw, br, save, (byte)LengthType);

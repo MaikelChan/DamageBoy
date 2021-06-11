@@ -116,7 +116,7 @@ namespace DamageBoy.Core.MemoryBankControllers
             }
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             romBank = SaveState.SaveLoadValue(bw, br, save, romBank);
             isMBC2RamEnabled = SaveState.SaveLoadValue(bw, br, save, isMBC2RamEnabled);

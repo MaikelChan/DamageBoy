@@ -25,7 +25,7 @@ namespace DamageBoy.Core
             Oam = new byte[OAM_SIZE];
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             SaveState.SaveLoadArray(stream, save, VRam, VRAM_SIZE);
             SaveState.SaveLoadArray(stream, save, Oam, OAM_SIZE);

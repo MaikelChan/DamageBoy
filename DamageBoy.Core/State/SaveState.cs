@@ -39,7 +39,7 @@ namespace DamageBoy.Core.State
                 {
                     for (int cs = 0; cs < componentsStates.Length; cs++)
                     {
-                        componentsStates[cs].LoadSaveState(gzip, gzipBw, null, true);
+                        componentsStates[cs].SaveOrLoadState(gzip, gzipBw, null, true);
                     }
                 }
             }
@@ -93,7 +93,7 @@ namespace DamageBoy.Core.State
                 {
                     for (int cs = 0; cs < componentsStates.Length; cs++)
                     {
-                        componentsStates[cs].LoadSaveState(gzip, null, gzipBr, false);
+                        componentsStates[cs].SaveOrLoadState(gzip, null, gzipBr, false);
                     }
                 }
             }

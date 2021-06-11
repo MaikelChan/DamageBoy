@@ -25,7 +25,7 @@ namespace DamageBoy.Core
             HighRam = new byte[HIGH_RAM_SIZE];
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             SaveState.SaveLoadArray(stream, save, InternalRam, INTERNAL_RAM_SIZE);
             SaveState.SaveLoadArray(stream, save, HighRam, HIGH_RAM_SIZE);

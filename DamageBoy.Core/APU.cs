@@ -131,7 +131,7 @@ namespace DamageBoy.Core
 
         #endregion
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             sampleClocksToWait = SaveState.SaveLoadValue(bw, br, save, sampleClocksToWait);
             lengthControlClocksToWait = SaveState.SaveLoadValue(bw, br, save, lengthControlClocksToWait);
@@ -147,7 +147,7 @@ namespace DamageBoy.Core
 
             for (int sc = 0; sc < Constants.SOUND_CHANNEL_COUNT; sc++)
             {
-                soundChannels[sc].LoadSaveState(stream, bw, br, save);
+                soundChannels[sc].SaveOrLoadState(stream, bw, br, save);
             }
         }
     }

@@ -78,7 +78,7 @@ namespace DamageBoy.Core
             currentOffset = -3;
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             sourceAddress = SaveState.SaveLoadValue(bw, br, save, sourceAddress);
             currentOffset = SaveState.SaveLoadValue(bw, br, save, currentOffset);

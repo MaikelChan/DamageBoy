@@ -19,7 +19,7 @@ namespace DamageBoy.Core
 
         public byte EnableUnusedBits { get; set; } // In this case, unused bits are actually writable and readable
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             RequestVerticalBlanking = SaveState.SaveLoadValue(bw, br, save, RequestVerticalBlanking);
             RequestLCDCSTAT = SaveState.SaveLoadValue(bw, br, save, RequestLCDCSTAT);

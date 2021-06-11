@@ -1041,7 +1041,7 @@ namespace DamageBoy.Core
 
         #endregion
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             if (save)
                 for (int b = 0; b < BUTTON_COUNT; b++) bw.Write(buttons[b]);

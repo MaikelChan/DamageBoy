@@ -173,11 +173,11 @@ namespace DamageBoy.Core
             }
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             if (ram != null) SaveState.SaveLoadArray(stream, save, ram, RamSize);
             isRamEnabled = SaveState.SaveLoadValue(bw, br, save, isRamEnabled);
-            mbc.LoadSaveState(stream, bw, br, save);
+            mbc.SaveOrLoadState(stream, bw, br, save);
         }
     }
 }

@@ -104,7 +104,7 @@ namespace DamageBoy.Core.MemoryBankControllers
             }
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             romBankHi = SaveState.SaveLoadValue(bw, br, save, romBankHi);
             romBankLo = SaveState.SaveLoadValue(bw, br, save, romBankLo);

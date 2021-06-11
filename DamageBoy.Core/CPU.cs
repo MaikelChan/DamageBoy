@@ -2527,7 +2527,7 @@ namespace DamageBoy.Core
 
         #region State
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             A = SaveState.SaveLoadValue(bw, br, save, A);
             B = SaveState.SaveLoadValue(bw, br, save, B);

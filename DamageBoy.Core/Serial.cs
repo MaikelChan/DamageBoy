@@ -80,7 +80,7 @@ namespace DamageBoy.Core
             return true;
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             ShiftClock = (STCShiftClock)SaveState.SaveLoadValue(bw, br, save, (byte)ShiftClock);
             TransferStartFlag = (STCTransferStartFlag)SaveState.SaveLoadValue(bw, br, save, (byte)TransferStartFlag);

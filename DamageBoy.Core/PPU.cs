@@ -532,7 +532,7 @@ namespace DamageBoy.Core
             currentBuffer ^= 1;
         }
 
-        public void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+        public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
             LCDDisplayEnable = SaveState.SaveLoadValue(bw, br, save, LCDDisplayEnable);
             WindowTileMapDisplaySelect = SaveState.SaveLoadValue(bw, br, save, WindowTileMapDisplaySelect);

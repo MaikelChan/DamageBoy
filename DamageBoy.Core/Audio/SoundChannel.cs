@@ -101,6 +101,6 @@ namespace DamageBoy.Core.Audio
             return (ushort)((left << 8) | right);
         }
 
-        public abstract void LoadSaveState(Stream stream, BinaryWriter bw, BinaryReader br, bool save);
+        public abstract void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save);
     }
 }
