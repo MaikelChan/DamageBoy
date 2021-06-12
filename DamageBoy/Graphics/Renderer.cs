@@ -112,6 +112,7 @@ namespace DamageBoy.Graphics
             PipelineState.FaceCulling = true;
             PipelineState.DepthTest = false;
             PipelineState.PolygonMode = PolygonMode.Fill;
+            PipelineState.CurrentVAO = vao;
 
             // Clear framebuffer
 
@@ -124,7 +125,7 @@ namespace DamageBoy.Graphics
             {
                 PipelineState.Blend = false;
                 PipelineState.SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-                PipelineState.CurrentVAO = vao;
+
                 PipelineState.CurrentShader = screenMaterial.Shader;
 
                 if (pixels != null)
