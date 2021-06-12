@@ -2,6 +2,9 @@
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace DamageBoy.Graphics
 {
@@ -14,9 +17,16 @@ namespace DamageBoy.Graphics
         readonly uint vao;
         readonly Texture2D screenTexture;
         readonly ScreenMaterial screenMaterial;
+        readonly Texture2D logoTexture;
+        readonly UnlitMaterial logoMaterial;
 
         int viewportX, viewportY, viewportWidth, viewportHeight;
+        int logoViewportX, logoViewportY, logoViewportWidth, logoViewportHeight;
+        int logoWidth, logoHeight;
         double elapsedTime;
+
+        public enum RenderModes { Logo, LCD }
+        public RenderModes RenderMode { get; set; }
 
         byte[] pixels;
 
@@ -34,7 +44,9 @@ namespace DamageBoy.Graphics
             }
 #endif
 
-            screenTexture = new Texture2D(this, Constants.RES_X, Constants.RES_Y, TextureFormats.R8, IntPtr.Zero, "Screen");
+            // Screen texture and material
+
+            screenTexture = new Texture2D(this, Constants.RES_X, Constants.RES_Y, TextureFormats.R8, IntPtr.Zero, "Screen Texture");
             screenTexture.SetMinFilter(TextureMinFilter.Nearest);
             screenTexture.SetMagFilter(TextureMagFilter.Nearest);
             screenTexture.SetWrapS(TextureWrapMode.ClampToEdge);
@@ -42,6 +54,44 @@ namespace DamageBoy.Graphics
 
             screenMaterial = new ScreenMaterial(this);
             screenMaterial.MainTexture = screenTexture;
+
+            // Get pixel data from logo image from Resources
+
+            byte[] logoPixels;
+
+            using (Bitmap logoBitmap = Resources.BigIcon)
+            {
+                logoWidth = logoBitmap.Width;
+                logoHeight = logoBitmap.Height;
+
+                BitmapData logoData = logoBitmap.LockBits(new Rectangle(0, 0, logoWidth, logoHeight), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                logoPixels = new byte[logoWidth * logoHeight * 4];
+                Marshal.Copy(logoData.Scan0, logoPixels, 0, logoPixels.Length);
+                logoBitmap.UnlockBits(logoData);
+            }
+
+            GraphicsUtils.BgraToRgba(logoPixels, logoWidth * logoHeight);
+
+            // Logo texture and material
+
+            unsafe
+            {
+                fixed (byte* p = logoPixels)
+                {
+                    IntPtr logoPtr = (IntPtr)p;
+                    logoTexture = new Texture2D(this, logoWidth, logoHeight, TextureFormats.RGBA8888, logoPtr, "Logo Texture");
+                }
+            }
+
+            logoTexture.SetMinFilter(TextureMinFilter.Linear);
+            logoTexture.SetMagFilter(TextureMagFilter.Linear);
+            logoTexture.SetWrapS(TextureWrapMode.ClampToEdge);
+            logoTexture.SetWrapT(TextureWrapMode.ClampToEdge);
+
+            logoMaterial = new UnlitMaterial(this);
+            logoMaterial.MainTexture = logoTexture;
+
+            RenderMode = RenderModes.Logo;
         }
 
         public override void Dispose()
@@ -50,34 +100,58 @@ namespace DamageBoy.Graphics
 
             GL.DeleteVertexArray(vao);
             screenTexture.Dispose();
+            logoTexture.Dispose();
             Shader.DisposeAll();
         }
 
         public override void Render(double deltaTime)
         {
-            PipelineState.SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-            PipelineState.Blend = false;
+            // Reset some states that can be modified by ImGui
+
             PipelineState.ScissorTest = false;
             PipelineState.FaceCulling = true;
             PipelineState.DepthTest = false;
+            PipelineState.PolygonMode = PolygonMode.Fill;
+
+            // Clear framebuffer
 
             PipelineState.ClearColor = clearColor;
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            PipelineState.PolygonMode = PolygonMode.Fill;
-            PipelineState.CurrentVAO = vao;
-            PipelineState.CurrentShader = screenMaterial.Shader;
+            // Render screen or logo
 
-            if (pixels != null)
+            if (RenderMode == RenderModes.LCD)
             {
-                screenTexture.Update(pixels);
+                PipelineState.Blend = false;
+                PipelineState.SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+                PipelineState.CurrentVAO = vao;
+                PipelineState.CurrentShader = screenMaterial.Shader;
+
+                if (pixels != null)
+                {
+                    screenTexture.Update(pixels);
+                }
+
+                screenMaterial.OffColor = pixelOffColor;
+                screenMaterial.OnColor = pixelOnColor;
+                screenMaterial.SetUniforms(globalUniforms);
+
+                GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            }
+            else
+            {
+                PipelineState.Blend = true;
+                PipelineState.BlendEquation = BlendEquationMode.FuncAdd;
+                PipelineState.SetBlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+                PipelineState.SetViewport(logoViewportX, logoViewportY, logoViewportWidth, logoViewportHeight);
+
+                PipelineState.CurrentShader = logoMaterial.Shader;
+                logoMaterial.SetUniforms(globalUniforms);
+
+                GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
             }
 
-            screenMaterial.OffColor = pixelOffColor;
-            screenMaterial.OnColor = pixelOnColor;
-            screenMaterial.SetUniforms(globalUniforms);
-
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            // Increase timer for animated shader effects (if any)
 
             elapsedTime += deltaTime;
             globalUniforms.Time = (float)elapsedTime;
@@ -86,6 +160,9 @@ namespace DamageBoy.Graphics
         public override void Resize(int width, int height)
         {
             float windowAspectRatio = (float)width / height;
+
+            // LCD Viewport
+
             float lcdAspectRatio = (float)Constants.RES_X / Constants.RES_Y;
 
             if (windowAspectRatio > lcdAspectRatio)
@@ -104,6 +181,28 @@ namespace DamageBoy.Graphics
             }
 
             globalUniforms.ViewportSize = new Vector2(viewportWidth, viewportHeight);
+
+            // Logo Viewport
+
+            float logoAspectRatio = (float)logoWidth / logoHeight;
+            const float logoSizeDivider = 3f;
+
+            int lw = (int)(width / logoSizeDivider);
+            int lh = (int)(height / logoSizeDivider);
+
+            if (windowAspectRatio > logoAspectRatio)
+            {
+                logoViewportWidth = (int)(lh * logoAspectRatio);
+                logoViewportHeight = lh;
+            }
+            else
+            {
+                logoViewportWidth = lw;
+                logoViewportHeight = (int)(lw / logoAspectRatio);
+            }
+
+            logoViewportX = (width - logoViewportWidth) >> 1;
+            logoViewportY = (height - logoViewportHeight) >> 1;
         }
 
         public override void ScreenUpdate(byte[] pixels)

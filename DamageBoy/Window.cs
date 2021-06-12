@@ -112,23 +112,16 @@ namespace DamageBoy
             const int pixelCount = width * height;
             const int size = width * height * 4;
 
-            BitmapData bData = Resources.WindowIcon.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, Resources.WindowIcon.PixelFormat);
             byte[] pixels = new byte[size];
-            Marshal.Copy(bData.Scan0, pixels, 0, size);
-            // Resources.WindowIcon.UnlockBits(bData);
 
-            for (int p = 0; p < pixelCount; p++)
+            using (Bitmap windowIconBitmap = Resources.WindowIcon)
             {
-                byte b = pixels[p * 4 + 0];
-                byte g = pixels[p * 4 + 1];
-                byte r = pixels[p * 4 + 2];
-                byte a = pixels[p * 4 + 3];
-
-                pixels[p * 4 + 0] = r;
-                pixels[p * 4 + 1] = g;
-                pixels[p * 4 + 2] = b;
-                pixels[p * 4 + 3] = a;
+                BitmapData bData = windowIconBitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, windowIconBitmap.PixelFormat);
+                Marshal.Copy(bData.Scan0, pixels, 0, size);
+                windowIconBitmap.UnlockBits(bData);
             }
+
+            GraphicsUtils.BgraToRgba(pixels, pixelCount);
 
             Image image = new Image(width, height, pixels);
             Icon = new WindowIcon(image);
@@ -217,13 +210,14 @@ namespace DamageBoy
             try
             {
                 gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
+                (renderer as Renderer).RenderMode = Renderer.RenderModes.LCD;
+                return true;
             }
             catch (Exception ex)
             {
                 Utils.Log(LogType.Error, ex.Message);
+                return false;
             }
-
-            return true;
         }
 
         public void StopEmulation()
@@ -233,6 +227,8 @@ namespace DamageBoy
             gameBoy.Dispose();
             gameBoy = null;
             sound.Stop();
+
+            (renderer as Renderer).RenderMode = Renderer.RenderModes.Logo;
         }
 
         public void ToggleTraceLog()
