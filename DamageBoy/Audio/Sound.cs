@@ -118,6 +118,8 @@ namespace DamageBoy.Audio
 
         public void Stop()
         {
+            if (!isInitialized) return;
+
             for (int sc = 0; sc < Constants.SOUND_CHANNEL_COUNT; sc++)
             {
                 soundChannels[sc].DeleteSource();

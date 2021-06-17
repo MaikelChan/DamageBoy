@@ -8,8 +8,8 @@ namespace DamageBoy.Core
     public enum EmulationStates
     {
         Stopped,
-        Initializing,
-        Running
+        Running,
+        Stopping
     }
 
     public enum FrameLimiterStates
@@ -37,6 +37,7 @@ namespace DamageBoy.Core
 
         readonly Cartridge cartridge;
         readonly Action<ushort[]> soundUpdateCallback;
+        readonly Action emulationStoppedCallback;
 
         public string GameTitle => cartridge.Title;
 
@@ -44,10 +45,11 @@ namespace DamageBoy.Core
 
         FrameLimiterStates frameLimiterState;
 
-        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<ushort[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
+        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<ushort[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback, Action emulationStoppedCallback)
         {
             cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
             this.soundUpdateCallback = soundUpdateCallback;
+            this.emulationStoppedCallback = emulationStoppedCallback;
 
             ram = new RAM();
             vram = new VRAM();
@@ -66,19 +68,14 @@ namespace DamageBoy.Core
             frameLimiterState = FrameLimiterStates.Limited;
 
             Thread thread = new Thread(MainLoop);
+            thread.Name = "GameBoy Emulation Loop";
             thread.Start();
         }
 
         public void Dispose()
         {
             if (EmulationState != EmulationStates.Running) return;
-            EmulationState = EmulationStates.Stopped;
-
-            cpu.Dispose();
-            ppu.Dispose();
-            cartridge.Dispose();
-
-            Utils.Log(LogType.Info, "Emulation is now stopped.");
+            EmulationState = EmulationStates.Stopping;
         }
 
         void MainLoop()
@@ -128,6 +125,15 @@ namespace DamageBoy.Core
                 }
 #endif
             }
+
+            cpu.Dispose();
+            ppu.Dispose();
+            cartridge.Dispose();
+
+            EmulationState = EmulationStates.Stopped;
+            Utils.Log(LogType.Info, "Emulation is now stopped.");
+
+            emulationStoppedCallback?.Invoke();
         }
 
         public void SetInput(InputState inputState)

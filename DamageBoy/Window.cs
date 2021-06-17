@@ -209,7 +209,7 @@ namespace DamageBoy
 
             try
             {
-                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
+                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate, EmulationStopped);
                 (renderer as Renderer).RenderMode = Renderer.RenderModes.LCD;
                 return true;
             }
@@ -222,19 +222,12 @@ namespace DamageBoy
 
         public void StopEmulation()
         {
-            if (gameBoy == null) return;
-
-            gameBoy.Dispose();
-            gameBoy = null;
-            sound.Stop();
-
-            (renderer as Renderer).RenderMode = Renderer.RenderModes.Logo;
+            gameBoy?.Dispose();
         }
 
         public void ToggleTraceLog()
         {
-            if (gameBoy == null) return;
-            gameBoy.ToggleTraceLog();
+            gameBoy?.ToggleTraceLog();
         }
 
         #endregion
@@ -274,6 +267,14 @@ namespace DamageBoy
             if (!Directory.Exists(SAVES_FOLDER)) Directory.CreateDirectory(SAVES_FOLDER);
             File.WriteAllBytes(SaveFilePath, data);
             Utils.Log($"Saved data to {SaveFilePath}.");
+        }
+
+        void EmulationStopped()
+        {
+            gameBoy = null;
+            sound.Stop();
+
+            (renderer as Renderer).RenderMode = Renderer.RenderModes.Logo;
         }
 
         #endregion
