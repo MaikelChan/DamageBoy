@@ -86,15 +86,17 @@ namespace DamageBoy
 
         public void OpenROM(string romFileName)
         {
-            StopEmulation();
-            selectedRomFileName = romFileName;
-            if (!RunEmulation()) return;
+            StopEmulation(() =>
+            {
+                selectedRomFileName = romFileName;
+                if (!RunEmulation()) return;
 
-            settings.Data.LastRomDirectory = Path.GetDirectoryName(romFileName);
-            AddRecentROM(romFileName);
-            settings.Save();
+                settings.Data.LastRomDirectory = Path.GetDirectoryName(romFileName);
+                AddRecentROM(romFileName);
+                settings.Save();
 
-            SetWindowTitle();
+                SetWindowTitle();
+            });
         }
 
         void SetWindowTitle()
@@ -209,7 +211,7 @@ namespace DamageBoy
 
             try
             {
-                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate, EmulationStopped);
+                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SoundUpdate, SaveUpdate);
                 (renderer as Renderer).RenderMode = Renderer.RenderModes.LCD;
                 return true;
             }
@@ -220,9 +222,24 @@ namespace DamageBoy
             }
         }
 
-        public void StopEmulation()
+        public void StopEmulation(Action emulationStoppedCallback = null)
         {
-            gameBoy?.Dispose();
+            if (gameBoy != null)
+            {
+                gameBoy.Stop(() =>
+                {
+                    gameBoy = null;
+                    sound.Stop();
+
+                    (renderer as Renderer).RenderMode = Renderer.RenderModes.Logo;
+
+                    emulationStoppedCallback?.Invoke();
+                });
+            }
+            else
+            {
+                emulationStoppedCallback?.Invoke();
+            }
         }
 
         public void ToggleTraceLog()
@@ -267,14 +284,6 @@ namespace DamageBoy
             if (!Directory.Exists(SAVES_FOLDER)) Directory.CreateDirectory(SAVES_FOLDER);
             File.WriteAllBytes(SaveFilePath, data);
             Utils.Log($"Saved data to {SaveFilePath}.");
-        }
-
-        void EmulationStopped()
-        {
-            gameBoy = null;
-            sound.Stop();
-
-            (renderer as Renderer).RenderMode = Renderer.RenderModes.Logo;
         }
 
         #endregion

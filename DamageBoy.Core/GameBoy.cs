@@ -19,7 +19,7 @@ namespace DamageBoy.Core
         Paused
     }
 
-    public class GameBoy : IDisposable
+    public class GameBoy
     {
         readonly RAM ram;
         readonly VRAM vram;
@@ -37,7 +37,8 @@ namespace DamageBoy.Core
 
         readonly Cartridge cartridge;
         readonly Action<ushort[]> soundUpdateCallback;
-        readonly Action emulationStoppedCallback;
+
+        Action emulationStoppedCallback;
 
         public string GameTitle => cartridge.Title;
 
@@ -45,11 +46,10 @@ namespace DamageBoy.Core
 
         FrameLimiterStates frameLimiterState;
 
-        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<ushort[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback, Action emulationStoppedCallback)
+        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<ushort[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
         {
             cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
             this.soundUpdateCallback = soundUpdateCallback;
-            this.emulationStoppedCallback = emulationStoppedCallback;
 
             ram = new RAM();
             vram = new VRAM();
@@ -72,9 +72,10 @@ namespace DamageBoy.Core
             thread.Start();
         }
 
-        public void Dispose()
+        public void Stop(Action emulationStoppedCallback)
         {
             if (EmulationState != EmulationStates.Running) return;
+            this.emulationStoppedCallback = emulationStoppedCallback;
             EmulationState = EmulationStates.Stopping;
         }
 
