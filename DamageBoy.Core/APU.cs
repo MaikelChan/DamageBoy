@@ -10,6 +10,7 @@ namespace DamageBoy.Core
         readonly Action<ushort[]> soundUpdateCallback;
 
         readonly SoundChannel[] soundChannels;
+        readonly ushort[] channelData;
 
         public PulseChannel Channel1 => soundChannels[0] as PulseChannel;
         public PulseChannel Channel2 => soundChannels[1] as PulseChannel;
@@ -34,6 +35,8 @@ namespace DamageBoy.Core
             soundChannels[1] = new PulseChannel(this);
             soundChannels[2] = new WaveChannel(this);
             soundChannels[3] = new NoiseChannel(this);
+
+            channelData = new ushort[Constants.SOUND_CHANNEL_COUNT];
         }
 
         public void Update()
@@ -71,15 +74,14 @@ namespace DamageBoy.Core
                 updateSweep = true;
             }
 
-            ushort[] data = new ushort[Constants.SOUND_CHANNEL_COUNT];
-            data[0] = soundChannels[0].Process(updateSample, updateLength, updateVolume, updateSweep);
-            data[1] = soundChannels[1].Process(updateSample, updateLength, updateVolume, false);
-            data[2] = soundChannels[2].Process(updateSample, updateLength, false, false);
-            data[3] = soundChannels[3].Process(false, updateLength, updateVolume, false);
+            channelData[0] = soundChannels[0].Process(updateSample, updateLength, updateVolume, updateSweep);
+            channelData[1] = soundChannels[1].Process(updateSample, updateLength, updateVolume, false);
+            channelData[2] = soundChannels[2].Process(updateSample, updateLength, false, false);
+            channelData[3] = soundChannels[3].Process(false, updateLength, updateVolume, false);
 
             if (updateSample)
             {
-                soundUpdateCallback?.Invoke(data);
+                soundUpdateCallback?.Invoke(channelData);
             }
         }
 

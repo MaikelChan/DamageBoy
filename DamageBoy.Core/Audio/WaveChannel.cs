@@ -33,6 +33,7 @@ namespace DamageBoy.Core.Audio
         float currentWaveCycle;
 
         public const int WAVE_PATTERN_SIZE = 0x20;
+        public const int UPDATE_FREQUENCY = 65536;
 
         public WaveChannel(APU apu) : base(apu)
         {
@@ -54,7 +55,7 @@ namespace DamageBoy.Core.Audio
                     case 3: volume = 0.25f; break;
                 }
 
-                float frequency = 65536f / (2048 - ((FrequencyHi << 8) | FrequencyLo));
+                float frequency = (float)UPDATE_FREQUENCY / (2048 - ((FrequencyHi << 8) | FrequencyLo));
 
                 currentWaveCycle += frequency / (Constants.SAMPLE_RATE >> 5);
                 currentWaveCycle %= WAVE_PATTERN_SIZE;

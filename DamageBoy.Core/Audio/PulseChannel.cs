@@ -60,6 +60,8 @@ namespace DamageBoy.Core.Audio
         int currentFrequency;
         float currentWaveCycle;
 
+        const int UPDATE_FREQUENCY = 131072;
+
         public PulseChannel(APU apu) : base(apu)
         {
 
@@ -133,7 +135,7 @@ namespace DamageBoy.Core.Audio
                     case PulsePatterns.Percent75: percentage = -0.5f; break;
                 }
 
-                float frequency = 131072f / (2048 - currentFrequency);
+                float frequency = (float)UPDATE_FREQUENCY / (2048 - currentFrequency);
 
                 currentWaveCycle += (frequency * MathF.PI * 2) / Constants.SAMPLE_RATE;
                 currentWaveCycle %= Constants.SAMPLE_RATE;

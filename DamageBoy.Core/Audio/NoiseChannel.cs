@@ -32,6 +32,8 @@ namespace DamageBoy.Core.Audio
         int currentNoiseClocksToWait;
         ushort currentNoiseSequence;
 
+        const int UPDATE_FREQUENCY = 524288;
+
         public NoiseChannel(APU apu) : base(apu)
         {
             random = new Random();
@@ -66,7 +68,7 @@ namespace DamageBoy.Core.Audio
             if (currentNoiseClocksToWait <= 0)
             {
                 float r = DividingRatioFrequencies == 0 ? 0.5f : DividingRatioFrequencies;
-                float frequency = 524288f / r / MathF.Pow(2, ShiftClockFrequency + 1);
+                float frequency = UPDATE_FREQUENCY / r / MathF.Pow(2, ShiftClockFrequency + 1);
 
                 currentNoiseClocksToWait = (int)(CPU.CPU_CLOCKS / frequency);
 
@@ -84,8 +86,8 @@ namespace DamageBoy.Core.Audio
             float wave = bit != 0 ? 1.0f : -0.999f;
 
             // HACK: When ShiftClockFrequency is below 4, those high frequencies
-            // are perceived as having lower volume. I can't figure out why they sound exactly
-            // the same in this case, so let's force a lower volume for now.
+            // are perceived as having lower volume. Sound processing needs a rewrite to
+            // be able to process noise at higher intervals, so let's force a lower volume for now.
 
             if (ShiftClockFrequency == 3) wave *= 0.825f;
             else if (ShiftClockFrequency == 2) wave *= 0.65f;
