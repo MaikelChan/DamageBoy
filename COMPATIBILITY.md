@@ -14,7 +14,7 @@ Here you can check game compatibility. Games not listed here have not been teste
 | 3 Choume no Tama - Tama and Friends - 3 Choume Obake Panic!! (J) | :heavy_check_mark: |
 | 3-pun Yosou - Umaban Club (J) | :heavy_check_mark: |
 | 4-in-1 Fun Pak (JUE) | :heavy_check_mark: |
-| 4-in-1 Fun Pak Volume II (UE) | :large_blue_diamond: (Volume of some music instruments is not correct) |
+| 4-in-1 Fun Pak Volume II (UE) | :heavy_check_mark: |
 | A-mazing Tater (U) | :heavy_check_mark: |
 | Aa Harimanada (J) | :heavy_check_mark: |
 | Addams Family, The (JUE) | :heavy_check_mark: |
