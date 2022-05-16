@@ -1,6 +1,7 @@
 ﻿using DamageBoy.Core.State;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace DamageBoy.Core.Audio
 {
@@ -32,8 +33,19 @@ namespace DamageBoy.Core.Audio
 
         // Frequency
 
-        public byte FrequencyLo { get; set; }
-        public byte FrequencyHi { get; set; }
+        byte frequencyLo = 0;
+        public byte FrequencyLo
+        {
+            get { return frequencyLo; }
+            set { frequencyLo = value; UpdateCurrentFrequency(); }
+        }
+
+        byte frequencyHi = 0;
+        public byte FrequencyHi
+        {
+            get { return frequencyHi; }
+            set { frequencyHi = value; UpdateCurrentFrequency(); }
+        }
 
         // Helper properties
 
@@ -148,8 +160,6 @@ namespace DamageBoy.Core.Audio
 
                 Enabled = true;
             }
-
-            currentFrequency = (FrequencyHi << 8) | FrequencyLo;
         }
 
         public override void Reset()
@@ -202,6 +212,12 @@ namespace DamageBoy.Core.Audio
             currentSweepTimer = SaveState.SaveLoadValue(bw, br, save, currentSweepTimer);
             currentFrequency = SaveState.SaveLoadValue(bw, br, save, currentFrequency);
             currentWaveCycle = SaveState.SaveLoadValue(bw, br, save, currentWaveCycle);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void UpdateCurrentFrequency()
+        {
+            currentFrequency = (FrequencyHi << 8) | FrequencyLo;
         }
     }
 }
