@@ -82,6 +82,16 @@ namespace DamageBoy.Core.Audio
 
             int bit = (currentNoiseSequence & 0x1) ^ 1;
             float wave = bit != 0 ? 1.0f : -0.999f;
+
+            // HACK: When ShiftClockFrequency is below 4, those high frequencies
+            // are perceived as having lower volume. I can't figure out why they sound exactly
+            // the same in this case, so let's force a lower volume for now.
+
+            if (ShiftClockFrequency == 3) wave *= 0.825f;
+            else if (ShiftClockFrequency == 2) wave *= 0.65f;
+            else if (ShiftClockFrequency == 1) wave *= 0.475f;
+            else if (ShiftClockFrequency == 0) wave *= 0.3f;
+
             wave *= currentVolume / (float)0xF;
             return FloatWaveToUInt16(wave);
         }
