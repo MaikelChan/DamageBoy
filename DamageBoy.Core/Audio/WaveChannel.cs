@@ -40,7 +40,7 @@ namespace DamageBoy.Core.Audio
             WavePattern = new byte[WAVE_PATTERN_SIZE];
         }
 
-        protected override ushort InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
+        protected override float InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
         {
             if (updateSample)
             {
@@ -62,7 +62,7 @@ namespace DamageBoy.Core.Audio
 
                 float wave = (WavePattern[(int)currentWaveCycle] / 7.5f) - 0.999f;
                 wave *= volume;
-                return FloatWaveToUInt16(wave);
+                return wave;
             }
 
             return WAVE_SILENCE;

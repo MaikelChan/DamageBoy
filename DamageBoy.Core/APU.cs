@@ -2,15 +2,15 @@
 using DamageBoy.Core.State;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace DamageBoy.Core
 {
     class APU : IState
     {
-        readonly Action<ushort[]> soundUpdateCallback;
+        readonly Action<ushort> soundUpdateCallback;
 
         readonly SoundChannel[] soundChannels;
-        readonly ushort[] channelData;
 
         public PulseChannel Channel1 => soundChannels[0] as PulseChannel;
         public PulseChannel Channel2 => soundChannels[1] as PulseChannel;
@@ -26,7 +26,7 @@ namespace DamageBoy.Core
         const int VOLUME_ENVELOPE_INTERVAL_HZ = 64;
         const int SWEEP_INTERVAL_HZ = 128;
 
-        public APU(Action<ushort[]> soundUpdateCallback)
+        public APU(Action<ushort> soundUpdateCallback)
         {
             this.soundUpdateCallback = soundUpdateCallback;
 
@@ -35,8 +35,6 @@ namespace DamageBoy.Core
             soundChannels[1] = new PulseChannel(this);
             soundChannels[2] = new WaveChannel(this);
             soundChannels[3] = new NoiseChannel(this);
-
-            channelData = new ushort[Constants.SOUND_CHANNEL_COUNT];
         }
 
         public void Update()
@@ -74,14 +72,22 @@ namespace DamageBoy.Core
                 updateSweep = true;
             }
 
-            channelData[0] = soundChannels[0].Process(updateSample, updateLength, updateVolume, updateSweep);
-            channelData[1] = soundChannels[1].Process(updateSample, updateLength, updateVolume, false);
-            channelData[2] = soundChannels[2].Process(updateSample, updateLength, false, false);
-            channelData[3] = soundChannels[3].Process(false, updateLength, updateVolume, false);
+            float value1 = soundChannels[0].Process(updateSample, updateLength, updateVolume, updateSweep);
+            float value2 = soundChannels[1].Process(updateSample, updateLength, updateVolume, false);
+            float value3 = soundChannels[2].Process(updateSample, updateLength, false, false);
+            float value4 = soundChannels[3].Process(false, updateLength, updateVolume, false);
 
             if (updateSample)
             {
-                soundUpdateCallback?.Invoke(channelData);
+                (float leftValue1, float rightValue1) = ProcessStereo(soundChannels[0], value1);
+                (float leftValue2, float rightValue2) = ProcessStereo(soundChannels[1], value2);
+                (float leftValue3, float rightValue3) = ProcessStereo(soundChannels[2], value3);
+                (float leftValue4, float rightValue4) = ProcessStereo(soundChannels[3], value4);
+
+                float leftValue = (leftValue1 + leftValue2 + leftValue3 + leftValue4) / 4f;
+                float rightValue = (rightValue1 + rightValue2 + rightValue3 + rightValue4) / 4f;
+
+                soundUpdateCallback?.Invoke(FloatWaveToUInt16(leftValue, rightValue));
             }
         }
 
@@ -151,6 +157,24 @@ namespace DamageBoy.Core
             {
                 soundChannels[sc].SaveOrLoadState(stream, bw, br, save);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        (float, float) ProcessStereo(SoundChannel soundChannel, float value)
+        {
+            float leftValue = soundChannel.Output2 ? value * (Output2Level / 7f) : 0f;
+            float rightValue = soundChannel.Output1 ? value * (Output1Level / 7f) : 0f;
+
+            return (leftValue, rightValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ushort FloatWaveToUInt16(float leftValue, float rightValue)
+        {
+            byte left = (byte)(leftValue * 128 + 127);
+            byte right = (byte)(rightValue * 128 + 127);
+
+            return (ushort)((left << 8) | right);
         }
     }
 }

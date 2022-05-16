@@ -10,7 +10,7 @@ namespace DamageBoy.Audio
         readonly ALDevice device;
         readonly ALContext context;
 
-        readonly SoundChannel[] soundChannels;
+        readonly SoundChannel soundChannel;
 
         bool isInitialized;
 
@@ -53,13 +53,9 @@ namespace DamageBoy.Audio
                 Utils.Log(LogType.Info, $"Attributes: {attrs}");
                 Utils.Log(LogType.Info, $"ALC Version: {alcMajorVersion}.{alcMinorVersion}");
 
-                AL.Listener(ALListenerf.Gain, 0.15f);
+                AL.Listener(ALListenerf.Gain, 1.0f);
 
-                soundChannels = new SoundChannel[Constants.SOUND_CHANNEL_COUNT];
-                for (int sc = 0; sc < Constants.SOUND_CHANNEL_COUNT; sc++)
-                {
-                    soundChannels[sc] = new SoundChannel();
-                }
+                soundChannel = new SoundChannel();
 
                 isInitialized = true;
             }
@@ -75,55 +71,26 @@ namespace DamageBoy.Audio
             if (!isInitialized) return;
             isInitialized = false;
 
-            for (int sc = 0; sc < Constants.SOUND_CHANNEL_COUNT; sc++)
-            {
-                soundChannels[sc].Dispose();
-            }
+            soundChannel.Dispose();
 
             ALC.MakeContextCurrent(ALContext.Null);
             ALC.DestroyContext(context);
             ALC.CloseDevice(device);
         }
 
-        public BufferStates Update(ushort[] data)
+        public BufferStates Update(ushort? data)
         {
             if (!isInitialized) return BufferStates.Uninitialized;
 
-            // Sometimes, not all channels are in the same state,
-            // so wait a bit until they are and then exit the loop.
-            // 16 iteration should be more than enough to guarantee
-            // the channels being in the same state.
-            // (Normally it's just 1 iteration)
-
-            for (int i = 0; i < 16; i++)
-            {
-                for (int sc = 0; sc < Constants.SOUND_CHANNEL_COUNT; sc++)
-                {
-                    if (i == 0)
-                        soundChannels[sc].ProcessChannel(data == null ? null : data[sc]);
-                    else
-                        soundChannels[sc].ProcessChannel(null);
-                }
-
-                if (soundChannels[0].BufferState == soundChannels[1].BufferState &&
-                    soundChannels[0].BufferState == soundChannels[2].BufferState &&
-                    soundChannels[0].BufferState == soundChannels[3].BufferState)
-                {
-                    break;
-                }
-            }
-
-            return soundChannels[0].BufferState;
+            soundChannel.ProcessChannel(data);
+            return soundChannel.BufferState;
         }
 
         public void Stop()
         {
             if (!isInitialized) return;
 
-            for (int sc = 0; sc < Constants.SOUND_CHANNEL_COUNT; sc++)
-            {
-                soundChannels[sc].DeleteSource();
-            }
+            soundChannel.DeleteSource();
         }
 
         static void CheckALError(string str)
@@ -134,33 +101,5 @@ namespace DamageBoy.Audio
                 Utils.Log(LogType.Error, $"ALError at '{str}': {AL.GetErrorString(error)}");
             }
         }
-
-        //static byte[] GenerateSquareWave(float frequency, Core.APU.WavePatternDuties wavePattern, float sampleRate)
-        //{
-        //    float waveLength = 1 / frequency;
-        //    int bufferLength = Math.Max(1, (int)(waveLength * sampleRate));
-        //    byte[] buffer = new byte[bufferLength];
-
-        //    float percentage;
-        //    switch (wavePattern)
-        //    {
-        //        default:
-        //        case Core.APU.WavePatternDuties.Percent12_5: percentage = 0.875f; break;
-        //        case Core.APU.WavePatternDuties.Percent25: percentage = 0.75f; break;
-        //        case Core.APU.WavePatternDuties.Percent50: percentage = 0.50f; break;
-        //        case Core.APU.WavePatternDuties.Percent75: percentage = 0.25f; break;
-        //    }
-
-        //    percentage = percentage * 2 - 1;
-
-        //    for (int b = 0; b < buffer.Length; b++)
-        //    {
-        //        float sin = MathF.Sin((b * frequency * MathF.PI * 2) / sampleRate);
-        //        //buffer[b] = (short)(sin * byte.MaxValue);
-        //        buffer[b] = sin >= percentage ? byte.MaxValue : byte.MinValue;
-        //    }
-
-        //    return buffer;
-        //}
     }
 }

@@ -39,7 +39,7 @@ namespace DamageBoy.Core.Audio
             random = new Random();
         }
 
-        protected override ushort InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
+        protected override float InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
         {
             if (updateVolume)
             {
@@ -95,7 +95,7 @@ namespace DamageBoy.Core.Audio
             else if (ShiftClockFrequency == 0) wave *= 0.3f;
 
             wave *= currentVolume / (float)0xF;
-            return FloatWaveToUInt16(wave);
+            return wave;
         }
 
         public override void Initialize(bool reset)

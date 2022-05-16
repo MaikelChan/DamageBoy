@@ -258,7 +258,7 @@ namespace DamageBoy
             renderer.ScreenUpdate(pixels);
         }
 
-        void SoundUpdate(ushort[] data)
+        void SoundUpdate(ushort? data)
         {
             if (IsExiting) return;
 

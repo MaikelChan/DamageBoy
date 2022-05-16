@@ -36,7 +36,7 @@ namespace DamageBoy.Core
         readonly Action<byte[]> screenUpdateCallback;
 
         readonly Cartridge cartridge;
-        readonly Action<ushort[]> soundUpdateCallback;
+        readonly Action<ushort?> soundUpdateCallback;
 
         Action emulationStoppedCallback;
 
@@ -46,7 +46,7 @@ namespace DamageBoy.Core
 
         FrameLimiterStates frameLimiterState;
 
-        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<ushort[]> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
+        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<ushort?> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
         {
             cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
             this.soundUpdateCallback = soundUpdateCallback;
@@ -57,7 +57,7 @@ namespace DamageBoy.Core
             serial = new Serial(interruptHandler);
             dma = new DMA(cartridge, ram, vram);
             timer = new Timer(interruptHandler);
-            apu = new APU(soundUpdateCallback);
+            apu = new APU((value) => soundUpdateCallback(value));
             ppu = new PPU(interruptHandler, vram, ScreenUpdate);
             io = new IO(ppu, dma, timer, apu, serial, interruptHandler);
             mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);

@@ -36,14 +36,14 @@ namespace DamageBoy.Core.Audio
 
         // Constants
 
-        protected const ushort WAVE_SILENCE = 0x7f7f;
+        protected const float WAVE_SILENCE = 0f;
 
         public SoundChannel(APU apu)
         {
             this.apu = apu;
         }
 
-        public ushort Process(bool updateSample, bool updateLength, bool updateVolumeEnvelope, bool updateSweep)
+        public float Process(bool updateSample, bool updateLength, bool updateVolumeEnvelope, bool updateSweep)
         {
             if (!IsDACEnabled)
             {
@@ -82,23 +82,11 @@ namespace DamageBoy.Core.Audio
             currentLength = 0;
         }
 
-        protected abstract ushort InternalProcess(bool updateSample, bool updateVolumeEnvelope, bool updateSweep);
+        protected abstract float InternalProcess(bool updateSample, bool updateVolumeEnvelope, bool updateSweep);
 
         protected void Stop()
         {
             Enabled = false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected ushort FloatWaveToUInt16(float value)
-        {
-            float leftValue = Output2 ? value * (apu.Output2Level / 7f) : 0f;
-            float rightValue = Output1 ? value * (apu.Output1Level / 7f) : 0f;
-
-            byte left = (byte)(leftValue * 128 + 127);
-            byte right = (byte)(rightValue * 128 + 127);
-
-            return (ushort)((left << 8) | right);
         }
 
         public abstract void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save);
