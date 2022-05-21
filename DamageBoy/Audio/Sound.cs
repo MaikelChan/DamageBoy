@@ -2,6 +2,7 @@
 using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace DamageBoy.Audio
 {
@@ -12,11 +13,12 @@ namespace DamageBoy.Audio
 
         readonly SoundChannel soundChannel;
 
+        bool audioLoopRunning;
         bool isInitialized;
 
         public enum BufferStates { Uninitialized, Ok, Underrun, Overrun }
 
-        public Sound()
+        public Sound(Func<byte[], bool> fillAudioBufferCallback)
         {
             try
             {
@@ -55,8 +57,9 @@ namespace DamageBoy.Audio
 
                 AL.Listener(ALListenerf.Gain, 1.0f);
 
-                soundChannel = new SoundChannel();
+                soundChannel = new SoundChannel(fillAudioBufferCallback);
 
+                audioLoopRunning = false;
                 isInitialized = true;
             }
             catch (DllNotFoundException ex)
@@ -78,19 +81,42 @@ namespace DamageBoy.Audio
             ALC.CloseDevice(device);
         }
 
-        public BufferStates Update(ushort? data)
+        public void Start()
         {
-            if (!isInitialized) return BufferStates.Uninitialized;
+            if (!isInitialized) return;
 
-            soundChannel.ProcessChannel(data);
-            return soundChannel.BufferState;
+            Thread thread = new Thread(AudioLoop);
+            thread.Name = "Audio Loop";
+            thread.Start();
         }
 
         public void Stop()
         {
             if (!isInitialized) return;
 
+            audioLoopRunning = false;
+        }
+
+        void AudioLoop()
+        {
+            audioLoopRunning = true;
+
+            while (audioLoopRunning)
+            {
+                Update();
+
+                Thread.Sleep(1);
+            }
+
             soundChannel.DeleteSource();
+        }
+
+        BufferStates Update()
+        {
+            if (!isInitialized) return BufferStates.Uninitialized;
+
+            soundChannel.ProcessChannel();
+            return soundChannel.BufferState;
         }
 
         static void CheckALError(string str)

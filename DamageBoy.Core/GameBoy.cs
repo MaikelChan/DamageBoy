@@ -36,7 +36,6 @@ namespace DamageBoy.Core
         readonly Action<byte[]> screenUpdateCallback;
 
         readonly Cartridge cartridge;
-        readonly Action<ushort?> soundUpdateCallback;
 
         Action emulationStoppedCallback;
 
@@ -46,10 +45,9 @@ namespace DamageBoy.Core
 
         FrameLimiterStates frameLimiterState;
 
-        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<ushort?> soundUpdateCallback, Action<byte[]> saveUpdateCallback)
+        public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<byte[]> saveUpdateCallback)
         {
             cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
-            this.soundUpdateCallback = soundUpdateCallback;
 
             ram = new RAM();
             vram = new VRAM();
@@ -57,7 +55,7 @@ namespace DamageBoy.Core
             serial = new Serial(interruptHandler);
             dma = new DMA(cartridge, ram, vram);
             timer = new Timer(interruptHandler);
-            apu = new APU((value) => soundUpdateCallback(value));
+            apu = new APU();
             ppu = new PPU(interruptHandler, vram, ScreenUpdate);
             io = new IO(ppu, dma, timer, apu, serial, interruptHandler);
             mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
@@ -89,14 +87,16 @@ namespace DamageBoy.Core
 
             while (EmulationState == EmulationStates.Running)
             {
+                if (apu.IsAudioBufferFull)
+                {
+                    frameLimiterState = FrameLimiterStates.Paused;
+                }
+
                 if (frameLimiterState == FrameLimiterStates.Paused)
                 {
                     if (sw.ElapsedTicks < (4 * Stopwatch.Frequency) / CPU.CPU_CLOCKS) continue;
                     sw.Restart();
 
-                    // We need to keep the sound system alive invoking it, so the GameBoy's main loop
-                    // gets notified when an audio buffer has finished playing and the loop continues running. 
-                    soundUpdateCallback?.Invoke(null);
                     continue;
                 }
 
@@ -137,6 +137,15 @@ namespace DamageBoy.Core
             emulationStoppedCallback?.Invoke();
         }
 
+        public bool FillAudioBuffer(byte[] data)
+        {
+            bool isFilled = apu.FillAudioBuffer(data);
+            if (!isFilled) frameLimiterState = FrameLimiterStates.Unlimited;
+            else frameLimiterState = FrameLimiterStates.Limited;
+
+            return isFilled;
+        }
+
         public void SetInput(InputState inputState)
         {
             if (EmulationState != EmulationStates.Running) return;
@@ -149,11 +158,6 @@ namespace DamageBoy.Core
             io.SetInput(Buttons.Right, inputState.Right);
             io.SetInput(Buttons.Down, inputState.Down);
             io.SetInput(Buttons.Left, inputState.Left);
-        }
-
-        public void SetFrameLimiterState(FrameLimiterStates state)
-        {
-            frameLimiterState = state;
         }
 
         void ScreenUpdate(byte[] lcdPixels)
