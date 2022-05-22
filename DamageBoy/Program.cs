@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using System;
+using System.Collections.Generic;
 
 namespace DamageBoy
 {
@@ -17,7 +18,6 @@ namespace DamageBoy
         {
             GameWindowSettings gameWindowSettings = new GameWindowSettings()
             {
-                IsMultiThreaded = false,
                 UpdateFrequency = 0.0f,
                 RenderFrequency = 0.0f
             };
@@ -33,26 +33,20 @@ namespace DamageBoy
                 Flags = ContextFlags.ForwardCompatible,
 #endif
                 Size = new Vector2i(INITIAL_WIDTH, INITIAL_HEIGHT),
-                IsFullscreen = false,
+                WindowState = WindowState.Normal
             };
 
-            Monitors.BuildMonitorCache();
-            Utils.Log(LogType.Info, $"Monitors: {Monitors.Count}");
+            List<MonitorInfo> monitors = Monitors.GetMonitors();
+            Utils.Log(LogType.Info, $"Monitors: {monitors.Count}");
 
-            if (Monitors.TryGetMonitorInfo(nativeWindowSettings.CurrentMonitor, out MonitorInfo monitorInfo) ||
-                Monitors.TryGetMonitorInfo(0, out monitorInfo))
-            {
-                Box2i area = monitorInfo.ClientArea;
-                int x = (area.Min.X + area.Max.X - INITIAL_WIDTH) >> 1;
-                int y = (area.Min.Y + area.Max.Y - INITIAL_HEIGHT) >> 1;
-                nativeWindowSettings.Location = new Vector2i(x, y);
+            MonitorInfo primaryMonitor = Monitors.GetPrimaryMonitor();
 
-                Utils.Log(LogType.Info, $"Primary monitor: {monitorInfo.HorizontalResolution}x{monitorInfo.VerticalResolution} pixels - {monitorInfo.HorizontalDpi}x{monitorInfo.VerticalDpi} dpi");
-            }
-            else
-            {
-                Utils.Log(LogType.Warning, "Couldn't get primary monitor info. Setting window at default location.");
-            }
+            Box2i area = primaryMonitor.ClientArea;
+            int x = (area.Min.X + area.Max.X - INITIAL_WIDTH) >> 1;
+            int y = (area.Min.Y + area.Max.Y - INITIAL_HEIGHT) >> 1;
+            nativeWindowSettings.Location = new Vector2i(x, y);
+
+            Utils.Log(LogType.Info, $"Primary monitor: {primaryMonitor.HorizontalResolution}x{primaryMonitor.VerticalResolution} pixels - {primaryMonitor.HorizontalDpi}x{primaryMonitor.VerticalDpi} dpi");
 
             using (Window window = new Window(gameWindowSettings, nativeWindowSettings))
             {
