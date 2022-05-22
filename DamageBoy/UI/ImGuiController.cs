@@ -10,10 +10,8 @@ using DamageBoy.Core;
 
 namespace DamageBoy.UI
 {
-    /// <summary>
-    /// A modified version of Veldrid.ImGui's ImGuiRenderer.
-    /// Manages input for ImGui and handles rendering ImGui's DrawLists with Veldrid.
-    /// </summary>
+    // https://github.com/NogginBops/ImGui.NET_OpenTK_Sample/blob/opentk4.0/Dear%20ImGui%20Sample/ImGuiController.cs
+
     internal class ImGuiController : IDisposable
     {
         private bool _frameBegun;
@@ -58,6 +56,12 @@ namespace DamageBoy.UI
 
             ImGui.NewFrame();
             _frameBegun = true;
+        }
+
+        public void WindowResized(int width, int height)
+        {
+            _windowWidth = width;
+            _windowHeight = height;
         }
 
         void CreateDeviceResources()
@@ -184,12 +188,6 @@ namespace DamageBoy.UI
             ImGui.NewFrame();
         }
 
-        public void WindowResized(int width, int height)
-        {
-            _windowWidth = width;
-            _windowHeight = height;
-        }
-
         /// <summary>
         /// Sets per-frame data based on the associated window.
         /// This is called by Update(float).
@@ -208,34 +206,34 @@ namespace DamageBoy.UI
         {
             ImGuiIOPtr io = ImGui.GetIO();
 
-            io.MouseDown[0] = data.LeftMouseButtonDown;
-            io.MouseDown[1] = data.RightMouseButtonDown;
-            io.MouseDown[2] = data.MiddleMouseButtonDown;
+            io.AddMouseButtonEvent(0, data.LeftMouseButtonDown);
+            io.AddMouseButtonEvent(1, data.RightMouseButtonDown);
+            io.AddMouseButtonEvent(2, data.MiddleMouseButtonDown);
 
-            io.MousePos = new System.Numerics.Vector2(data.MousePosition.X, data.MousePosition.Y);
+            io.AddMousePosEvent(data.MousePosition.X, data.MousePosition.Y);
 
-            io.KeysDown[(int)ImGuiKey.Tab] = data.KeyTab;
-            io.KeysDown[(int)ImGuiKey.LeftArrow] = data.KeyLeftArrow;
-            io.KeysDown[(int)ImGuiKey.RightArrow] = data.KeyRightArrow;
-            io.KeysDown[(int)ImGuiKey.UpArrow] = data.KeyUpArrow;
-            io.KeysDown[(int)ImGuiKey.DownArrow] = data.KeyDownArrow;
-            io.KeysDown[(int)ImGuiKey.PageUp] = data.KeyPageUp;
-            io.KeysDown[(int)ImGuiKey.PageDown] = data.KeyPageDown;
-            io.KeysDown[(int)ImGuiKey.Home] = data.KeyHome;
-            io.KeysDown[(int)ImGuiKey.End] = data.KeyEnd;
-            io.KeysDown[(int)ImGuiKey.Insert] = data.KeyInsert;
-            io.KeysDown[(int)ImGuiKey.Delete] = data.KeyDelete;
-            io.KeysDown[(int)ImGuiKey.Backspace] = data.KeyBackspace;
-            io.KeysDown[(int)ImGuiKey.Space] = data.KeySpace;
-            io.KeysDown[(int)ImGuiKey.Enter] = data.KeyEnter;
-            io.KeysDown[(int)ImGuiKey.Escape] = data.KeyEscape;
-            io.KeysDown[(int)ImGuiKey.KeyPadEnter] = data.KeyKeyPadEnter;
-            io.KeysDown[(int)ImGuiKey.A] = data.KeyA;
-            io.KeysDown[(int)ImGuiKey.C] = data.KeyC;
-            io.KeysDown[(int)ImGuiKey.V] = data.KeyV;
-            io.KeysDown[(int)ImGuiKey.X] = data.KeyX;
-            io.KeysDown[(int)ImGuiKey.Y] = data.KeyY;
-            io.KeysDown[(int)ImGuiKey.Z] = data.KeyZ;
+            io.AddKeyEvent(ImGuiKey.Tab, data.KeyTab);
+            io.AddKeyEvent(ImGuiKey.LeftArrow, data.KeyLeftArrow);
+            io.AddKeyEvent(ImGuiKey.RightArrow, data.KeyRightArrow);
+            io.AddKeyEvent(ImGuiKey.UpArrow, data.KeyUpArrow);
+            io.AddKeyEvent(ImGuiKey.DownArrow, data.KeyDownArrow);
+            io.AddKeyEvent(ImGuiKey.PageUp, data.KeyPageUp);
+            io.AddKeyEvent(ImGuiKey.PageDown, data.KeyPageDown);
+            io.AddKeyEvent(ImGuiKey.Home, data.KeyHome);
+            io.AddKeyEvent(ImGuiKey.End, data.KeyEnd);
+            io.AddKeyEvent(ImGuiKey.Insert, data.KeyInsert);
+            io.AddKeyEvent(ImGuiKey.Delete, data.KeyDelete);
+            io.AddKeyEvent(ImGuiKey.Backspace, data.KeyBackspace);
+            io.AddKeyEvent(ImGuiKey.Space, data.KeySpace);
+            io.AddKeyEvent(ImGuiKey.Enter, data.KeyEnter);
+            io.AddKeyEvent(ImGuiKey.Escape, data.KeyEscape);
+            io.AddKeyEvent(ImGuiKey.KeypadEnter, data.KeyKeyPadEnter);
+            io.AddKeyEvent(ImGuiKey.A, data.KeyA);
+            io.AddKeyEvent(ImGuiKey.C, data.KeyC);
+            io.AddKeyEvent(ImGuiKey.V, data.KeyV);
+            io.AddKeyEvent(ImGuiKey.X, data.KeyX);
+            io.AddKeyEvent(ImGuiKey.Y, data.KeyY);
+            io.AddKeyEvent(ImGuiKey.Z, data.KeyZ);
 
             foreach (var c in PressedChars)
             {
@@ -259,90 +257,68 @@ namespace DamageBoy.UI
         {
             ImGuiIOPtr io = ImGui.GetIO();
 
-            io.MouseWheel = offset.Y;
-            io.MouseWheelH = offset.X;
+            io.AddMouseWheelEvent(offset.X, offset.Y);
         }
 
         private static void SetKeyMappings()
         {
-            ImGuiIOPtr io = ImGui.GetIO();
-            io.KeyMap[(int)ImGuiKey.Tab] = (int)ImGuiKey.Tab;
-            io.KeyMap[(int)ImGuiKey.LeftArrow] = (int)ImGuiKey.LeftArrow;
-            io.KeyMap[(int)ImGuiKey.RightArrow] = (int)ImGuiKey.RightArrow;
-            io.KeyMap[(int)ImGuiKey.UpArrow] = (int)ImGuiKey.UpArrow;
-            io.KeyMap[(int)ImGuiKey.DownArrow] = (int)ImGuiKey.DownArrow;
-            io.KeyMap[(int)ImGuiKey.PageUp] = (int)ImGuiKey.PageUp;
-            io.KeyMap[(int)ImGuiKey.PageDown] = (int)ImGuiKey.PageDown;
-            io.KeyMap[(int)ImGuiKey.Home] = (int)ImGuiKey.Home;
-            io.KeyMap[(int)ImGuiKey.End] = (int)ImGuiKey.End;
-            io.KeyMap[(int)ImGuiKey.Delete] = (int)ImGuiKey.Delete;
-            io.KeyMap[(int)ImGuiKey.Backspace] = (int)ImGuiKey.Backspace;
-            io.KeyMap[(int)ImGuiKey.Enter] = (int)ImGuiKey.Enter;
-            io.KeyMap[(int)ImGuiKey.Escape] = (int)ImGuiKey.Escape;
-            io.KeyMap[(int)ImGuiKey.A] = (int)ImGuiKey.A;
-            io.KeyMap[(int)ImGuiKey.C] = (int)ImGuiKey.C;
-            io.KeyMap[(int)ImGuiKey.V] = (int)ImGuiKey.V;
-            io.KeyMap[(int)ImGuiKey.X] = (int)ImGuiKey.X;
-            io.KeyMap[(int)ImGuiKey.Y] = (int)ImGuiKey.Y;
-            io.KeyMap[(int)ImGuiKey.Z] = (int)ImGuiKey.Z;
+            //ImGuiIOPtr io = ImGui.GetIO();
+            //io.KeyMap[(int)ImGuiKey.Tab] = (int)ImGuiKey.Tab;
+            //io.KeyMap[(int)ImGuiKey.LeftArrow] = (int)ImGuiKey.LeftArrow;
+            //io.KeyMap[(int)ImGuiKey.RightArrow] = (int)ImGuiKey.RightArrow;
+            //io.KeyMap[(int)ImGuiKey.UpArrow] = (int)ImGuiKey.UpArrow;
+            //io.KeyMap[(int)ImGuiKey.DownArrow] = (int)ImGuiKey.DownArrow;
+            //io.KeyMap[(int)ImGuiKey.PageUp] = (int)ImGuiKey.PageUp;
+            //io.KeyMap[(int)ImGuiKey.PageDown] = (int)ImGuiKey.PageDown;
+            //io.KeyMap[(int)ImGuiKey.Home] = (int)ImGuiKey.Home;
+            //io.KeyMap[(int)ImGuiKey.End] = (int)ImGuiKey.End;
+            //io.KeyMap[(int)ImGuiKey.Delete] = (int)ImGuiKey.Delete;
+            //io.KeyMap[(int)ImGuiKey.Backspace] = (int)ImGuiKey.Backspace;
+            //io.KeyMap[(int)ImGuiKey.Enter] = (int)ImGuiKey.Enter;
+            //io.KeyMap[(int)ImGuiKey.Escape] = (int)ImGuiKey.Escape;
+            //io.KeyMap[(int)ImGuiKey.Space] = (int)ImGuiKey.Space;
+            //io.KeyMap[(int)ImGuiKey.A] = (int)ImGuiKey.A;
+            //io.KeyMap[(int)ImGuiKey.C] = (int)ImGuiKey.C;
+            //io.KeyMap[(int)ImGuiKey.V] = (int)ImGuiKey.V;
+            //io.KeyMap[(int)ImGuiKey.X] = (int)ImGuiKey.X;
+            //io.KeyMap[(int)ImGuiKey.Y] = (int)ImGuiKey.Y;
+            //io.KeyMap[(int)ImGuiKey.Z] = (int)ImGuiKey.Z;
         }
 
         private void RenderImDrawData(ImDrawDataPtr draw_data)
         {
-            uint vertexOffsetInVertices = 0;
-            uint indexOffsetInElements = 0;
-
             if (draw_data.CmdListsCount == 0)
             {
                 return;
             }
 
-            renderer.PipelineState.CurrentVAO = _vertexArray;
 
-            uint totalVBSize = (uint)(draw_data.TotalVtxCount * Unsafe.SizeOf<ImDrawVert>());
-            if (totalVBSize > _vertexBufferSize)
-            {
-                int newSize = (int)Math.Max(_vertexBufferSize * 1.5f, totalVBSize);
-
-                GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffer);
-                GL.BufferData(BufferTarget.ArrayBuffer, newSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
-                //GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-
-                _vertexBufferSize = newSize;
-
-                //Utils.Log(LogType.Info, $"ImGui: Resized vertex buffer to new size {_vertexBufferSize}");
-            }
-
-            uint totalIBSize = (uint)(draw_data.TotalIdxCount * sizeof(ushort));
-            if (totalIBSize > _indexBufferSize)
-            {
-                int newSize = (int)Math.Max(_indexBufferSize * 1.5f, totalIBSize);
-
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer);
-                GL.BufferData(BufferTarget.ElementArrayBuffer, newSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
-                //GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-
-                _indexBufferSize = newSize;
-
-                //Utils.Log(LogType.Info, $"ImGui: Resized index buffer to new size {_indexBufferSize}");
-            }
 
             for (int i = 0; i < draw_data.CmdListsCount; i++)
             {
                 ImDrawListPtr cmd_list = draw_data.CmdListsRange[i];
 
-                GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffer);
-                GL.BufferSubData(BufferTarget.ArrayBuffer, (IntPtr)(vertexOffsetInVertices * Unsafe.SizeOf<ImDrawVert>()), cmd_list.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>(), cmd_list.VtxBuffer.Data);
+                int vertexSize = cmd_list.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>();
+                if (vertexSize > _vertexBufferSize)
+                {
+                    int newSize = (int)Math.Max(_vertexBufferSize * 1.5f, vertexSize);
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffer);
+                    GL.BufferData(BufferTarget.ArrayBuffer, newSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+                    _vertexBufferSize = newSize;
 
-                CheckGLError($"Data Vert {i}");
+                    Console.WriteLine($"Resized dear imgui vertex buffer to new size {_vertexBufferSize}");
+                }
 
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer);
-                GL.BufferSubData(BufferTarget.ElementArrayBuffer, (IntPtr)(indexOffsetInElements * sizeof(ushort)), cmd_list.IdxBuffer.Size * sizeof(ushort), cmd_list.IdxBuffer.Data);
+                int indexSize = cmd_list.IdxBuffer.Size * sizeof(ushort);
+                if (indexSize > _indexBufferSize)
+                {
+                    int newSize = (int)Math.Max(_indexBufferSize * 1.5f, indexSize);
+                    GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer);
+                    GL.BufferData(BufferTarget.ElementArrayBuffer, newSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+                    _indexBufferSize = newSize;
 
-                CheckGLError($"Data Idx {i}");
-
-                vertexOffsetInVertices += (uint)cmd_list.VtxBuffer.Size;
-                indexOffsetInElements += (uint)cmd_list.IdxBuffer.Size;
+                    Console.WriteLine($"Resized dear imgui index buffer to new size {_indexBufferSize}");
+                }
             }
 
             //GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -362,23 +338,36 @@ namespace DamageBoy.UI
             renderer.PipelineState.CurrentShader = _material.Shader;
             _material.SetUniforms(null);
 
+            renderer.PipelineState.CurrentVAO = _vertexArray;
+
             draw_data.ScaleClipRects(io.DisplayFramebufferScale);
 
-            renderer.PipelineState.SetViewport(0, 0, _windowWidth, _windowHeight);
             renderer.PipelineState.Blend = true;
             renderer.PipelineState.BlendEquation = BlendEquationMode.FuncAdd;
             renderer.PipelineState.SetBlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             renderer.PipelineState.ScissorTest = true;
             renderer.PipelineState.FaceCulling = false;
             renderer.PipelineState.DepthTest = false;
+
+            // Reset some states that can be changed by the emulator 
+
+            renderer.PipelineState.SetViewport(0, 0, _windowWidth, _windowHeight);
             renderer.PipelineState.PolygonMode = PolygonMode.Fill;
 
             // Render command lists
-            int vtx_offset = 0;
-            int idx_offset = 0;
+
             for (int n = 0; n < draw_data.CmdListsCount; n++)
             {
                 ImDrawListPtr cmd_list = draw_data.CmdListsRange[n];
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffer);
+                GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero, cmd_list.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>(), cmd_list.VtxBuffer.Data);
+                CheckGLError($"Data Vert {n}");
+
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer);
+                GL.BufferSubData(BufferTarget.ElementArrayBuffer, IntPtr.Zero, cmd_list.IdxBuffer.Size * sizeof(ushort), cmd_list.IdxBuffer.Data);
+                CheckGLError($"Data Idx {n}");
+
                 for (int cmd_i = 0; cmd_i < cmd_list.CmdBuffer.Size; cmd_i++)
                 {
                     ImDrawCmdPtr pcmd = cmd_list.CmdBuffer[cmd_i];
@@ -397,14 +386,18 @@ namespace DamageBoy.UI
                         renderer.PipelineState.SetScissor((int)clip.X, _windowHeight - (int)clip.W, (int)(clip.Z - clip.X), (int)(clip.W - clip.Y));
                         CheckGLError("Scissor");
 
-                        GL.DrawElementsBaseVertex(PrimitiveType.Triangles, (int)pcmd.ElemCount, DrawElementsType.UnsignedShort, (IntPtr)(idx_offset * sizeof(ushort)), vtx_offset);
+                        if ((io.BackendFlags & ImGuiBackendFlags.RendererHasVtxOffset) != 0)
+                        {
+                            GL.DrawElementsBaseVertex(PrimitiveType.Triangles, (int)pcmd.ElemCount, DrawElementsType.UnsignedShort, (IntPtr)(pcmd.IdxOffset * sizeof(ushort)), (int)pcmd.VtxOffset);
+                        }
+                        else
+                        {
+                            GL.DrawElements(PrimitiveType.Triangles, (int)pcmd.ElemCount, DrawElementsType.UnsignedShort, (int)pcmd.IdxOffset * sizeof(ushort));
+                        }
+
                         CheckGLError("Draw");
                     }
-
-                    idx_offset += (int)pcmd.ElemCount;
                 }
-
-                vtx_offset += cmd_list.VtxBuffer.Size;
             }
         }
 
@@ -416,6 +409,9 @@ namespace DamageBoy.UI
             GL.DeleteVertexArray(_vertexArray);
             GL.DeleteBuffer(_vertexBuffer);
             GL.DeleteBuffer(_indexBuffer);
+
+            _fontTexture.Dispose();
+            //_shader.Dispose(); // Shader is in _material and disposed automatically
         }
 
         [Conditional("DEBUG")]
