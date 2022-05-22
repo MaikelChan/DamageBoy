@@ -16,9 +16,12 @@ namespace DamageBoy.Audio
         bool audioLoopRunning;
         bool isInitialized;
 
+        bool ALC_EXT_disconnect;
+        const int ALC_CONNECTED = 0x313;
+
         public enum BufferStates { Uninitialized, Ok, Underrun, Overrun }
 
-        public Sound(Func<byte[], bool> fillAudioBufferCallback)
+        public Sound(Action<BufferStates> bufferStateChangeCallback)
         {
             try
             {
@@ -45,6 +48,9 @@ namespace DamageBoy.Audio
                 string vend = AL.Get(ALGetString.Vendor);
                 string vers = AL.Get(ALGetString.Version);
                 string rend = AL.Get(ALGetString.Renderer);
+                string alExt = AL.Get(ALGetString.Extensions);
+
+                string alcExt = ALC.GetString(device, AlcGetString.Extensions);
                 ALContextAttributes attrs = ALC.GetContextAttributes(device);
                 ALC.GetInteger(device, AlcGetInteger.MajorVersion, 1, out int alcMajorVersion);
                 ALC.GetInteger(device, AlcGetInteger.MinorVersion, 1, out int alcMinorVersion);
@@ -52,12 +58,17 @@ namespace DamageBoy.Audio
                 Utils.Log(LogType.Info, $"Vendor: {vend}");
                 Utils.Log(LogType.Info, $"Version: {vers}");
                 Utils.Log(LogType.Info, $"Renderer: {rend}");
-                Utils.Log(LogType.Info, $"Attributes: {attrs}");
+                Utils.Log(LogType.Info, $"Extensions: {alExt}");
+
+                Utils.Log(LogType.Info, $"ALC Extensions: {alcExt}");
+                Utils.Log(LogType.Info, $"ALC Attributes: {attrs}");
                 Utils.Log(LogType.Info, $"ALC Version: {alcMajorVersion}.{alcMinorVersion}");
+
+                ALC_EXT_disconnect = ALC.IsExtensionPresent(device, "ALC_EXT_disconnect");
 
                 AL.Listener(ALListenerf.Gain, 1.0f);
 
-                soundChannel = new SoundChannel(fillAudioBufferCallback);
+                soundChannel = new SoundChannel(bufferStateChangeCallback);
 
                 audioLoopRunning = false;
                 isInitialized = true;
@@ -97,12 +108,33 @@ namespace DamageBoy.Audio
             audioLoopRunning = false;
         }
 
+        public void AddToAudioBuffer(byte leftValue, byte rightValue)
+        {
+            if (!isInitialized) return;
+
+            soundChannel.AddToAudioBuffer(leftValue, rightValue);
+        }
+
         void AudioLoop()
         {
+            soundChannel.ClearBuffer();
+
             audioLoopRunning = true;
 
             while (audioLoopRunning)
             {
+                if (ALC_EXT_disconnect)
+                {
+                    bool deviceConnected = ALC.GetInteger(device, (AlcGetInteger)ALC_CONNECTED) > 0;
+                    if (!deviceConnected)
+                    {
+                        Utils.Log(LogType.Error, "Lost connection to OpenAL device.");
+                        audioLoopRunning = false;
+                        Dispose();
+                        return;
+                    }
+                }
+
                 Update();
 
                 Thread.Sleep(1);
@@ -111,12 +143,11 @@ namespace DamageBoy.Audio
             soundChannel.DeleteSource();
         }
 
-        BufferStates Update()
+        void Update()
         {
-            if (!isInitialized) return BufferStates.Uninitialized;
+            if (!isInitialized) return;
 
-            soundChannel.ProcessChannel();
-            return soundChannel.BufferState;
+            soundChannel.Update();
         }
 
         static void CheckALError(string str)

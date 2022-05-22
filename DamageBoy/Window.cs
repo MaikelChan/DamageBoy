@@ -49,7 +49,7 @@ namespace DamageBoy
             CleanupRecentROMs();
 
             renderer = new Renderer();
-            sound = new Sound(FillAudioBuffer);
+            sound = new Sound(AudioBufferStateChanged);
             imguiController = new ImGuiController(renderer, ClientSize.X, ClientSize.Y);
             imguiInputData = new ImGuiInputData();
 
@@ -211,7 +211,7 @@ namespace DamageBoy
 
             try
             {
-                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, SaveUpdate);
+                gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, AddToAudioBuffer, SaveUpdate);
                 (renderer as Renderer).RenderMode = Renderer.RenderModes.LCD;
                 sound.Start();
                 return true;
@@ -248,11 +248,21 @@ namespace DamageBoy
             gameBoy?.ToggleTraceLog();
         }
 
-        bool FillAudioBuffer(byte[] data)
+        void AudioBufferStateChanged(Sound.BufferStates audioBufferState)
         {
-            if (IsExiting) return false;
-
-            return gameBoy == null ? false : gameBoy.FillAudioBuffer(data);
+            switch (audioBufferState)
+            {
+                case Sound.BufferStates.Uninitialized:
+                case Sound.BufferStates.Ok:
+                    gameBoy?.SetFrameLimiterState(FrameLimiterStates.Limited);
+                    break;
+                case Sound.BufferStates.Underrun:
+                    gameBoy?.SetFrameLimiterState(FrameLimiterStates.Unlimited);
+                    break;
+                case Sound.BufferStates.Overrun:
+                    gameBoy?.SetFrameLimiterState(FrameLimiterStates.Paused);
+                    break;
+            }
         }
 
         #endregion
@@ -264,6 +274,13 @@ namespace DamageBoy
             if (IsExiting) return;
 
             renderer.ScreenUpdate(pixels);
+        }
+
+        void AddToAudioBuffer(byte leftValue, byte rightValue)
+        {
+            if (IsExiting) return;
+
+            sound.AddToAudioBuffer(leftValue, rightValue);
         }
 
         void SaveUpdate(byte[] data)
