@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core;
 using DamageBoy.Graphics;
+using DamageBoy.Properties;
 using DamageBoy.UI;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -8,12 +9,9 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Image = OpenTK.Windowing.Common.Input.Image;
 using Sound = DamageBoy.Audio.Sound;
 
@@ -109,23 +107,18 @@ namespace DamageBoy
 
         void SetWindowIcon()
         {
-            const int width = 16;
-            const int height = 16;
-            const int pixelCount = width * height;
-            const int size = width * height * 4;
+            byte[] compressedIcon = Resources.WindowIcon;
+            byte[] icon;
 
-            byte[] pixels = new byte[size];
-
-            using (Bitmap windowIconBitmap = Resources.WindowIcon)
+            using (MemoryStream compressedStream = new MemoryStream(compressedIcon))
+            using (BrotliStream decompressionStream = new BrotliStream(compressedStream, CompressionMode.Decompress))
+            using (MemoryStream decompressedStream = new MemoryStream())
             {
-                BitmapData bData = windowIconBitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, windowIconBitmap.PixelFormat);
-                Marshal.Copy(bData.Scan0, pixels, 0, size);
-                windowIconBitmap.UnlockBits(bData);
+                decompressionStream.CopyTo(decompressedStream);
+                icon = decompressedStream.ToArray();
             }
 
-            GraphicsUtils.BgraToRgba(pixels, pixelCount);
-
-            Image image = new Image(width, height, pixels);
+            Image image = new Image(16, 16, icon);
             Icon = new WindowIcon(image);
         }
 

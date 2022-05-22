@@ -20,7 +20,7 @@ namespace DamageBoy.Audio
 
         float currentVolume;
 
-        bool ALC_EXT_disconnect;
+        readonly bool ALC_EXT_disconnect;
         const int ALC_CONNECTED = 0x313;
 
         public enum BufferStates { Uninitialized, Ok, Underrun, Overrun }

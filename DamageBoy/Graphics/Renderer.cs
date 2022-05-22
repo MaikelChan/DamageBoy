@@ -1,10 +1,10 @@
 ﻿using DamageBoy.Core;
+using DamageBoy.Properties;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
+using System.IO;
+using System.IO.Compression;
 
 namespace DamageBoy.Graphics
 {
@@ -22,11 +22,13 @@ namespace DamageBoy.Graphics
 
         int viewportX, viewportY, viewportWidth, viewportHeight;
         int logoViewportX, logoViewportY, logoViewportWidth, logoViewportHeight;
-        int logoWidth, logoHeight;
         double elapsedTime;
 
         public enum RenderModes { Logo, LCD }
         public RenderModes RenderMode { get; set; }
+
+        const int LOGO_WIDTH = 1024;
+        const int LOGO_HEIGHT = 1024;
 
         byte[] pixels;
 
@@ -59,29 +61,25 @@ namespace DamageBoy.Graphics
 
             // Get pixel data from logo image from Resources
 
-            byte[] logoPixels;
+            byte[] compressedIcon = Resources.BigIcon;
+            byte[] icon;
 
-            using (Bitmap logoBitmap = Resources.BigIcon)
+            using (MemoryStream compressedStream = new MemoryStream(compressedIcon))
+            using (BrotliStream decompressionStream = new BrotliStream(compressedStream, CompressionMode.Decompress))
+            using (MemoryStream decompressedStream = new MemoryStream())
             {
-                logoWidth = logoBitmap.Width;
-                logoHeight = logoBitmap.Height;
-
-                BitmapData logoData = logoBitmap.LockBits(new Rectangle(0, 0, logoWidth, logoHeight), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                logoPixels = new byte[logoWidth * logoHeight * 4];
-                Marshal.Copy(logoData.Scan0, logoPixels, 0, logoPixels.Length);
-                logoBitmap.UnlockBits(logoData);
+                decompressionStream.CopyTo(decompressedStream);
+                icon = decompressedStream.ToArray();
             }
-
-            GraphicsUtils.BgraToRgba(logoPixels, logoWidth * logoHeight);
 
             // Logo texture and material
 
             unsafe
             {
-                fixed (byte* p = logoPixels)
+                fixed (byte* p = icon)
                 {
                     IntPtr logoPtr = (IntPtr)p;
-                    logoTexture = new Texture2D(this, logoWidth, logoHeight, TextureFormats.RGBA8888, logoPtr, "Logo Texture");
+                    logoTexture = new Texture2D(this, LOGO_WIDTH, LOGO_HEIGHT, TextureFormats.RGBA8888, logoPtr, "Logo Texture");
                 }
             }
 
@@ -190,7 +188,7 @@ namespace DamageBoy.Graphics
 
             // Logo Viewport
 
-            float logoAspectRatio = (float)logoWidth / logoHeight;
+            float logoAspectRatio = (float)LOGO_WIDTH / LOGO_HEIGHT;
             const float logoSizeDivider = 3f;
 
             int lw = (int)(width / logoSizeDivider);
