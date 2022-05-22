@@ -134,7 +134,7 @@ namespace DamageBoy.Audio
         {
             if (soundDataPosition >= BUFFER_SIZE)
             {
-                Utils.Log(LogType.Warning, "Trying to add data to the audio buffer while it's full.");
+                //Utils.Log(LogType.Warning, "Trying to add data to the audio buffer while it's full.");
                 return;
             }
 

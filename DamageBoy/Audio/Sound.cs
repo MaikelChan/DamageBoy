@@ -83,13 +83,15 @@ namespace DamageBoy.Audio
         public void Dispose()
         {
             if (!isInitialized) return;
-            isInitialized = false;
 
+            Stop();
             soundChannel.Dispose();
 
             ALC.MakeContextCurrent(ALContext.Null);
             ALC.DestroyContext(context);
             ALC.CloseDevice(device);
+
+            isInitialized = false;
         }
 
         public void Start()
@@ -121,7 +123,7 @@ namespace DamageBoy.Audio
 
             audioLoopRunning = true;
 
-            while (audioLoopRunning)
+            while (isInitialized && audioLoopRunning)
             {
                 if (ALC_EXT_disconnect)
                 {
