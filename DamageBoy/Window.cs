@@ -48,12 +48,12 @@ namespace DamageBoy
             settings = new Settings();
             CleanupRecentROMs();
 
-            renderer = new Renderer();
-            sound = new Sound(AudioBufferStateChanged);
+            renderer = new Renderer(settings);
+            sound = new Sound(settings, AudioBufferStateChanged);
             imguiController = new ImGuiController(renderer, ClientSize.X, ClientSize.Y);
             imguiInputData = new ImGuiInputData();
 
-            mainUI = new MainUI(this, settings);
+            mainUI = new MainUI(this, renderer, settings);
             mainUI.IsVisible = true;
 
             SetWindowTitle();

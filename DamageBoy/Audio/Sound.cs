@@ -8,6 +8,8 @@ namespace DamageBoy.Audio
 {
     class Sound : IDisposable
     {
+        readonly Settings settings;
+
         readonly ALDevice device;
         readonly ALContext context;
 
@@ -16,13 +18,17 @@ namespace DamageBoy.Audio
         bool audioLoopRunning;
         bool isInitialized;
 
+        float currentVolume;
+
         bool ALC_EXT_disconnect;
         const int ALC_CONNECTED = 0x313;
 
         public enum BufferStates { Uninitialized, Ok, Underrun, Overrun }
 
-        public Sound(Action<BufferStates> bufferStateChangeCallback)
+        public Sound(Settings settings, Action<BufferStates> bufferStateChangeCallback)
         {
+            this.settings = settings;
+
             try
             {
                 IEnumerable<string> devices = ALC.GetStringList(GetEnumerationStringList.DeviceSpecifier);
@@ -66,7 +72,8 @@ namespace DamageBoy.Audio
 
                 ALC_EXT_disconnect = ALC.IsExtensionPresent(device, "ALC_EXT_disconnect");
 
-                AL.Listener(ALListenerf.Gain, 1.0f);
+                currentVolume = settings.Data.AudioVolume;
+                AL.Listener(ALListenerf.Gain, currentVolume);
 
                 soundChannel = new SoundChannel(bufferStateChangeCallback);
 
@@ -148,6 +155,12 @@ namespace DamageBoy.Audio
         void Update()
         {
             if (!isInitialized) return;
+
+            if (currentVolume != settings.Data.AudioVolume)
+            {
+                currentVolume = settings.Data.AudioVolume;
+                AL.Listener(ALListenerf.Gain, currentVolume);
+            }
 
             soundChannel.Update();
         }

@@ -10,9 +10,9 @@ namespace DamageBoy.Graphics
 {
     class Renderer : BaseRenderer
     {
+        readonly Settings settings;
+
         readonly Color4 clearColor = new Color4(0.0f, 0.0f, 0.0f, 1.0f);
-        readonly Color4 pixelOffColor = new Color4(27, 64, 51, 255);
-        readonly Color4 pixelOnColor = new Color4(195, 245, 162, 255);
 
         readonly uint vao;
         readonly Texture2D screenTexture;
@@ -30,8 +30,10 @@ namespace DamageBoy.Graphics
 
         byte[] pixels;
 
-        public Renderer() : base()
+        public Renderer(Settings settings) : base()
         {
+            this.settings = settings;
+
             // A VAO is not needed, but OpenGL complains if there's no one bound
             GL.GenVertexArrays(1, out vao);
             PipelineState.CurrentVAO = vao;
@@ -133,8 +135,11 @@ namespace DamageBoy.Graphics
                     screenTexture.Update(pixels);
                 }
 
-                screenMaterial.OffColor = pixelOffColor;
-                screenMaterial.OnColor = pixelOnColor;
+                screenMaterial.Color0 = settings.Data.GbColor0.ToColor4();
+                screenMaterial.Color1 = settings.Data.GbColor1.ToColor4();
+                screenMaterial.Color2 = settings.Data.GbColor2.ToColor4();
+                screenMaterial.Color3 = settings.Data.GbColor3.ToColor4();
+                screenMaterial.LcdEffect = settings.Data.LcdEffectVisibility;
                 screenMaterial.SetUniforms(globalUniforms);
 
                 GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
@@ -209,11 +214,6 @@ namespace DamageBoy.Graphics
         public override void ScreenUpdate(byte[] pixels)
         {
             this.pixels = pixels;
-        }
-
-        public override void SetColors()
-        {
-
         }
     }
 }

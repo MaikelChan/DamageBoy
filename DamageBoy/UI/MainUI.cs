@@ -1,10 +1,13 @@
-﻿using ImGuiNET;
+﻿using DamageBoy.Graphics;
+using ImGuiNET;
+using System.Numerics;
 
 namespace DamageBoy.UI
 {
     class MainUI : BaseUI
     {
         readonly Window window;
+        readonly BaseRenderer renderer;
         readonly Settings settings;
 
         readonly FileBrowserUI fileBrowserUI;
@@ -15,9 +18,10 @@ namespace DamageBoy.UI
 
         public int MainMenuHeight { get; private set; }
 
-        public MainUI(Window window, Settings settings)
+        public MainUI(Window window, BaseRenderer renderer, Settings settings)
         {
             this.window = window;
+            this.renderer = renderer;
             this.settings = settings;
 
             MainMenuHeight = MAIN_MENU_DEFAULT_HEIGHT;
@@ -87,6 +91,54 @@ namespace DamageBoy.UI
                     if (ImGui.MenuItem("Load State", "F7"))
                     {
                         window.LoadState();
+                    }
+
+                    ImGui.EndMenu();
+                }
+
+                if (ImGui.BeginMenu("Settings"))
+                {
+                    float visibility = settings.Data.LcdEffectVisibility;
+                    if (ImGui.SliderFloat("LCD effect visibility", ref visibility, 0.0f, 1.0f))
+                    {
+                        settings.Data.LcdEffectVisibility = visibility;
+                    }
+
+                    Vector3 color0 = new Vector3(settings.Data.GbColor0.R, settings.Data.GbColor0.G, settings.Data.GbColor0.B);
+                    if (ImGui.ColorEdit3("LCD Color 0", ref color0))
+                    {
+                        settings.Data.GbColor0 = new ColorSetting(color0);
+                    }
+
+                    Vector3 color1 = new Vector3(settings.Data.GbColor1.R, settings.Data.GbColor1.G, settings.Data.GbColor1.B);
+                    if (ImGui.ColorEdit3("LCD Color 1", ref color1))
+                    {
+                        settings.Data.GbColor1 = new ColorSetting(color1);
+                    }
+
+                    Vector3 color2 = new Vector3(settings.Data.GbColor2.R, settings.Data.GbColor2.G, settings.Data.GbColor2.B);
+                    if (ImGui.ColorEdit3("LCD Color 2", ref color2))
+                    {
+                        settings.Data.GbColor2 = new ColorSetting(color2);
+                    }
+
+                    Vector3 color3 = new Vector3(settings.Data.GbColor3.R, settings.Data.GbColor3.G, settings.Data.GbColor3.B);
+                    if (ImGui.ColorEdit3("LCD Color 3", ref color3))
+                    {
+                        settings.Data.GbColor3 = new ColorSetting(color3);
+                    }
+
+                    if (ImGui.Button("Reset Colors"))
+                    {
+                        settings.Data.ResetColors();
+                    }
+
+                    ImGui.Separator();
+
+                    float volume = settings.Data.AudioVolume;
+                    if (ImGui.SliderFloat("Audio Volume", ref volume, 0.0f, 1.0f))
+                    {
+                        settings.Data.AudioVolume = volume;
                     }
 
                     ImGui.EndMenu();

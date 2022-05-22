@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 using System;
 
 namespace DamageBoy.Graphics
@@ -35,7 +36,6 @@ namespace DamageBoy.Graphics
         public abstract void Render(double deltaTime);
         public abstract void Resize(int width, int height);
         public abstract void ScreenUpdate(byte[] vram);
-        public abstract void SetColors();
 
         #region GL Info
 
