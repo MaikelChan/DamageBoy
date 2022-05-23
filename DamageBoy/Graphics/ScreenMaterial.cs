@@ -59,10 +59,10 @@ uniform float uLcdEffect;
 
 out vec4 fragColor;
 
-const float WIDTH = 160f;
-const float HEIGHT = 144f;
-const float PI = 3.1415926535897932384626433832795f;
-const float DOTS_POWER = 1 / 3f;
+const float WIDTH = 160.0;
+const float HEIGHT = 144.0;
+const float PI = 3.1415926535897932384626433832795;
+const float DOTS_POWER = 1.0 / 3.0;
 const float GRID_VISIBILITY_MIN_HEIGHT = 400.0;
 const float GRID_FADE_MAX_HEIGHT = 800.0;
 
