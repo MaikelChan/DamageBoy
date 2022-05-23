@@ -14,6 +14,9 @@ namespace DamageBoy.UI
         readonly AboutWindowUI aboutWindowUI;
         //readonly DebugWindowUI debugWindowUI;
 
+        readonly Vector2 separatorMargin = new Vector2(0f, 5f);
+        readonly Vector4 menuHeaderColor = new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
+
         public const int MAIN_MENU_DEFAULT_HEIGHT = 19;
 
         public int MainMenuHeight { get; private set; }
@@ -78,7 +81,7 @@ namespace DamageBoy.UI
 
                     if (ImGui.MenuItem("Pause", "F2", window.IsGameBoyPaused))
                     {
-                        window.PauseEmulation();
+                        window.TogglePauseEmulation();
                     }
 
                     if (ImGui.MenuItem("Stop", "F3", !window.IsGameBoyRunning))
@@ -103,8 +106,20 @@ namespace DamageBoy.UI
 
                 if (ImGui.BeginMenu("Settings"))
                 {
+                    ImGui.TextColored(menuHeaderColor, "General");
+
+                    if (ImGui.MenuItem("Pause While Minimized", string.Empty, settings.Data.PauseWhileMinimized))
+                    {
+                        settings.Data.PauseWhileMinimized = !settings.Data.PauseWhileMinimized;
+                    }
+
+                    ImGui.Separator();
+
+                    ImGui.Dummy(separatorMargin);
+                    ImGui.TextColored(menuHeaderColor, "Graphics");
+
                     float visibility = settings.Data.LcdEffectVisibility;
-                    if (ImGui.SliderFloat("LCD effect visibility", ref visibility, 0.0f, 1.0f))
+                    if (ImGui.SliderFloat("LCD Effect Visibility", ref visibility, 0.0f, 1.0f))
                     {
                         settings.Data.LcdEffectVisibility = visibility;
                     }
@@ -139,6 +154,9 @@ namespace DamageBoy.UI
                     }
 
                     ImGui.Separator();
+
+                    ImGui.Dummy(separatorMargin);
+                    ImGui.TextColored(menuHeaderColor, "Audio");
 
                     float volume = settings.Data.AudioVolume;
                     if (ImGui.SliderFloat("Audio Volume", ref volume, 0.0f, 1.0f))

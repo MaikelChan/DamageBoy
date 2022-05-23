@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
+using System.Threading;
 using Image = OpenTK.Windowing.Common.Input.Image;
 using Sound = DamageBoy.Audio.Sound;
 
@@ -36,6 +37,8 @@ namespace DamageBoy
 
         bool isCloseRequested;
         bool isDisposed;
+
+        EmulationStates stateBeforeMinimized;
 
         string SaveFilePath => Path.Combine(SAVES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFileName) + ".sav");
         const string SAVES_FOLDER = "Saves";
@@ -217,7 +220,7 @@ namespace DamageBoy
             }
         }
 
-        public void PauseEmulation()
+        public void TogglePauseEmulation()
         {
             if (gameBoy == null) return;
 
@@ -360,11 +363,11 @@ namespace DamageBoy
 
             if (IsExiting) return;
 
-            //if (WindowState == WindowState.Minimized || !IsFocused)
-            //{
-            //    //Thread.Sleep(50);
-            //    return;
-            //}
+            if (WindowState == WindowState.Minimized)
+            {
+                Thread.Sleep(32);
+                return;
+            }
 
             ProcessInput();
         }
@@ -382,11 +385,11 @@ namespace DamageBoy
 
             if (IsExiting) return;
 
-            //if (WindowState == WindowState.Minimized || !IsFocused)
-            //{
-            //    //Thread.Sleep(50);
-            //    return;
-            //}
+            if (WindowState == WindowState.Minimized)
+            {
+                Thread.Sleep(32);
+                return;
+            }
 
             ProcessUI((float)args.Time);
 
@@ -410,6 +413,28 @@ namespace DamageBoy
 
             renderer.Resize(e.Width, e.Height - mainUI.MainMenuHeight);
             imguiController.WindowResized(e.Width, e.Height);
+        }
+
+        protected override void OnMinimized(MinimizedEventArgs e)
+        {
+            base.OnMinimized(e);
+
+            if (!settings.Data.PauseWhileMinimized) return;
+
+            if (gameBoy == null) return;
+
+            EmulationStates currentState = gameBoy.EmulationState;
+            if (currentState == EmulationStates.Stopping || currentState == EmulationStates.Stopped) return;
+
+            if (e.IsMinimized)
+            {
+                stateBeforeMinimized = currentState;
+                if (currentState == EmulationStates.Running) TogglePauseEmulation();
+            }
+            else
+            {
+                if (stateBeforeMinimized == EmulationStates.Running) TogglePauseEmulation();
+            }
         }
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
@@ -436,7 +461,7 @@ namespace DamageBoy
                         RunEmulation();
                         break;
                     case Keys.F2:
-                        PauseEmulation();
+                        TogglePauseEmulation();
                         break;
                     case Keys.F3:
                         StopEmulation();

@@ -55,6 +55,8 @@ namespace DamageBoy
         public string LastRomDirectory { get; set; }
         public List<string> RecentRoms { get; set; }
 
+        public bool PauseWhileMinimized { get; set; }
+
         public ColorSetting GbColor0 { get; set; }
         public ColorSetting GbColor1 { get; set; }
         public ColorSetting GbColor2 { get; set; }
@@ -67,6 +69,8 @@ namespace DamageBoy
         {
             LastRomDirectory = Environment.CurrentDirectory;
             RecentRoms = new List<string>(Window.MAX_RECENT_ROMS);
+
+            PauseWhileMinimized = true;
 
             ResetColors();
             LcdEffectVisibility = 1.0f;
