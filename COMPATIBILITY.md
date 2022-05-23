@@ -38,8 +38,11 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Alleyway (World) | :heavy_check_mark: |
 | All-Star Baseball 99 (U) | :heavy_check_mark: |
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
+| Dragon's Lair - The Legend | :heavy_check_mark: |
 | F-1 Race (W) (V1.1) [!] | :heavy_check_mark: |
 | Ferrari - Grand Prix Challenge (U) [!] | :heavy_check_mark: |
+| Ganso!! Yancha Maru | :heavy_check_mark: |
+| Gojira-kun | :heavy_check_mark: |
 | Indien dans la Ville, Un (F) | :large_blue_diamond: (Music glitches) |
 | Initial D Gaiden (J) | :warning: (The game freezes and has visual glitches when selecting the first game option. It shouldn't be selectable?)
 | Kirby's Dream Land (UE) [!] | :heavy_check_mark: |
@@ -53,9 +56,17 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Pokemon - Yellow Version (UE) [C][!] | :heavy_check_mark: |
 | Prehistorik Man (UE) | :warning: (Audio and visual glitches) |
 | Road Rash (UE) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
+| Spy vs Spy - Operation Boobytrap | :heavy_check_mark: |
+| Sunsoft Grand Prix | :heavy_check_mark: |
+| Super Chinese Land | :heavy_check_mark: |
+| Super Chinese Land 1,2,3 | :warning: (Doesn't load the correct game or goes back to title screen) |
+| Super James Pond | :heavy_check_mark: |
 | Super Mario Land (W) (V1.1) [!] | :heavy_check_mark: |
 | Super Mario Land 2 - 6 Golden Coins (UE) (V1.0) [!] | :heavy_check_mark: |
+| Super Street Fighter II (JUE) | :warning: (Visual glitches inside stages) |
 | Tetris (W) (V1.1) [!] | :heavy_check_mark: |
+| V-Rally Championship Edition | :heavy_check_mark: |
+| Vattle Giuce | :heavy_check_mark: |
 | Wario Land - Super Mario Land 3 (W) [!] | :heavy_check_mark: |
 | Wario Land II (UE) [S][!] | :heavy_check_mark: |
 | Zerd no Densetsu (J) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
