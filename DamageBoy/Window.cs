@@ -28,6 +28,7 @@ namespace DamageBoy
         readonly MainUI mainUI;
 
         public bool IsGameBoyRunning => gameBoy != null;
+        public bool IsGameBoyPaused => gameBoy != null && gameBoy.EmulationState == EmulationStates.Paused;
 
         GameBoy gameBoy;
 
@@ -214,6 +215,17 @@ namespace DamageBoy
                 Utils.Log(LogType.Error, ex.Message);
                 return false;
             }
+        }
+
+        public void PauseEmulation()
+        {
+            if (gameBoy == null) return;
+
+            gameBoy.TogglePause();
+            if (gameBoy.EmulationState == EmulationStates.Paused)
+                sound.Stop();
+            else if (gameBoy.EmulationState == EmulationStates.Running)
+                sound.Start();
         }
 
         public void StopEmulation(Action emulationStoppedCallback = null)
@@ -424,6 +436,9 @@ namespace DamageBoy
                         RunEmulation();
                         break;
                     case Keys.F2:
+                        PauseEmulation();
+                        break;
+                    case Keys.F3:
                         StopEmulation();
                         break;
                     case Keys.F5:

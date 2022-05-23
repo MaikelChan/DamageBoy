@@ -76,7 +76,12 @@ namespace DamageBoy.UI
                         window.RunEmulation();
                     }
 
-                    if (ImGui.MenuItem("Stop", "F2", !window.IsGameBoyRunning))
+                    if (ImGui.MenuItem("Pause", "F2", window.IsGameBoyPaused))
+                    {
+                        window.PauseEmulation();
+                    }
+
+                    if (ImGui.MenuItem("Stop", "F3", !window.IsGameBoyRunning))
                     {
                         window.StopEmulation();
                     }

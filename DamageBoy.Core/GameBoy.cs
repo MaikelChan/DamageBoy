@@ -9,6 +9,7 @@ namespace DamageBoy.Core
     {
         Stopped,
         Running,
+        Paused,
         Stopping
     }
 
@@ -70,9 +71,17 @@ namespace DamageBoy.Core
             thread.Start();
         }
 
+        public void TogglePause()
+        {
+            if (EmulationState == EmulationStates.Running)
+                EmulationState = EmulationStates.Paused;
+            else if (EmulationState == EmulationStates.Paused)
+                EmulationState = EmulationStates.Running;
+        }
+
         public void Stop(Action emulationStoppedCallback)
         {
-            if (EmulationState != EmulationStates.Running) return;
+            if (EmulationState != EmulationStates.Running && EmulationState != EmulationStates.Paused) return;
             this.emulationStoppedCallback = emulationStoppedCallback;
             EmulationState = EmulationStates.Stopping;
         }
@@ -85,8 +94,14 @@ namespace DamageBoy.Core
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            while (EmulationState == EmulationStates.Running)
+            while (EmulationState == EmulationStates.Running || EmulationState == EmulationStates.Paused)
             {
+                if (EmulationState == EmulationStates.Paused)
+                {
+                    Thread.Sleep(32);
+                    continue;
+                }
+
                 if (frameLimiterState == FrameLimiterStates.Paused)
                 {
                     if (sw.ElapsedTicks < (4 * Stopwatch.Frequency) / CPU.CPU_CLOCKS) continue;
@@ -94,7 +109,8 @@ namespace DamageBoy.Core
 
                     continue;
                 }
-                else if (frameLimiterState == FrameLimiterStates.Limited)
+
+                if (frameLimiterState == FrameLimiterStates.Limited)
                 {
                     if (sw.ElapsedTicks < (4 * Stopwatch.Frequency) / CPU.CPU_CLOCKS) continue;
                     sw.Restart();
