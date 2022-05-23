@@ -38,6 +38,8 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Alleyway (World) | :heavy_check_mark: |
 | All-Star Baseball 99 (U) | :heavy_check_mark: |
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
+| Donkey Kong Land 2 | :x: (Crashes after title screen) |
+| Donkey Kong Land 3 | :x: (Crashes after title screen) |
 | Dragon's Lair - The Legend | :heavy_check_mark: |
 | F-1 Race (W) (V1.1) [!] | :heavy_check_mark: |
 | Ferrari - Grand Prix Challenge (U) [!] | :heavy_check_mark: |
