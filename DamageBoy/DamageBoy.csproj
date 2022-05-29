@@ -20,6 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ashleigh.openal.soft.redist" Version="1.21.1.2" />
     <PackageReference Include="ImGui.NET" Version="1.87.3" />
     <PackageReference Include="OpenTK" Version="4.7.2" />
   </ItemGroup>
