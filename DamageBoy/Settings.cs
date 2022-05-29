@@ -72,18 +72,26 @@ namespace DamageBoy
 
             PauseWhileMinimized = true;
 
-            ResetColors();
+            DefaultColors();
             LcdEffectVisibility = 1.0f;
 
             AudioVolume = 1f;
         }
 
-        public void ResetColors()
+        public void DefaultColors()
         {
-            GbColor0 = new ColorSetting(27, 64, 51);
-            GbColor1 = new ColorSetting((byte)MathHelper.Lerp(27, 195, 1f / 3f), (byte)MathHelper.Lerp(64, 245, 1f / 3f), (byte)MathHelper.Lerp(51, 162, 1f / 3f));
-            GbColor2 = new ColorSetting((byte)MathHelper.Lerp(27, 195, 2f / 3f), (byte)MathHelper.Lerp(64, 245, 2f / 3f), (byte)MathHelper.Lerp(51, 162, 2f / 3f));
+            GbColor0 = new ColorSetting(30, 64, 70);
+            GbColor1 = new ColorSetting(68, 121, 106);
+            GbColor2 = new ColorSetting(123, 183, 127);
             GbColor3 = new ColorSetting(195, 245, 162);
+        }
+
+        public void SetColors(ColorSetting color0, ColorSetting color1, ColorSetting color2, ColorSetting color3)
+        {
+            GbColor0 = color0;
+            GbColor1 = color1;
+            GbColor2 = color2;
+            GbColor3 = color3;
         }
     }
 

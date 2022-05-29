@@ -148,9 +148,30 @@ namespace DamageBoy.UI
                         settings.Data.GbColor3 = new ColorSetting(color3);
                     }
 
-                    if (ImGui.Button("Reset Colors"))
+                    if (ImGui.Button("Default Theme"))
                     {
-                        settings.Data.ResetColors();
+                        settings.Data.DefaultColors();
+                    }
+
+                    ImGui.SameLine();
+
+                    if (ImGui.Button("Pink Theme"))
+                    {
+                        settings.Data.SetColors(new ColorSetting(82, 15, 96), new ColorSetting(141, 27, 118), new ColorSetting(220, 75, 152), new ColorSetting(245, 162, 182));
+                    }
+
+                    ImGui.SameLine();
+
+                    if (ImGui.Button("Blue Theme"))
+                    {
+                        settings.Data.SetColors(new ColorSetting(39, 34, 118), new ColorSetting(67, 92, 160), new ColorSetting(120, 162, 196), new ColorSetting(179, 244, 255));
+                    }
+
+                    ImGui.SameLine();
+
+                    if (ImGui.Button("White Theme"))
+                    {
+                        settings.Data.SetColors(new ColorSetting(0, 0, 0), new ColorSetting(85, 85, 85), new ColorSetting(170, 170, 170), new ColorSetting(255, 255, 255));
                     }
 
                     ImGui.Separator();
