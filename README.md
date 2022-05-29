@@ -17,7 +17,7 @@
 
 ## Requirements
 
-It requires [.NET 5.0 Runtime](https://dotnet.microsoft.com/download), [OpenAL 1.1](https://openal.org/downloads/oalinst.zip) and OpenGL 3.3.
+It requires [.NET 6.0 Runtime](https://dotnet.microsoft.com/download) and OpenGL 3.3.
 
 ## Compatibility
 
