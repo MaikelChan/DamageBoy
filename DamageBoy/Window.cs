@@ -302,6 +302,15 @@ namespace DamageBoy
 
         #region Input
 
+        const byte BUTTON_A = 0;
+        const byte BUTTON_X = 2;
+        const byte BUTTON_BACK = 6;
+        const byte BUTTON_START = 7;
+        const byte BUTTON_UP = 11;
+        const byte BUTTON_RIGHT = 12;
+        const byte BUTTON_DOWN = 13;
+        const byte BUTTON_LEFT = 14;
+
         const float DEADZONE = 0.65f;
 
         unsafe void ProcessInput()
@@ -316,16 +325,18 @@ namespace DamageBoy
                 }
             }
 
+            byte pressed = (byte)InputAction.Press;
+
             InputState inputState = new InputState()
             {
-                A = KeyboardState.IsKeyDown(Keys.X) || gamepadState.Buttons[0] > 0,
-                B = KeyboardState.IsKeyDown(Keys.Z) || gamepadState.Buttons[2] > 0,
-                Select = KeyboardState.IsKeyDown(Keys.RightShift) || gamepadState.Buttons[6] > 0,
-                Start = KeyboardState.IsKeyDown(Keys.Enter) || gamepadState.Buttons[7] > 0,
-                Up = KeyboardState.IsKeyDown(Keys.Up) || gamepadState.Buttons[11] > 0 || gamepadState.Axes[1] < -DEADZONE,
-                Right = KeyboardState.IsKeyDown(Keys.Right) || gamepadState.Buttons[12] > 0 || gamepadState.Axes[0] > DEADZONE,
-                Down = KeyboardState.IsKeyDown(Keys.Down) || gamepadState.Buttons[13] > 0 || gamepadState.Axes[1] > DEADZONE,
-                Left = KeyboardState.IsKeyDown(Keys.Left) || gamepadState.Buttons[14] > 0 || gamepadState.Axes[0] < -DEADZONE
+                A = KeyboardState.IsKeyDown(Keys.X) || gamepadState.Buttons[BUTTON_A] == pressed,
+                B = KeyboardState.IsKeyDown(Keys.Z) || gamepadState.Buttons[BUTTON_X] == pressed,
+                Select = KeyboardState.IsKeyDown(Keys.RightShift) || gamepadState.Buttons[BUTTON_BACK] == pressed,
+                Start = KeyboardState.IsKeyDown(Keys.Enter) || gamepadState.Buttons[BUTTON_START] == pressed,
+                Up = KeyboardState.IsKeyDown(Keys.Up) || gamepadState.Buttons[BUTTON_UP] == pressed || gamepadState.Axes[1] < -DEADZONE,
+                Right = KeyboardState.IsKeyDown(Keys.Right) || gamepadState.Buttons[BUTTON_RIGHT] == pressed || gamepadState.Axes[0] > DEADZONE,
+                Down = KeyboardState.IsKeyDown(Keys.Down) || gamepadState.Buttons[BUTTON_DOWN] == pressed || gamepadState.Axes[1] > DEADZONE,
+                Left = KeyboardState.IsKeyDown(Keys.Left) || gamepadState.Buttons[BUTTON_LEFT] == pressed || gamepadState.Axes[0] < -DEADZONE
             };
 
             gameBoy?.SetInput(inputState);
