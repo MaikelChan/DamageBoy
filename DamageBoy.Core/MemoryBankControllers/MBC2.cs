@@ -24,10 +24,17 @@ namespace DamageBoy.Core.MemoryBankControllers
             }
             set
             {
-                if (isMBC2RamEnabled && !value) saveUpdateCallback?.Invoke(ram);
+                if (isMBC2RamEnabled && !value && ramHasBeenModifiedSinceLastSave)
+                {
+                    saveUpdateCallback?.Invoke(ram);
+                    ramHasBeenModifiedSinceLastSave = false;
+                }
+
                 isMBC2RamEnabled = value;
             }
         }
+
+        bool ramHasBeenModifiedSinceLastSave;
 
         const int RAM_SIZE = 512;
 
@@ -105,6 +112,7 @@ namespace DamageBoy.Core.MemoryBankControllers
                         index -= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS;
                         index &= 0x1FF;
                         ram[index] = (byte)(0b1111_0000 | (value & 0b0000_1111));
+                        ramHasBeenModifiedSinceLastSave = true;
                         break;
                     }
 
