@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.IO.Compression;
+using System.Text;
 
 namespace DamageBoy.Core.State
 {
@@ -8,7 +9,9 @@ namespace DamageBoy.Core.State
         readonly IState[] componentsStates;
         readonly Cartridge cartridge;
 
-        const uint SAVE_SATATE_FORMAT_VERSION = 1;
+        const uint SAVE_SATATE_FORMAT_VERSION = 2;
+
+        const bool COMPRESS_SAVE_STATE = true;
 
         public SaveState(IState[] componentsStates, Cartridge cartridge)
         {
@@ -28,18 +31,27 @@ namespace DamageBoy.Core.State
             using (BinaryWriter fsBw = new BinaryWriter(fs))
             {
                 fsBw.Write(SAVE_SATATE_FORMAT_VERSION);
+                fsBw.Write(COMPRESS_SAVE_STATE);
 
                 fs.Position = 0x10;
                 fs.Write(cartridge.RawTitle, 0, Cartridge.RAW_TITLE_LENGTH);
 
-                // Write state of all components with GZip compression
-
-                using (GZipStream gzip = new GZipStream(fs, CompressionMode.Compress, true))
-                using (BinaryWriter gzipBw = new BinaryWriter(gzip))
+                if (COMPRESS_SAVE_STATE)
+                {
+                    using (BrotliStream cfs = new BrotliStream(fs, CompressionMode.Compress, true))
+                    using (BinaryWriter cfsBw = new BinaryWriter(cfs))
+                    {
+                        for (int cs = 0; cs < componentsStates.Length; cs++)
+                        {
+                            componentsStates[cs].SaveOrLoadState(cfs, cfsBw, null, true);
+                        }
+                    }
+                }
+                else
                 {
                     for (int cs = 0; cs < componentsStates.Length; cs++)
                     {
-                        componentsStates[cs].SaveOrLoadState(gzip, gzipBw, null, true);
+                        componentsStates[cs].SaveOrLoadState(fs, fsBw, null, true);
                     }
                 }
             }
@@ -62,15 +74,17 @@ namespace DamageBoy.Core.State
             }
 
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-            using (BinaryReader br = new BinaryReader(fs))
+            using (BinaryReader fsBr = new BinaryReader(fs))
             {
-                uint version = br.ReadUInt32();
+                uint version = fsBr.ReadUInt32();
 
                 if (version != SAVE_SATATE_FORMAT_VERSION)
                 {
                     Utils.Log(LogType.Error, $"Save state \"{fileName}\" is version {version} but version {SAVE_SATATE_FORMAT_VERSION} is expected.");
                     return false;
                 }
+
+                bool compressedSaveState = fsBr.ReadBoolean();
 
                 fs.Position = 0x10;
 
@@ -81,19 +95,27 @@ namespace DamageBoy.Core.State
                 {
                     if (rawTitle[t] != cartridge.RawTitle[t])
                     {
-                        Utils.Log(LogType.Error, $"Save state \"{fileName}\" is from a different game or a different version of the game.");
+                        Utils.Log(LogType.Error, $"Save state \"{fileName}\" is from a different game or a different version of the game ({Encoding.ASCII.GetString(rawTitle)}).");
                         return false;
                     }
                 }
 
-                // Read state of all components
-
-                using (GZipStream gzip = new GZipStream(fs, CompressionMode.Decompress, true))
-                using (BinaryReader gzipBr = new BinaryReader(gzip))
+                if (compressedSaveState)
+                {
+                    using (BrotliStream cfs = new BrotliStream(fs, CompressionMode.Decompress, true))
+                    using (BinaryReader cfsBr = new BinaryReader(cfs))
+                    {
+                        for (int cs = 0; cs < componentsStates.Length; cs++)
+                        {
+                            componentsStates[cs].SaveOrLoadState(cfs, null, cfsBr, false);
+                        }
+                    }
+                }
+                else
                 {
                     for (int cs = 0; cs < componentsStates.Length; cs++)
                     {
-                        componentsStates[cs].SaveOrLoadState(gzip, null, gzipBr, false);
+                        componentsStates[cs].SaveOrLoadState(fs, null, fsBr, false);
                     }
                 }
             }

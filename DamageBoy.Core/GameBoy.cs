@@ -57,7 +57,7 @@ namespace DamageBoy.Core
             dma = new DMA(cartridge, ram, vram);
             timer = new Timer(interruptHandler);
             apu = new APU(addToAudioBufferCallback);
-            ppu = new PPU(interruptHandler, vram, dma, ScreenUpdate);
+            ppu = new PPU(interruptHandler, vram, dma, ScreenUpdate, FinishedVBlank);
             io = new IO(ppu, dma, timer, apu, serial, interruptHandler);
             mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
             cpu = new CPU(mmu, bootRom != null);
@@ -116,8 +116,6 @@ namespace DamageBoy.Core
                     sw.Restart();
                 }
 
-                ProcessSaveState();
-
 #if !DEBUG
                 try
                 {
@@ -169,6 +167,11 @@ namespace DamageBoy.Core
         void ScreenUpdate(byte[] lcdPixels)
         {
             screenUpdateCallback?.Invoke(lcdPixels);
+        }
+
+        void FinishedVBlank()
+        {
+            ProcessSaveState();
         }
 
         #region Save States

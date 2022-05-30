@@ -11,6 +11,7 @@ namespace DamageBoy.Core
         readonly VRAM vram;
         readonly DMA dma;
         readonly Action<byte[]> screenUpdateCallback;
+        readonly Action finishedVBlankCallback;
 
         readonly byte[][] lcdPixelBuffers;
         readonly byte[] spriteIndicesInCurrentLine;
@@ -95,12 +96,13 @@ namespace DamageBoy.Core
 
         readonly byte[] currentLineColorIndices = new byte[Constants.RES_X];
 
-        public PPU(InterruptHandler interruptHandler, VRAM vram, DMA dma, Action<byte[]> screenUpdateCallback)
+        public PPU(InterruptHandler interruptHandler, VRAM vram, DMA dma, Action<byte[]> screenUpdateCallback, Action finishedVBlankCallback)
         {
             this.interruptHandler = interruptHandler;
             this.vram = vram;
             this.dma = dma;
             this.screenUpdateCallback = screenUpdateCallback;
+            this.finishedVBlankCallback = finishedVBlankCallback;
 
             // Initialize double buffer
             lcdPixelBuffers = new byte[2][];
@@ -239,6 +241,7 @@ namespace DamageBoy.Core
 
                         LY = 0;
                         CheckLYC();
+                        finishedVBlankCallback?.Invoke();
                         DoOAMSearch();
                     }
                     else
@@ -402,6 +405,7 @@ namespace DamageBoy.Core
                         if (spriteRow < 0)
                         {
                             Utils.Log(LogType.Warning, $"spriteRow < 0! spriteEntryAddress = 0x{spriteEntryAddress:x4}");
+                            continue;
                         }
 
                         ushort tileDataAddress = (ushort)(spriteTile * TILE_BYTES_SIZE + spriteRow);
@@ -542,7 +546,7 @@ namespace DamageBoy.Core
 
         void ClearScreen()
         {
-            for (int p = 0; p < Constants.RES_X * Constants.RES_Y; p++) lcdPixelBuffers[currentBuffer][p] = 255;
+            for (int p = 0; p < Constants.RES_X * Constants.RES_Y; p++) lcdPixelBuffers[currentBuffer][p] = COLOR_WHITE;
             screenUpdateCallback?.Invoke(lcdPixelBuffers[currentBuffer]);
             currentBuffer ^= 1;
         }
@@ -575,8 +579,6 @@ namespace DamageBoy.Core
             BackgroundPalette = SaveState.SaveLoadValue(bw, br, save, BackgroundPalette);
             ObjectPalette0 = SaveState.SaveLoadValue(bw, br, save, ObjectPalette0);
             ObjectPalette1 = SaveState.SaveLoadValue(bw, br, save, ObjectPalette1);
-
-            clocksToWait = SaveState.SaveLoadValue(bw, br, save, clocksToWait);
         }
     }
 }
