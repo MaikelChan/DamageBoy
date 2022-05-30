@@ -338,7 +338,7 @@ namespace DamageBoy.Core
             {
                 for (int x = 0; x < Constants.RES_X; x++)
                 {
-                    int currentLCDPixel = LY * Constants.RES_X + (x);
+                    int currentLCDPixel = LY * Constants.RES_X + x;
                     lcdPixelBuffers[currentBuffer][currentLCDPixel] = COLOR_WHITE;
                 }
             }
@@ -381,36 +381,36 @@ namespace DamageBoy.Core
             {
                 byte spriteHeight = OBJSize ? SPRITE_MAX_HEIGHT : SPRITE_HEIGHT;
 
-                for (byte x = 0; x < Constants.RES_X; x++)
+                for (int s = spritesAmountInCurrentLine - 1; s >= 0; s--)
                 {
-                    for (int s = spritesAmountInCurrentLine - 1; s >= 0; s--)
+                    byte spriteIndex = spriteIndicesInCurrentLine[s];
+                    int spriteEntryAddress = spriteIndex * OAM_ENTRY_SIZE;
+
+                    int spriteY = GetOAM(spriteEntryAddress + 0) - SPRITE_MAX_HEIGHT;
+                    int spriteX = GetOAM(spriteEntryAddress + 1) - SPRITE_WIDTH;
+
+                    bool spritePalette = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 4);
+                    bool spriteInvX = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 5);
+                    bool spriteInvY = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 6);
+                    bool spritePriority = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 7);
+
+                    byte spriteTile = GetOAM(spriteEntryAddress + 2);
+                    int spriteRow = (spriteInvY ? ((spriteHeight - 1) - (LY - spriteY)) : (LY - spriteY)) << 1;
+
+                    if (spriteRow < 0)
                     {
-                        byte spriteIndex = spriteIndicesInCurrentLine[s];
-                        int spriteEntryAddress = spriteIndex * OAM_ENTRY_SIZE;
+                        Utils.Log(LogType.Warning, $"spriteRow < 0! spriteEntryAddress = 0x{spriteEntryAddress:x4}");
+                        continue;
+                    }
 
-                        int spriteY = GetOAM(spriteEntryAddress + 0) - SPRITE_MAX_HEIGHT;
+                    ushort tileDataAddress = (ushort)(spriteTile * TILE_BYTES_SIZE + spriteRow);
 
-                        int spriteX = GetOAM(spriteEntryAddress + 1) - SPRITE_WIDTH;
-                        if (x >= spriteX + 8) continue;
-                        if (x < spriteX) continue;
+                    int minX = Math.Max(spriteX, 0);
+                    int maxX = Math.Min(spriteX + 8, Constants.RES_X);
 
-                        bool spritePalette = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 4);
-                        bool spriteInvX = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 5);
-                        bool spriteInvY = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 6);
-                        bool spritePriority = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 7);
-
-                        byte spriteTile = GetOAM(spriteEntryAddress + 2);
-                        int spriteRow = (spriteInvY ? ((spriteHeight - 1) - (LY - spriteY)) : (LY - spriteY)) << 1;
-
-                        if (spriteRow < 0)
-                        {
-                            Utils.Log(LogType.Warning, $"spriteRow < 0! spriteEntryAddress = 0x{spriteEntryAddress:x4}");
-                            continue;
-                        }
-
-                        ushort tileDataAddress = (ushort)(spriteTile * TILE_BYTES_SIZE + spriteRow);
-
-                        int currentLCDPixel = LY * Constants.RES_X + (x);
+                    for (int x = minX; x < maxX; x++)
+                    {
+                        int currentLCDPixel = LY * Constants.RES_X + x;
                         byte bit = (byte)(spriteInvX ? x - spriteX : (SPRITE_WIDTH - 1) - (x - spriteX));
                         byte colorIndex = GetColorIndex(tileDataAddress, bit);
                         if (colorIndex != 0)
