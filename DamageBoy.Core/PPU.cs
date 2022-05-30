@@ -9,6 +9,7 @@ namespace DamageBoy.Core
     {
         readonly InterruptHandler interruptHandler;
         readonly VRAM vram;
+        readonly DMA dma;
         readonly Action<byte[]> screenUpdateCallback;
 
         readonly byte[][] lcdPixelBuffers;
@@ -94,10 +95,11 @@ namespace DamageBoy.Core
 
         readonly byte[] currentLineColorIndices = new byte[Constants.RES_X];
 
-        public PPU(InterruptHandler interruptHandler, VRAM vram, Action<byte[]> screenUpdateCallback)
+        public PPU(InterruptHandler interruptHandler, VRAM vram, DMA dma, Action<byte[]> screenUpdateCallback)
         {
             this.interruptHandler = interruptHandler;
             this.vram = vram;
+            this.dma = dma;
             this.screenUpdateCallback = screenUpdateCallback;
 
             // Initialize double buffer
@@ -282,11 +284,11 @@ namespace DamageBoy.Core
             {
                 int spriteEntryAddress = s * OAM_ENTRY_SIZE;
 
-                int spriteY = vram.Oam[spriteEntryAddress + 0] - SPRITE_MAX_HEIGHT;
+                int spriteY = GetOAM(spriteEntryAddress + 0) - SPRITE_MAX_HEIGHT;
                 if (LY >= spriteY + spriteHeight) continue;
                 if (LY < spriteY) continue;
 
-                //byte spriteX = vram.Oam[spriteEntryAddress + 1];
+                //byte spriteX = GetOAM(spriteEntryAddress + 1);
                 //if (spriteX == 0) continue;
 
                 // TODO: Check more conditions?
@@ -382,19 +384,25 @@ namespace DamageBoy.Core
                         byte spriteIndex = spriteIndicesInCurrentLine[s];
                         int spriteEntryAddress = spriteIndex * OAM_ENTRY_SIZE;
 
-                        int spriteY = vram.Oam[spriteEntryAddress + 0] - SPRITE_MAX_HEIGHT;
+                        int spriteY = GetOAM(spriteEntryAddress + 0) - SPRITE_MAX_HEIGHT;
 
-                        int spriteX = vram.Oam[spriteEntryAddress + 1] - SPRITE_WIDTH;
+                        int spriteX = GetOAM(spriteEntryAddress + 1) - SPRITE_WIDTH;
                         if (x >= spriteX + 8) continue;
                         if (x < spriteX) continue;
 
-                        bool spritePalette = Helpers.GetBit(vram.Oam[spriteEntryAddress + 3], 4);
-                        bool spriteInvX = Helpers.GetBit(vram.Oam[spriteEntryAddress + 3], 5);
-                        bool spriteInvY = Helpers.GetBit(vram.Oam[spriteEntryAddress + 3], 6);
-                        bool spritePriority = Helpers.GetBit(vram.Oam[spriteEntryAddress + 3], 7);
+                        bool spritePalette = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 4);
+                        bool spriteInvX = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 5);
+                        bool spriteInvY = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 6);
+                        bool spritePriority = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 7);
 
-                        byte spriteTile = vram.Oam[spriteEntryAddress + 2];
+                        byte spriteTile = GetOAM(spriteEntryAddress + 2);
                         int spriteRow = (spriteInvY ? ((spriteHeight - 1) - (LY - spriteY)) : (LY - spriteY)) << 1;
+
+                        if (spriteRow < 0)
+                        {
+                            Utils.Log(LogType.Warning, $"spriteRow < 0! spriteEntryAddress = 0x{spriteEntryAddress:x4}");
+                        }
+
                         ushort tileDataAddress = (ushort)(spriteTile * TILE_BYTES_SIZE + spriteRow);
 
                         int currentLCDPixel = LY * Constants.RES_X + (x);
@@ -508,6 +516,12 @@ namespace DamageBoy.Core
         byte GetObjPalette1Color(byte colorIndex)
         {
             return (byte)((ObjectPalette1 >> (colorIndex << 1)) & 0x3);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        byte GetOAM(int index)
+        {
+            return dma.IsBusy ? (byte)0xFF : vram.Oam[index];
         }
 
         bool CanCPUAccessVRAM()

@@ -57,7 +57,7 @@ namespace DamageBoy.Core
             dma = new DMA(cartridge, ram, vram);
             timer = new Timer(interruptHandler);
             apu = new APU(addToAudioBufferCallback);
-            ppu = new PPU(interruptHandler, vram, ScreenUpdate);
+            ppu = new PPU(interruptHandler, vram, dma, ScreenUpdate);
             io = new IO(ppu, dma, timer, apu, serial, interruptHandler);
             mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
             cpu = new CPU(mmu, bootRom != null);

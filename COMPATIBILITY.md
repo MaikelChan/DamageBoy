@@ -51,7 +51,7 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Kirby's Dream Land 2 (U) [S][!] | :heavy_check_mark: |
 | Lamborghini American Challenge (U) [!] | :large_blue_diamond: (Some music sounds bad) |
 | Legend of Zelda, The - Link's Awakening (U) (V1.2) [!] | :heavy_check_mark: |
-| Little Mermaid, The (E) | :warning: (Random graphics related crashes) |
+| Little Mermaid, The (E) | :heavy_check_mark: |
 | Mario & Yoshi (E) [!] | :heavy_check_mark: |
 | Metroid II - Return of Samus (W) [!] | :heavy_check_mark: |
 | Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
