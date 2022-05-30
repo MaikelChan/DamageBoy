@@ -133,6 +133,7 @@ namespace DamageBoy.Core.MemoryBankControllers
                     {
                         if (!cartridge.IsRamEnabled) break;
                         ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
+                        cartridge.RamHasBeenModifiedSinceLastSave = true;
                         break;
                     }
 

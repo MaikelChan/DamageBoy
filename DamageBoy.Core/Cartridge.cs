@@ -30,11 +30,18 @@ namespace DamageBoy.Core
             {
                 if (ram != null)
                 {
-                    if (isRamEnabled && !value) saveUpdateCallback?.Invoke(ram);
+                    if (isRamEnabled && !value && RamHasBeenModifiedSinceLastSave)
+                    {
+                        saveUpdateCallback?.Invoke(ram);
+                        RamHasBeenModifiedSinceLastSave = false;
+                    }
+
                     isRamEnabled = value;
                 }
             }
         }
+
+        public bool RamHasBeenModifiedSinceLastSave { get; set; }
 
         public int RomSize
         {
@@ -175,7 +182,12 @@ namespace DamageBoy.Core
 
         public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
         {
-            if (ram != null) SaveState.SaveLoadArray(stream, save, ram, RamSize);
+            if (ram != null)
+            {
+                SaveState.SaveLoadArray(stream, save, ram, RamSize);
+                if (!save) RamHasBeenModifiedSinceLastSave = true;
+            }
+
             isRamEnabled = SaveState.SaveLoadValue(bw, br, save, isRamEnabled);
             mbc.SaveOrLoadState(stream, bw, br, save);
         }
