@@ -188,6 +188,7 @@ namespace DamageBoy.UI
                     ImGui.EndMenu();
                 }
 
+#if DEBUG
                 if (ImGui.BeginMenu("Debug"))
                 {
                     if (ImGui.MenuItem("Trace Log", null, window.IsTraceLogEnabled))
@@ -204,6 +205,7 @@ namespace DamageBoy.UI
 
                     ImGui.EndMenu();
                 }
+#endif
 
                 if (ImGui.BeginMenu("Help"))
                 {
