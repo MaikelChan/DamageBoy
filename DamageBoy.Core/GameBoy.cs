@@ -34,8 +34,6 @@ namespace DamageBoy.Core
         readonly MMU mmu;
         readonly CPU cpu;
 
-        readonly Action<byte[]> screenUpdateCallback;
-
         readonly Cartridge cartridge;
 
         Action emulationStoppedCallback;
@@ -57,12 +55,10 @@ namespace DamageBoy.Core
             dma = new DMA(cartridge, ram, vram);
             timer = new Timer(interruptHandler);
             apu = new APU(addToAudioBufferCallback);
-            ppu = new PPU(interruptHandler, vram, dma, ScreenUpdate, FinishedVBlank);
+            ppu = new PPU(interruptHandler, vram, dma, screenUpdateCallback, ProcessSaveState);
             io = new IO(ppu, dma, timer, apu, serial, interruptHandler);
             mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
             cpu = new CPU(mmu, bootRom != null);
-
-            this.screenUpdateCallback = screenUpdateCallback;
 
             frameLimiterState = FrameLimiterStates.Limited;
 
@@ -164,15 +160,14 @@ namespace DamageBoy.Core
             frameLimiterState = state;
         }
 
-        void ScreenUpdate(byte[] lcdPixels)
-        {
-            screenUpdateCallback?.Invoke(lcdPixels);
-        }
+        #region Settings
 
-        void FinishedVBlank()
-        {
-            ProcessSaveState();
-        }
+        public bool Channel1Enabled { get => apu.Channel1Enabled; set => apu.Channel1Enabled = value; }
+        public bool Channel2Enabled { get => apu.Channel2Enabled; set => apu.Channel2Enabled = value; }
+        public bool Channel3Enabled { get => apu.Channel3Enabled; set => apu.Channel3Enabled = value; }
+        public bool Channel4Enabled { get => apu.Channel4Enabled; set => apu.Channel4Enabled = value; }
+
+        #endregion
 
         #region Save States
 

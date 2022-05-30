@@ -210,7 +210,10 @@ namespace DamageBoy
             {
                 gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, AddToAudioBuffer, SaveUpdate);
                 (renderer as Renderer).RenderMode = Renderer.RenderModes.LCD;
+
+                UpdateGameBoySettings();
                 sound.Start();
+
                 return true;
             }
             catch (Exception ex)
@@ -249,6 +252,16 @@ namespace DamageBoy
             {
                 emulationStoppedCallback?.Invoke();
             }
+        }
+
+        public void UpdateGameBoySettings()
+        {
+            if (gameBoy == null) return;
+
+            gameBoy.Channel1Enabled = settings.Data.Channel1Enabled;
+            gameBoy.Channel2Enabled = settings.Data.Channel2Enabled;
+            gameBoy.Channel3Enabled = settings.Data.Channel3Enabled;
+            gameBoy.Channel4Enabled = settings.Data.Channel4Enabled;
         }
 
         public void ToggleTraceLog()

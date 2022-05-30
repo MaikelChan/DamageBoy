@@ -36,7 +36,7 @@ namespace DamageBoy.Core.Audio
 
         // Constants
 
-        protected const float WAVE_SILENCE = 0f;
+        public const float WAVE_SILENCE = 0f;
 
         public SoundChannel(APU apu)
         {

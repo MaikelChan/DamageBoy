@@ -17,6 +17,11 @@ namespace DamageBoy.Core
         public WaveChannel Channel3 => soundChannels[2] as WaveChannel;
         public NoiseChannel Channel4 => soundChannels[3] as NoiseChannel;
 
+        public bool Channel1Enabled { get; set; }
+        public bool Channel2Enabled { get; set; }
+        public bool Channel3Enabled { get; set; }
+        public bool Channel4Enabled { get; set; }
+
         int sampleClocksToWait;
         int lengthControlClocksToWait;
         int volumeEnvelopeClocksToWait;
@@ -79,10 +84,10 @@ namespace DamageBoy.Core
 
             if (updateSample)
             {
-                (float leftValue1, float rightValue1) = ProcessStereo(soundChannels[0], value1);
-                (float leftValue2, float rightValue2) = ProcessStereo(soundChannels[1], value2);
-                (float leftValue3, float rightValue3) = ProcessStereo(soundChannels[2], value3);
-                (float leftValue4, float rightValue4) = ProcessStereo(soundChannels[3], value4);
+                (float leftValue1, float rightValue1) = Channel1Enabled ? ProcessStereo(soundChannels[0], value1) : (SoundChannel.WAVE_SILENCE, SoundChannel.WAVE_SILENCE);
+                (float leftValue2, float rightValue2) = Channel2Enabled ? ProcessStereo(soundChannels[1], value2) : (SoundChannel.WAVE_SILENCE, SoundChannel.WAVE_SILENCE);
+                (float leftValue3, float rightValue3) = Channel3Enabled ? ProcessStereo(soundChannels[2], value3) : (SoundChannel.WAVE_SILENCE, SoundChannel.WAVE_SILENCE);
+                (float leftValue4, float rightValue4) = Channel4Enabled ? ProcessStereo(soundChannels[3], value4) : (SoundChannel.WAVE_SILENCE, SoundChannel.WAVE_SILENCE);
 
                 float leftValue = (leftValue1 + leftValue2 + leftValue3 + leftValue4) / 4f;
                 float rightValue = (rightValue1 + rightValue2 + rightValue3 + rightValue4) / 4f;

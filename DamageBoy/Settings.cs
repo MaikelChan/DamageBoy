@@ -64,6 +64,10 @@ namespace DamageBoy
         public float LcdEffectVisibility { get; set; }
 
         public float AudioVolume { get; set; }
+        public bool Channel1Enabled { get; set; }
+        public bool Channel2Enabled { get; set; }
+        public bool Channel3Enabled { get; set; }
+        public bool Channel4Enabled { get; set; }
 
         public SettingsData()
         {
@@ -76,6 +80,10 @@ namespace DamageBoy
             LcdEffectVisibility = 1.0f;
 
             AudioVolume = 1f;
+            Channel1Enabled = true;
+            Channel2Enabled = true;
+            Channel3Enabled = true;
+            Channel4Enabled = true;
         }
 
         public void DefaultColors()

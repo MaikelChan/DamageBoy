@@ -108,9 +108,10 @@ namespace DamageBoy.UI
                 {
                     ImGui.TextColored(menuHeaderColor, "General");
 
-                    if (ImGui.MenuItem("Pause While Minimized", string.Empty, settings.Data.PauseWhileMinimized))
+                    bool pauseWhileMinimized = settings.Data.PauseWhileMinimized;
+                    if (ImGui.Checkbox("Pause While Minimized", ref pauseWhileMinimized))
                     {
-                        settings.Data.PauseWhileMinimized = !settings.Data.PauseWhileMinimized;
+                        settings.Data.PauseWhileMinimized = pauseWhileMinimized;
                     }
 
                     ImGui.Separator();
@@ -183,6 +184,38 @@ namespace DamageBoy.UI
                     if (ImGui.SliderFloat("Audio Volume", ref volume, 0.0f, 1.0f))
                     {
                         settings.Data.AudioVolume = volume;
+                    }
+
+                    bool channel1 = settings.Data.Channel1Enabled;
+                    if (ImGui.Checkbox("Enable Channel 1", ref channel1))
+                    {
+                        settings.Data.Channel1Enabled = channel1;
+                        window.UpdateGameBoySettings();
+                    }
+
+                    ImGui.SameLine();
+
+                    bool channel2 = settings.Data.Channel2Enabled;
+                    if (ImGui.Checkbox("Enable Channel 2", ref channel2))
+                    {
+                        settings.Data.Channel2Enabled = channel2;
+                        window.UpdateGameBoySettings();
+                    }
+
+                    bool channel3 = settings.Data.Channel3Enabled;
+                    if (ImGui.Checkbox("Enable Channel 3", ref channel3))
+                    {
+                        settings.Data.Channel3Enabled = channel3;
+                        window.UpdateGameBoySettings();
+                    }
+
+                    ImGui.SameLine();
+
+                    bool channel4 = settings.Data.Channel4Enabled;
+                    if (ImGui.Checkbox("Enable Channel 4", ref channel4))
+                    {
+                        settings.Data.Channel4Enabled = channel4;
+                        window.UpdateGameBoySettings();
                     }
 
                     ImGui.EndMenu();
