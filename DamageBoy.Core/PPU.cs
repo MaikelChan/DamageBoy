@@ -352,7 +352,7 @@ namespace DamageBoy.Core
                     if (LY >= WindowY + Constants.RES_Y) break;
                     if (LY < WindowY) break;
 
-                    if (x >= WindowX - 7 + Constants.RES_X) continue;
+                    if (x > WindowX - 7 + Constants.RES_X) continue;
                     if (x < WindowX - 7) continue;
 
                     int sX = (x - WindowX + 7) & 0xFF;
