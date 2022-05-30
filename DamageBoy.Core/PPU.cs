@@ -333,9 +333,10 @@ namespace DamageBoy.Core
             }
             else
             {
-                for (int p = 0; p < Constants.RES_X * Constants.RES_Y; p++)
+                for (int x = 0; x < Constants.RES_X; x++)
                 {
-                    lcdPixelBuffers[currentBuffer][p] = 0;
+                    int currentLCDPixel = LY * Constants.RES_X + (x);
+                    lcdPixelBuffers[currentBuffer][currentLCDPixel] = COLOR_WHITE;
                 }
             }
 

@@ -21,7 +21,7 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Addams Family, The - Pugsley's Scavenger Hunt (UE) | :heavy_check_mark: |
 | Adventure Island (UE) | :heavy_check_mark: |
 | Adventure Island II - Aliens in Paradise (UE) | :heavy_check_mark: |
-| Adventures of Lolo (E) | :large_blue_diamond: (Black screen during transitions) |
+| Adventures of Lolo (E) | :heavy_check_mark: |
 | Adventures of Rocky and Bullwinkle and Friends, The (U) | :heavy_check_mark: |
 | Adventures of Star Saver, The (UE) | :heavy_check_mark: |
 | Aerostar (JUE) | :heavy_check_mark: |
