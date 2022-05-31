@@ -3,223 +3,222 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace DamageBoy.Core.Audio
+namespace DamageBoy.Core.Audio;
+
+public enum PulsePatterns : byte
 {
-    public enum PulsePatterns : byte
+    Percent12_5,
+    Percent25,
+    Percent50,
+    Percent75
+}
+
+class PulseChannel : SoundChannel, ISweep, IVolumeEnvelope
+{
+    // Sweep
+
+    public byte SweepShift { get; set; }
+    public SweepTypes SweepType { get; set; }
+    public byte SweepTime { get; set; }
+
+    // Pulse
+
+    public PulsePatterns PulsePattern { get; set; }
+
+    // Volume Envelope
+
+    public byte LengthEnvelopeSteps { get; set; }
+    public EnvelopeDirections EnvelopeDirection { get; set; }
+    public byte InitialVolume { get; set; }
+
+    // Frequency
+
+    byte frequencyLo = 0;
+    public byte FrequencyLo
     {
-        Percent12_5,
-        Percent25,
-        Percent50,
-        Percent75
+        get { return frequencyLo; }
+        set { frequencyLo = value; UpdateCurrentFrequency(); }
     }
 
-    class PulseChannel : SoundChannel, ISweep, IVolumeEnvelope
+    byte frequencyHi = 0;
+    public byte FrequencyHi
     {
-        // Sweep
+        get { return frequencyHi; }
+        set { frequencyHi = value; UpdateCurrentFrequency(); }
+    }
 
-        public byte SweepShift { get; set; }
-        public SweepTypes SweepType { get; set; }
-        public byte SweepTime { get; set; }
+    // Helper properties
 
-        // Pulse
+    protected override int MaxLength => 64;
+    protected override bool IsDACEnabled => InitialVolume != 0 || EnvelopeDirection == EnvelopeDirections.Increase;
 
-        public PulsePatterns PulsePattern { get; set; }
+    // Current state
 
-        // Volume Envelope
+    int currentEnvelopeTimer;
+    int currentVolume;
+    int currentSweepTimer;
+    int currentFrequency;
+    float currentWaveCycle;
 
-        public byte LengthEnvelopeSteps { get; set; }
-        public EnvelopeDirections EnvelopeDirection { get; set; }
-        public byte InitialVolume { get; set; }
+    const int UPDATE_FREQUENCY = 131072;
 
-        // Frequency
+    public PulseChannel(APU apu) : base(apu)
+    {
 
-        byte frequencyLo = 0;
-        public byte FrequencyLo
+    }
+
+    protected override float InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
+    {
+        if (updateVolume)
         {
-            get { return frequencyLo; }
-            set { frequencyLo = value; UpdateCurrentFrequency(); }
-        }
-
-        byte frequencyHi = 0;
-        public byte FrequencyHi
-        {
-            get { return frequencyHi; }
-            set { frequencyHi = value; UpdateCurrentFrequency(); }
-        }
-
-        // Helper properties
-
-        protected override int MaxLength => 64;
-        protected override bool IsDACEnabled => InitialVolume != 0 || EnvelopeDirection == EnvelopeDirections.Increase;
-
-        // Current state
-
-        int currentEnvelopeTimer;
-        int currentVolume;
-        int currentSweepTimer;
-        int currentFrequency;
-        float currentWaveCycle;
-
-        const int UPDATE_FREQUENCY = 131072;
-
-        public PulseChannel(APU apu) : base(apu)
-        {
-
-        }
-
-        protected override float InternalProcess(bool updateSample, bool updateVolume, bool updateSweep)
-        {
-            if (updateVolume)
+            if (LengthEnvelopeSteps > 0 && currentEnvelopeTimer > 0)
             {
-                if (LengthEnvelopeSteps > 0 && currentEnvelopeTimer > 0)
+                currentEnvelopeTimer--;
+                if (currentEnvelopeTimer == 0)
                 {
-                    currentEnvelopeTimer--;
-                    if (currentEnvelopeTimer == 0)
-                    {
-                        currentEnvelopeTimer = LengthEnvelopeSteps;
+                    currentEnvelopeTimer = LengthEnvelopeSteps;
 
-                        if (EnvelopeDirection == EnvelopeDirections.Decrease)
+                    if (EnvelopeDirection == EnvelopeDirections.Decrease)
+                    {
+                        currentVolume--;
+                        if (currentVolume < 0) currentVolume = 0;
+                    }
+                    else
+                    {
+                        currentVolume++;
+                        if (currentVolume > 0xF) currentVolume = 0xF;
+                    }
+                }
+            }
+        }
+
+        if (updateSweep)
+        {
+            if (SweepTime > 0 && currentSweepTimer > 0)
+            {
+                currentSweepTimer--;
+                if (currentSweepTimer == 0)
+                {
+                    currentSweepTimer = SweepTime;
+
+                    int frequencyDifference = (int)(currentFrequency / MathF.Pow(2, SweepShift));
+
+                    if (SweepType == SweepTypes.Increase)
+                    {
+                        currentFrequency += frequencyDifference;
+                        if (currentFrequency > 0x7FF)
                         {
-                            currentVolume--;
-                            if (currentVolume < 0) currentVolume = 0;
+                            Stop();
+                            return WAVE_SILENCE;
                         }
-                        else
+                    }
+                    else
+                    {
+                        if (frequencyDifference >= 0 && SweepShift > 0)
                         {
-                            currentVolume++;
-                            if (currentVolume > 0xF) currentVolume = 0xF;
+                            currentFrequency -= frequencyDifference;
                         }
                     }
                 }
             }
+        }
 
-            if (updateSweep)
+        if (updateSample)
+        {
+            float percentage;
+            switch (PulsePattern)
             {
-                if (SweepTime > 0 && currentSweepTimer > 0)
-                {
-                    currentSweepTimer--;
-                    if (currentSweepTimer == 0)
-                    {
-                        currentSweepTimer = SweepTime;
-
-                        int frequencyDifference = (int)(currentFrequency / MathF.Pow(2, SweepShift));
-
-                        if (SweepType == SweepTypes.Increase)
-                        {
-                            currentFrequency += frequencyDifference;
-                            if (currentFrequency > 0x7FF)
-                            {
-                                Stop();
-                                return WAVE_SILENCE;
-                            }
-                        }
-                        else
-                        {
-                            if (frequencyDifference >= 0 && SweepShift > 0)
-                            {
-                                currentFrequency -= frequencyDifference;
-                            }
-                        }
-                    }
-                }
+                default:
+                case PulsePatterns.Percent12_5: percentage = 0.75f; break;
+                case PulsePatterns.Percent25: percentage = 0.5f; break;
+                case PulsePatterns.Percent50: percentage = 0.0f; break;
+                case PulsePatterns.Percent75: percentage = -0.5f; break;
             }
 
-            if (updateSample)
-            {
-                float percentage;
-                switch (PulsePattern)
-                {
-                    default:
-                    case PulsePatterns.Percent12_5: percentage = 0.75f; break;
-                    case PulsePatterns.Percent25: percentage = 0.5f; break;
-                    case PulsePatterns.Percent50: percentage = 0.0f; break;
-                    case PulsePatterns.Percent75: percentage = -0.5f; break;
-                }
+            float frequency = (float)UPDATE_FREQUENCY / (2048 - currentFrequency);
 
-                float frequency = (float)UPDATE_FREQUENCY / (2048 - currentFrequency);
+            currentWaveCycle += (frequency * MathF.PI * 2) / Constants.SAMPLE_RATE;
+            currentWaveCycle %= Constants.SAMPLE_RATE;
 
-                currentWaveCycle += (frequency * MathF.PI * 2) / Constants.SAMPLE_RATE;
-                currentWaveCycle %= Constants.SAMPLE_RATE;
-
-                float wave = MathF.Sin(currentWaveCycle);
-                wave = wave > percentage ? 1f : -0.999f;
-                wave *= currentVolume / (float)0xF;
-                return wave;
-            }
-
-            return WAVE_SILENCE;
+            float wave = MathF.Sin(currentWaveCycle);
+            wave = wave > percentage ? 1f : -0.999f;
+            wave *= currentVolume / (float)0xF;
+            return wave;
         }
 
-        public override void Initialize(bool reset)
+        return WAVE_SILENCE;
+    }
+
+    public override void Initialize(bool reset)
+    {
+        base.Initialize(reset);
+
+        if (reset)
         {
-            base.Initialize(reset);
+            currentVolume = InitialVolume;
+            currentEnvelopeTimer = LengthEnvelopeSteps;
+            currentSweepTimer = SweepTime;
+            currentWaveCycle = 0;
 
-            if (reset)
-            {
-                currentVolume = InitialVolume;
-                currentEnvelopeTimer = LengthEnvelopeSteps;
-                currentSweepTimer = SweepTime;
-                currentWaveCycle = 0;
-
-                Enabled = true;
-            }
+            Enabled = true;
         }
+    }
 
-        public override void Reset()
-        {
-            base.Reset();
+    public override void Reset()
+    {
+        base.Reset();
 
-            SweepShift = 0;
-            SweepType = SweepTypes.Increase;
-            SweepTime = 0;
+        SweepShift = 0;
+        SweepType = SweepTypes.Increase;
+        SweepTime = 0;
 
-            PulsePattern = PulsePatterns.Percent12_5;
+        PulsePattern = PulsePatterns.Percent12_5;
 
-            LengthEnvelopeSteps = 0;
-            EnvelopeDirection = EnvelopeDirections.Decrease;
-            InitialVolume = 0;
+        LengthEnvelopeSteps = 0;
+        EnvelopeDirection = EnvelopeDirections.Decrease;
+        InitialVolume = 0;
 
-            FrequencyLo = 0;
-            FrequencyHi = 0;
+        FrequencyLo = 0;
+        FrequencyHi = 0;
 
-            currentEnvelopeTimer = 0;
-            currentVolume = 0;
-            currentSweepTimer = 0;
-            currentFrequency = 0;
-            currentWaveCycle = 0f;
-        }
+        currentEnvelopeTimer = 0;
+        currentVolume = 0;
+        currentSweepTimer = 0;
+        currentFrequency = 0;
+        currentWaveCycle = 0f;
+    }
 
-        public override void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
-        {
-            Enabled = SaveState.SaveLoadValue(bw, br, save, Enabled);
-            LengthType = (LengthTypes)SaveState.SaveLoadValue(bw, br, save, (byte)LengthType);
-            Output2 = SaveState.SaveLoadValue(bw, br, save, Output2);
-            Output1 = SaveState.SaveLoadValue(bw, br, save, Output1);
-            currentLength = SaveState.SaveLoadValue(bw, br, save, currentLength);
+    public override void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+    {
+        Enabled = SaveState.SaveLoadValue(bw, br, save, Enabled);
+        LengthType = (LengthTypes)SaveState.SaveLoadValue(bw, br, save, (byte)LengthType);
+        Output2 = SaveState.SaveLoadValue(bw, br, save, Output2);
+        Output1 = SaveState.SaveLoadValue(bw, br, save, Output1);
+        currentLength = SaveState.SaveLoadValue(bw, br, save, currentLength);
 
-            SweepShift = SaveState.SaveLoadValue(bw, br, save, SweepShift);
-            SweepType = (SweepTypes)SaveState.SaveLoadValue(bw, br, save, (byte)SweepType);
-            SweepTime = SaveState.SaveLoadValue(bw, br, save, SweepTime);
+        SweepShift = SaveState.SaveLoadValue(bw, br, save, SweepShift);
+        SweepType = (SweepTypes)SaveState.SaveLoadValue(bw, br, save, (byte)SweepType);
+        SweepTime = SaveState.SaveLoadValue(bw, br, save, SweepTime);
 
-            PulsePattern = (PulsePatterns)SaveState.SaveLoadValue(bw, br, save, (byte)PulsePattern);
+        PulsePattern = (PulsePatterns)SaveState.SaveLoadValue(bw, br, save, (byte)PulsePattern);
 
-            LengthEnvelopeSteps = SaveState.SaveLoadValue(bw, br, save, LengthEnvelopeSteps);
-            EnvelopeDirection = (EnvelopeDirections)SaveState.SaveLoadValue(bw, br, save, (byte)EnvelopeDirection);
-            InitialVolume = SaveState.SaveLoadValue(bw, br, save, InitialVolume);
+        LengthEnvelopeSteps = SaveState.SaveLoadValue(bw, br, save, LengthEnvelopeSteps);
+        EnvelopeDirection = (EnvelopeDirections)SaveState.SaveLoadValue(bw, br, save, (byte)EnvelopeDirection);
+        InitialVolume = SaveState.SaveLoadValue(bw, br, save, InitialVolume);
 
-            FrequencyLo = SaveState.SaveLoadValue(bw, br, save, FrequencyLo);
-            FrequencyHi = SaveState.SaveLoadValue(bw, br, save, FrequencyHi);
+        FrequencyLo = SaveState.SaveLoadValue(bw, br, save, FrequencyLo);
+        FrequencyHi = SaveState.SaveLoadValue(bw, br, save, FrequencyHi);
 
-            currentEnvelopeTimer = SaveState.SaveLoadValue(bw, br, save, currentEnvelopeTimer);
-            currentVolume = SaveState.SaveLoadValue(bw, br, save, currentVolume);
-            currentSweepTimer = SaveState.SaveLoadValue(bw, br, save, currentSweepTimer);
-            currentFrequency = SaveState.SaveLoadValue(bw, br, save, currentFrequency);
-            currentWaveCycle = SaveState.SaveLoadValue(bw, br, save, currentWaveCycle);
-        }
+        currentEnvelopeTimer = SaveState.SaveLoadValue(bw, br, save, currentEnvelopeTimer);
+        currentVolume = SaveState.SaveLoadValue(bw, br, save, currentVolume);
+        currentSweepTimer = SaveState.SaveLoadValue(bw, br, save, currentSweepTimer);
+        currentFrequency = SaveState.SaveLoadValue(bw, br, save, currentFrequency);
+        currentWaveCycle = SaveState.SaveLoadValue(bw, br, save, currentWaveCycle);
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void UpdateCurrentFrequency()
-        {
-            currentFrequency = (FrequencyHi << 8) | FrequencyLo;
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void UpdateCurrentFrequency()
+    {
+        currentFrequency = (FrequencyHi << 8) | FrequencyLo;
     }
 }

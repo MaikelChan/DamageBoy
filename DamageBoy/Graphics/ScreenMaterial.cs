@@ -1,40 +1,40 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
-namespace DamageBoy.Graphics
+namespace DamageBoy.Graphics;
+
+class ScreenMaterial : Material
 {
-    class ScreenMaterial : Material
+    public Texture2D MainTexture { get; set; }
+    public Color4 Color0 { get; set; }
+    public Color4 Color1 { get; set; }
+    public Color4 Color2 { get; set; }
+    public Color4 Color3 { get; set; }
+    public float LcdEffect { get; set; }
+
+    public ScreenMaterial(BaseRenderer renderer) : base(renderer, vsSource, fsSource)
     {
-        public Texture2D MainTexture { get; set; }
-        public Color4 Color0 { get; set; }
-        public Color4 Color1 { get; set; }
-        public Color4 Color2 { get; set; }
-        public Color4 Color3 { get; set; }
-        public float LcdEffect { get; set; }
+        DefineUniform("uViewportSize", UniformTypes.Float2);
+        DefineUniform("uMainTexture", UniformTypes.Sampler2D);
+        DefineUniform("uColor0", UniformTypes.Float3);
+        DefineUniform("uColor1", UniformTypes.Float3);
+        DefineUniform("uColor2", UniformTypes.Float3);
+        DefineUniform("uColor3", UniformTypes.Float3);
+        DefineUniform("uLcdEffect", UniformTypes.Float1);
+    }
 
-        public ScreenMaterial(BaseRenderer renderer) : base(renderer, vsSource, fsSource)
-        {
-            DefineUniform("uViewportSize", UniformTypes.Float2);
-            DefineUniform("uMainTexture", UniformTypes.Sampler2D);
-            DefineUniform("uColor0", UniformTypes.Float3);
-            DefineUniform("uColor1", UniformTypes.Float3);
-            DefineUniform("uColor2", UniformTypes.Float3);
-            DefineUniform("uColor3", UniformTypes.Float3);
-            DefineUniform("uLcdEffect", UniformTypes.Float1);
-        }
+    public override void SetUniforms(GlobalUniforms globalUniforms)
+    {
+        SetUniform("uViewportSize", globalUniforms.ViewportSize);
+        SetUniform("uMainTexture", TextureTarget.Texture2D, 0, MainTexture);
+        SetUniform("uColor0", new Vector3(Color0.R, Color0.G, Color0.B));
+        SetUniform("uColor1", new Vector3(Color1.R, Color1.G, Color1.B));
+        SetUniform("uColor2", new Vector3(Color2.R, Color2.G, Color2.B));
+        SetUniform("uColor3", new Vector3(Color3.R, Color3.G, Color3.B));
+        SetUniform("uLcdEffect", LcdEffect);
+    }
 
-        public override void SetUniforms(GlobalUniforms globalUniforms)
-        {
-            SetUniform("uViewportSize", globalUniforms.ViewportSize);
-            SetUniform("uMainTexture", TextureTarget.Texture2D, 0, MainTexture);
-            SetUniform("uColor0", new Vector3(Color0.R, Color0.G, Color0.B));
-            SetUniform("uColor1", new Vector3(Color1.R, Color1.G, Color1.B));
-            SetUniform("uColor2", new Vector3(Color2.R, Color2.G, Color2.B));
-            SetUniform("uColor3", new Vector3(Color3.R, Color3.G, Color3.B));
-            SetUniform("uLcdEffect", LcdEffect);
-        }
-
-        const string vsSource = @"#version 330 core
+    const string vsSource = @"#version 330 core
 out vec2 uv0;
 
 void main()
@@ -46,7 +46,7 @@ void main()
     uv0.y = (1.0 - y) * 0.5;
 }";
 
-        const string fsSource = @"#version 330 core
+    const string fsSource = @"#version 330 core
 in vec2 uv0;
 
 uniform vec2 uViewportSize;
@@ -94,5 +94,4 @@ void main()
 
     fragColor = vec4(color, 1);
 }";
-    }
 }

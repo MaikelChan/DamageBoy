@@ -1,9 +1,8 @@
 ﻿using DamageBoy.Core.State;
 
-namespace DamageBoy.Core.MemoryBankControllers
+namespace DamageBoy.Core.MemoryBankControllers;
+
+interface IMemoryBankController : IState
 {
-    interface IMemoryBankController: IState
-    {
-        byte this[int index] { get; set; }
-    }
+    byte this[int index] { get; set; }
 }

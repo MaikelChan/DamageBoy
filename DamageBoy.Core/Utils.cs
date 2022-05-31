@@ -1,43 +1,42 @@
 ﻿using System;
 
-namespace DamageBoy.Core
+namespace DamageBoy.Core;
+
+public enum LogType
 {
-    public enum LogType
+    Info,
+    Warning,
+    Error
+}
+
+public static class Utils
+{
+    public static void Log(string message)
     {
-        Info,
-        Warning,
-        Error
+        Log(LogType.Info, message);
     }
 
-    public static class Utils
+    public static void Log(LogType type, string message)
     {
-        public static void Log(string message)
+        switch (type)
         {
-            Log(LogType.Info, message);
+            default:
+            case LogType.Info:
+                Console.ForegroundColor = ConsoleColor.White;
+                break;
+            case LogType.Warning:
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                break;
+            case LogType.Error:
+                Console.ForegroundColor = ConsoleColor.Red;
+                break;
         }
 
-        public static void Log(LogType type, string message)
-        {
-            switch (type)
-            {
-                default:
-                case LogType.Info:
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
-                case LogType.Warning:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
-                case LogType.Error:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-            }
+        Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] [{type}] {message}");
+    }
 
-            Console.WriteLine($"[{DateTime.Now.ToLongTimeString()}] [{type}] {message}");
-        }
-
-        public static void LogEmpty()
-        {
-            Console.WriteLine();
-        }
+    public static void LogEmpty()
+    {
+        Console.WriteLine();
     }
 }

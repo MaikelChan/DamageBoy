@@ -1,10 +1,9 @@
 ﻿using OpenTK.Mathematics;
 
-namespace DamageBoy.Graphics
+namespace DamageBoy.Graphics;
+
+class GlobalUniforms
 {
-    class GlobalUniforms
-    {
-        public float Time { get; set; }
-        public Vector2 ViewportSize { get; set; }
-    }
+    public float Time { get; set; }
+    public Vector2 ViewportSize { get; set; }
 }

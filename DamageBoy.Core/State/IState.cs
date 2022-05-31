@@ -1,9 +1,8 @@
 ﻿using System.IO;
 
-namespace DamageBoy.Core.State
+namespace DamageBoy.Core.State;
+
+internal interface IState
 {
-    internal interface IState
-    {
-        void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save);
-    }
+    void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save);
 }
