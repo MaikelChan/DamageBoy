@@ -37,6 +37,8 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Alien vs Predator - The Last of His Clan (JU) | :heavy_check_mark: |
 | Alleyway (World) | :heavy_check_mark: |
 | All-Star Baseball 99 (U) | :heavy_check_mark: |
+| Contra | :heavy_check_mark: |
+| Contra - The Alien Wars | :heavy_check_mark: |
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
 | Donkey Kong Land 2 | :x: (Crashes after title screen) |
 | Donkey Kong Land 3 | :x: (Crashes after title screen) |
@@ -44,19 +46,33 @@ Here you can check game compatibility. Games not listed here have not been teste
 | F-1 Race (W) (V1.1) [!] | :heavy_check_mark: |
 | Ferrari - Grand Prix Challenge (U) [!] | :heavy_check_mark: |
 | Ganso!! Yancha Maru | :heavy_check_mark: |
+| Garfield Labyrinth | :heavy_check_mark: |
+| Genki Bakuhatsu Gambaruger | :heavy_check_mark: |
+| Gluecksrad | :heavy_check_mark: |
+| Go! Go! Tank | :heavy_check_mark: |
+| God Medicine - Fantasy Sekai no Tanjou | :heavy_check_mark: |
 | Gojira-kun | :heavy_check_mark: |
 | Indien dans la Ville, Un (F) | :large_blue_diamond: (Music glitches) |
-| Initial D Gaiden (J) | :warning: (The game freezes and has visual glitches when selecting the first game option. It shouldn't be selectable?)
+| Initial D Gaiden (J) | :warning: (The game freezes and has visual glitches when selecting the first game option. It shouldn't be selectable?) |
 | Kirby's Dream Land (UE) [!] | :heavy_check_mark: |
 | Kirby's Dream Land 2 (U) [S][!] | :heavy_check_mark: |
 | Lamborghini American Challenge (U) [!] | :large_blue_diamond: (Some music sounds bad) |
 | Legend of Zelda, The - Link's Awakening (U) (V1.2) [!] | :heavy_check_mark: |
 | Little Mermaid, The (E) | :heavy_check_mark: |
 | Mario & Yoshi (E) [!] | :heavy_check_mark: |
+| Megaman - Dr Wily's Revenge | :heavy_check_mark: |
+| Megaman II | :heavy_check_mark: |
+| Megaman III | :heavy_check_mark: |
+| Megaman IV | :heavy_check_mark: |
+| Megaman V | :warning: (Game resets when selecting certain levels) |
+| Megami Tensei Gaiden - Last Bible | :large_blue_diamond: |
+| Megami Tensei Gaiden - Last Bible II | :large_blue_diamond: |
 | Metroid II - Return of Samus (W) [!] | :heavy_check_mark: |
 | Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
 | Pokemon - Yellow Version (UE) [C][!] | :heavy_check_mark: |
 | Prehistorik Man (UE) | :warning: (Audio and visual glitches) |
+| Probotector | :heavy_check_mark: |
+| Probotector 2 | :heavy_check_mark: |
 | Road Rash (UE) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
 | Spy vs Spy - Operation Boobytrap | :heavy_check_mark: |
 | Sunsoft Grand Prix | :heavy_check_mark: |
