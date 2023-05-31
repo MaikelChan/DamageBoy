@@ -31,7 +31,7 @@ It requires [.NET 6.0 Runtime](https://dotnet.microsoft.com/download) and OpenGL
   <img title="Wario Land - Screenshot" src="/02.png">
   <img title="Zelda Link's Awakening - Screenshot" src="/03.png">
   <img title="Donkey Kong Land - Screenshot" src="/04.png">
-  <img title="Pokemon Red - Screenshot" src="/05.png">
-  <img title="Kirby's Dreamland - Screenshot" src="/06.png">
-  <img title="Metroid II Samus Returns - Screenshot" src="/07.png">
+  <img title="Kirby's Dreamland - Screenshot" src="/05.png">
+  <img title="Metroid II Samus Returns - Screenshot" src="/06.png">
+  <img title="Pokemon Red - Screenshot" src="/07.png">
 </p>
