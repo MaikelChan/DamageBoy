@@ -76,6 +76,7 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Road Rash (UE) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
 | Spy vs Spy - Operation Boobytrap | :heavy_check_mark: |
 | Sunsoft Grand Prix | :heavy_check_mark: |
+| Super Bikkuriman - Densetsu no Sekiban | :heavy_check_mark: |
 | Super Chinese Land | :heavy_check_mark: |
 | Super Chinese Land 1,2,3 | :warning: (Doesn't load the correct game or goes back to title screen) |
 | Super James Pond | :heavy_check_mark: |

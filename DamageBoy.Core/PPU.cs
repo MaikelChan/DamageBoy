@@ -405,6 +405,10 @@ class PPU : IDisposable, IState
 
                 ushort tileDataAddress = (ushort)(spriteTile * TILE_BYTES_SIZE + spriteRow);
 
+                // Prevent sprites being able to draw data from the BG exclusive area.
+                // Some games like Super Bikkuriman try to do this, and it should not be rendered.
+                if (tileDataAddress >= 0x1000) continue;
+
                 int minX = Math.Max(spriteX, 0);
                 int maxX = Math.Min(spriteX + 8, Constants.RES_X);
 
