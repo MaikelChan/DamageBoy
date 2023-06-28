@@ -15,12 +15,40 @@ class FileBrowserUI : BaseUI
     readonly Action<string> openFileCallback;
 
     readonly EnumerationOptions enumerationOptions;
-    readonly List<string> currentFolderEntries;
+    readonly List<FolderEntry> currentFolderEntries;
 
     string selectedEntry;
-    string currentFolder;
 
-    const int ELEMENTS_WIDTH = 600;
+    string currentFolder;
+    string CurrentFolder
+    {
+        get => currentFolder;
+        set
+        {
+            if (currentFolder == value) return;
+            if (!Directory.Exists(value)) return;
+            currentFolder = value;
+            PopulateFileSystemEntries();
+        }
+    }
+
+    struct FolderEntry
+    {
+        public string FullPath { get; set; }
+        public string EntryName { get; set; }
+        public bool IsDirectory { get; set; }
+
+        public FolderEntry(string fullPath, string entryName, bool isDirectory)
+        {
+            FullPath = fullPath;
+            EntryName = entryName;
+            IsDirectory = isDirectory;
+        }
+    }
+
+    const int ELEMENTS_WIDTH = 800;
+    const int HORIZONTAL_SEPARATION = 8;
+    const int BUTTON_WIDTH = 120;
 
     public FileBrowserUI(string windowTitle, string startingPath, string searchFilter = null, bool onlyAllowFolders = false, Action<string> openFileCallback = null)
     {
@@ -33,15 +61,14 @@ class FileBrowserUI : BaseUI
             this.windowTitle = "Open File";
         }
 
-        if (!string.IsNullOrWhiteSpace(startingPath) && Directory.Exists(startingPath))
+        enumerationOptions = new EnumerationOptions()
         {
-            currentFolder = startingPath;
-        }
-        else
-        {
-            currentFolder = Environment.CurrentDirectory;
-            if (string.IsNullOrWhiteSpace(currentFolder)) currentFolder = AppContext.BaseDirectory;
-        }
+            MatchType = MatchType.Win32,
+            ReturnSpecialDirectories = false,
+            AttributesToSkip = FileAttributes.Hidden | FileAttributes.System
+        };
+
+        currentFolderEntries = new List<FolderEntry>();
 
         if (!string.IsNullOrWhiteSpace(searchFilter))
         {
@@ -52,17 +79,15 @@ class FileBrowserUI : BaseUI
         this.onlyAllowFolders = onlyAllowFolders;
         this.openFileCallback = openFileCallback;
 
-        UpdateDrives();
-        SetDriveIndexFromDirectory(currentFolder);
-
-        currentFolderEntries = new List<string>();
-
-        enumerationOptions = new EnumerationOptions()
+        if (!string.IsNullOrWhiteSpace(startingPath) && Directory.Exists(startingPath))
         {
-            MatchType = MatchType.Win32,
-            ReturnSpecialDirectories = true,
-            AttributesToSkip = FileAttributes.Hidden | FileAttributes.System
-        };
+            currentFolder = startingPath;
+        }
+        else
+        {
+            currentFolder = Environment.CurrentDirectory;
+            if (string.IsNullOrWhiteSpace(currentFolder)) currentFolder = AppContext.BaseDirectory;
+        }
     }
 
     protected override void VisibilityChanged(bool isVisible)
@@ -72,6 +97,8 @@ class FileBrowserUI : BaseUI
         if (isVisible)
         {
             ImGui.OpenPopup(windowTitle);
+
+            Refresh();
         }
     }
 
@@ -83,55 +110,77 @@ class FileBrowserUI : BaseUI
             return;
         }
 
-        UpdateDrives();
+        ImGui.PushItemWidth(ELEMENTS_WIDTH - BUTTON_WIDTH - HORIZONTAL_SEPARATION);
 
-        ImGui.PushItemWidth(ELEMENTS_WIDTH);
-
-        if (ImGui.Combo("##Drive", ref currentDriveIndex, drivesNames.ToArray(), drivesNames.Count))
+        if (ImGui.Combo("##Drive", ref currentDriveIndex, drivesNames[0..drivesCount], drivesCount))
         {
             CurrentDriveChanged();
         }
 
-        if (ImGui.InputText("##Current Folder", ref currentFolder, 512))
+        ImGui.SameLine();
+
+        if (ImGui.Button("Refresh", new Vector2(BUTTON_WIDTH, 0)))
         {
-            if (string.IsNullOrWhiteSpace(currentFolder))
+            Refresh();
+        }
+
+        string cf = CurrentFolder;
+        if (ImGui.InputText("##Current Folder", ref cf, 512))
+        {
+            CurrentFolder = cf;
+
+            if (string.IsNullOrWhiteSpace(CurrentFolder))
             {
                 CurrentDriveChanged();
             }
 
             selectedEntry = null;
-            SetDriveIndexFromDirectory(currentFolder);
+            SetDriveIndexFromDirectory();
         }
 
         ImGui.PopItemWidth();
 
+        ImGui.SameLine();
+
+        if (ImGui.Button("Go to Parent", new Vector2(BUTTON_WIDTH, 0)))
+        {
+            if (Directory.Exists(CurrentFolder))
+            {
+                DirectoryInfo info = Directory.GetParent(CurrentFolder);
+                if (info != null)
+                {
+                    CurrentFolder = info.FullName;
+                }
+            }
+        }
+
         if (ImGui.BeginChildFrame(1, new Vector2(ELEMENTS_WIDTH, 400)))
         {
-            var directory = new DirectoryInfo(currentFolder);
-
-            if (directory.Exists)
+            for (int e = 0; e < currentFolderEntries.Count; e++)
             {
-                PopulateFileSystemEntries(directory.FullName);
+                FolderEntry entry = currentFolderEntries[e];
 
-                foreach (var entry in currentFolderEntries)
+                if (entry.IsDirectory)
                 {
-                    if (Directory.Exists(entry))
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 1f, 0f, 1f));
+                    bool clicked = ImGui.Selectable(entry.EntryName, false, ImGuiSelectableFlags.DontClosePopups);
+                    ImGui.PopStyleColor();
+
+                    if (clicked)
                     {
-                        var name = Path.GetFileName(entry);
-                        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 1f, 0f, 1f));
-                        if (ImGui.Selectable(name + "/", false, ImGuiSelectableFlags.DontClosePopups))
-                        {
-                            currentFolder = entry;
-                            selectedEntry = null;
-                        }
-                        ImGui.PopStyleColor();
+                        CurrentFolder = entry.FullPath;
+                        selectedEntry = null;
+                        break;
                     }
-                    else
+                }
+                else
+                {
+                    bool isSelected = selectedEntry == entry.FullPath;
+                    bool clicked = ImGui.Selectable(entry.EntryName, isSelected, ImGuiSelectableFlags.DontClosePopups);
+
+                    if (clicked)
                     {
-                        var name = Path.GetFileName(entry);
-                        bool isSelected = selectedEntry == entry;
-                        if (ImGui.Selectable(name, isSelected, ImGuiSelectableFlags.DontClosePopups))
-                            selectedEntry = entry;
+                        selectedEntry = entry.FullPath;
                     }
                 }
             }
@@ -139,7 +188,7 @@ class FileBrowserUI : BaseUI
             ImGui.EndChildFrame();
         }
 
-        if (ImGui.Button("Cancel", new Vector2(120, 0)))
+        if (ImGui.Button("Cancel", new Vector2(BUTTON_WIDTH, 0)))
         {
             Close();
         }
@@ -148,9 +197,9 @@ class FileBrowserUI : BaseUI
         {
             ImGui.SameLine();
 
-            if (ImGui.Button("Open", new Vector2(120, 0)))
+            if (ImGui.Button("Open", new Vector2(BUTTON_WIDTH, 0)))
             {
-                openFileCallback?.Invoke(currentFolder);
+                openFileCallback?.Invoke(CurrentFolder);
                 Close();
             }
         }
@@ -158,7 +207,7 @@ class FileBrowserUI : BaseUI
         {
             ImGui.SameLine();
 
-            if (ImGui.Button("Open", new Vector2(120, 0)))
+            if (ImGui.Button("Open", new Vector2(BUTTON_WIDTH, 0)))
             {
                 openFileCallback?.Invoke(selectedEntry);
                 Close();
@@ -174,31 +223,27 @@ class FileBrowserUI : BaseUI
         isVisible = false;
     }
 
-    void PopulateFileSystemEntries(string directory)
+    void PopulateFileSystemEntries()
     {
-        if (string.IsNullOrWhiteSpace(directory))
+        if (string.IsNullOrWhiteSpace(CurrentFolder))
         {
             return;
         }
 
-        string[] directories = Directory.GetDirectories(directory, string.Empty, enumerationOptions);
-
-        currentFolderEntries.Clear();
-        currentFolderEntries.AddRange(directories);
-
-        if (!onlyAllowFolders)
+        try
         {
-            string[] files;
+            string[] directories = Directory.GetDirectories(CurrentFolder, string.Empty, enumerationOptions);
 
-            try
+            currentFolderEntries.Clear();
+
+            for (int d = 0; d < directories.Length; d++)
             {
-                files = Directory.GetFiles(directory, string.Empty);
+                currentFolderEntries.Add(new FolderEntry(directories[d], Path.GetFileName(directories[d]) + "/", true));
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                Utils.Log(LogType.Warning, ex.Message);
-                return;
-            }
+
+            if (onlyAllowFolders) return;
+
+            string[] files = Directory.GetFiles(CurrentFolder, string.Empty);
 
             for (int f = 0; f < files.Length; f++)
             {
@@ -208,48 +253,64 @@ class FileBrowserUI : BaseUI
 
                     if (allowedExtensions.Contains(extension))
                     {
-                        currentFolderEntries.Add(files[f]);
+                        currentFolderEntries.Add(new FolderEntry(files[f], Path.GetFileName(files[f]), false));
                     }
                 }
                 else
                 {
-                    currentFolderEntries.Add(files[f]);
+                    currentFolderEntries.Add(new FolderEntry(files[f], Path.GetFileName(files[f]), false));
                 }
             }
         }
+        catch (Exception ex)
+        {
+            Utils.Log(LogType.Error, ex.Message);
+            return;
+        }
+    }
+
+    void Refresh()
+    {
+        UpdateDrives();
+        SetDriveIndexFromDirectory();
+        PopulateFileSystemEntries();
     }
 
     #region Drive handling
 
-    readonly List<string> drivesNames = new List<string>();
+    readonly string[] drivesNames = new string[WINDOWS_MAX_DRIVES];
+    int drivesCount = 0;
     int currentDriveIndex = 0;
+
+    const int WINDOWS_MAX_DRIVES = 26;
 
     void UpdateDrives()
     {
-        drivesNames.Clear();
+        drivesCount = 0;
 
         DriveInfo[] drives = DriveInfo.GetDrives();
 
         for (int d = 0; d < drives.Length; d++)
         {
             if (!drives[d].IsReady) continue;
-            drivesNames.Add(drives[d].Name);
+            drivesNames[drivesCount] = drives[d].Name;
+            drivesCount++;
         }
 
-        if (currentDriveIndex < 0 || currentDriveIndex >= drivesNames.Count)
+        if (currentDriveIndex < 0 || currentDriveIndex >= drivesCount)
         {
             currentDriveIndex = 0;
             CurrentDriveChanged();
         }
     }
 
-    void SetDriveIndexFromDirectory(string directory)
+    void SetDriveIndexFromDirectory()
     {
         DirectoryInfo info;
 
         try
         {
-            info = new DirectoryInfo(directory);
+            info = new DirectoryInfo(CurrentFolder);
         }
         catch (Exception ex)
         {
@@ -264,7 +325,7 @@ class FileBrowserUI : BaseUI
             return;
         }
 
-        for (int d = 0; d < drivesNames.Count; d++)
+        for (int d = 0; d < drivesCount; d++)
         {
             if (drivesNames[d] == info.Root.Name)
             {
@@ -279,7 +340,7 @@ class FileBrowserUI : BaseUI
     void CurrentDriveChanged()
     {
         selectedEntry = null;
-        currentFolder = drivesNames[currentDriveIndex];
+        CurrentFolder = drivesNames[currentDriveIndex];
     }
 
     #endregion
