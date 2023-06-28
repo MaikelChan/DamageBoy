@@ -48,7 +48,7 @@ class FileBrowserUI : BaseUI
 
     const int ELEMENTS_WIDTH = 800;
     const int HORIZONTAL_SEPARATION = 8;
-    const int BUTTON_WIDTH = 120;
+    const int BUTTON_WIDTH = 100;
 
     public FileBrowserUI(string windowTitle, string startingPath, string searchFilter = null, bool onlyAllowFolders = false, Action<string> openFileCallback = null)
     {
@@ -110,19 +110,36 @@ class FileBrowserUI : BaseUI
             return;
         }
 
-        ImGui.PushItemWidth(ELEMENTS_WIDTH - BUTTON_WIDTH - HORIZONTAL_SEPARATION);
+        if (ImGui.Button("Refresh", new Vector2(BUTTON_WIDTH, 0)))
+        {
+            Refresh();
+        }
+
+        ImGui.SameLine();
+
+        if (ImGui.Button("Go to Parent", new Vector2(BUTTON_WIDTH, 0)))
+        {
+            if (Directory.Exists(CurrentFolder))
+            {
+                DirectoryInfo info = Directory.GetParent(CurrentFolder);
+                if (info != null)
+                {
+                    CurrentFolder = info.FullName;
+                }
+            }
+        }
+
+        ImGui.SameLine();
+        ImGui.PushItemWidth(ELEMENTS_WIDTH - ((BUTTON_WIDTH + HORIZONTAL_SEPARATION) * 2));
 
         if (ImGui.Combo("##Drive", ref currentDriveIndex, drivesNames[0..drivesCount], drivesCount))
         {
             CurrentDriveChanged();
         }
 
-        ImGui.SameLine();
+        ImGui.PopItemWidth();
 
-        if (ImGui.Button("Refresh", new Vector2(BUTTON_WIDTH, 0)))
-        {
-            Refresh();
-        }
+        ImGui.PushItemWidth(ELEMENTS_WIDTH);
 
         string cf = CurrentFolder;
         if (ImGui.InputText("##Current Folder", ref cf, 512))
@@ -140,47 +157,45 @@ class FileBrowserUI : BaseUI
 
         ImGui.PopItemWidth();
 
-        ImGui.SameLine();
-
-        if (ImGui.Button("Go to Parent", new Vector2(BUTTON_WIDTH, 0)))
-        {
-            if (Directory.Exists(CurrentFolder))
-            {
-                DirectoryInfo info = Directory.GetParent(CurrentFolder);
-                if (info != null)
-                {
-                    CurrentFolder = info.FullName;
-                }
-            }
-        }
-
         if (ImGui.BeginChildFrame(1, new Vector2(ELEMENTS_WIDTH, 400)))
         {
-            for (int e = 0; e < currentFolderEntries.Count; e++)
+            ImGuiListClipperPtr listClipper;
+
+            unsafe
             {
-                FolderEntry entry = currentFolderEntries[e];
+                listClipper = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
+            }
 
-                if (entry.IsDirectory)
+            listClipper.Begin(currentFolderEntries.Count);
+
+            while (listClipper.Step())
+            {
+                for (int e = listClipper.DisplayStart; e < listClipper.DisplayEnd; e++)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 1f, 0f, 1f));
-                    bool clicked = ImGui.Selectable(entry.EntryName, false, ImGuiSelectableFlags.DontClosePopups);
-                    ImGui.PopStyleColor();
+                    FolderEntry entry = currentFolderEntries[e];
 
-                    if (clicked)
+                    if (entry.IsDirectory)
                     {
-                        CurrentFolder = entry.FullPath;
-                        selectedEntry = null;
-                        break;
+                        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 1f, 0f, 1f));
+                        bool clicked = ImGui.Selectable(entry.EntryName, false, ImGuiSelectableFlags.DontClosePopups);
+                        ImGui.PopStyleColor();
+
+                        if (clicked)
+                        {
+                            CurrentFolder = entry.FullPath;
+                            selectedEntry = null;
+                            break;
+                        }
                     }
-                }
-                else
-                {
-                    bool isSelected = selectedEntry == entry.FullPath;
-                    bool clicked = ImGui.Selectable(entry.EntryName, isSelected, ImGuiSelectableFlags.DontClosePopups);
-
-                    if (clicked)
+                    else
                     {
-                        selectedEntry = entry.FullPath;
+                        bool isSelected = selectedEntry == entry.FullPath;
+                        bool clicked = ImGui.Selectable(entry.EntryName, isSelected, ImGuiSelectableFlags.DontClosePopups);
+
+                        if (clicked)
+                        {
+                            selectedEntry = entry.FullPath;
+                        }
                     }
                 }
             }
