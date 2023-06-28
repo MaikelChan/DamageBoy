@@ -119,15 +119,26 @@ class CPU : IDisposable, IState
             // Disable the Boot ROM in the corresponding IO register
             mmu[0xFF50] = 0x01;
         }
+
+#if DEBUG
+        bootromFinishedExecuting = false;
+        totalCycles = 0;
+#endif
     }
 
     public void Dispose()
     {
+#if DEBUG
         DisableTraceLog();
+#endif
     }
 
     public void Update()
     {
+#if DEBUG
+        totalCycles += 4;
+#endif
+
         clocksToWait -= 4;
         if (clocksToWait > 0) return;
 
@@ -137,7 +148,9 @@ class CPU : IDisposable, IState
         }
         else
         {
+#if DEBUG
             ProcessTraceLog();
+#endif
             ProcessOpcodes();
         }
 
@@ -2552,9 +2565,14 @@ class CPU : IDisposable, IState
 
     #region TraceLog
 
+#if DEBUG
+
     public bool IsTraceLogEnabled => traceLogStreamWriter != null;
 
     StreamWriter traceLogStreamWriter;
+
+    bool bootromFinishedExecuting = false;
+    ulong totalCycles = 0;
 
     public void EnableTraceLog(string fileName)
     {
@@ -2574,15 +2592,38 @@ class CPU : IDisposable, IState
 
     void ProcessTraceLog()
     {
-        try
+        if (traceLogStreamWriter == null) return;
+
+        if (!bootromFinishedExecuting)
         {
-            traceLogStreamWriter?.WriteLine($"PC = {PC:X4} ({mmu[PC]:X2}), AF = {AF:X4}, BC = {BC:X4}, DE = {DE:X4}, HL = {HL:X4}, SP = {SP:X4} ({(ushort)((mmu[SP + 1] << 8) | mmu[SP]):X4})");
+            if (PC >= 0x100)
+            {
+                bootromFinishedExecuting = true;
+                totalCycles = 0;
+            }
+            else
+            {
+                return;
+            }
         }
-        catch (Exception)
-        {
-            traceLogStreamWriter?.WriteLine($"PC = {PC:X4} ({mmu[PC]:X2}), AF = {AF:X4}, BC = {BC:X4}, DE = {DE:X4}, HL = {HL:X4}, SP = {SP:X4}");
-        }
+
+        //bool displayOn = (mmu[0xff40] & 0x80) != 0;
+        //int ppuMode = mmu[0xff41] & 0x3;
+        //traceLogStreamWriter.WriteLine($"PC:{PC:X4} AF:{AF:X4} BC:{BC:X4} DE:{DE:X4} HL:{HL:X4} SP:{SP:X4} (cy: {totalCycles}) ppu:{(displayOn ? "+" : "-")}{ppuMode} LY:{mmu[0xff44]:X2}");
+
+        traceLogStreamWriter.WriteLine($"PC:{PC:X4} AF:{AF:X4} BC:{BC:X4} DE:{DE:X4} HL:{HL:X4} SP:{SP:X4}");
+
+        //try
+        //{
+        //    traceLogStreamWriter?.WriteLine($"PC = {PC:X4} ({mmu[PC]:X2}), AF = {AF:X4}, BC = {BC:X4}, DE = {DE:X4}, HL = {HL:X4}, SP = {SP:X4} ({(ushort)((mmu[SP + 1] << 8) | mmu[SP]):X4})");
+        //}
+        //catch (Exception)
+        //{
+        //    traceLogStreamWriter?.WriteLine($"PC = {PC:X4} ({mmu[PC]:X2}), AF = {AF:X4}, BC = {BC:X4}, DE = {DE:X4}, HL = {HL:X4}, SP = {SP:X4}");
+        //}
     }
+
+#endif
 
     #endregion
 }

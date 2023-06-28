@@ -128,6 +128,8 @@ class Window : GameWindow
 
     #region GameBoy
 
+#if DEBUG
+
     public bool IsTraceLogEnabled
     {
         get
@@ -136,6 +138,8 @@ class Window : GameWindow
             return false;
         }
     }
+
+#endif
 
     public bool RunEmulation()
     {
@@ -264,10 +268,12 @@ class Window : GameWindow
         gameBoy.Channel4Enabled = settings.Data.Channel4Enabled;
     }
 
+#if DEBUG
     public void ToggleTraceLog()
     {
         gameBoy?.ToggleTraceLog();
     }
+#endif
 
     void AudioBufferStateChanged(Sound.BufferStates audioBufferState)
     {

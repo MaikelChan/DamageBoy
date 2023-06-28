@@ -255,6 +255,8 @@ public class GameBoy
 
     #region TraceLog
 
+#if DEBUG
+
     public bool IsTraceLogEnabled => cpu.IsTraceLogEnabled;
 
     public void ToggleTraceLog()
@@ -264,6 +266,8 @@ public class GameBoy
         else
             cpu.EnableTraceLog("LogDamageBoy.txt");
     }
+
+#endif
 
     #endregion
 }
