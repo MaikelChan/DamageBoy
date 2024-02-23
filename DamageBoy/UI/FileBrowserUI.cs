@@ -170,6 +170,8 @@ class FileBrowserUI : BaseUI
 
             while (listClipper.Step())
             {
+                bool changedFolder = false;
+
                 for (int e = listClipper.DisplayStart; e < listClipper.DisplayEnd; e++)
                 {
                     FolderEntry entry = currentFolderEntries[e];
@@ -177,10 +179,10 @@ class FileBrowserUI : BaseUI
                     if (entry.IsDirectory)
                     {
                         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 1f, 0f, 1f));
-                        bool clicked = ImGui.Selectable(entry.EntryName, false, ImGuiSelectableFlags.DontClosePopups);
+                        changedFolder = ImGui.Selectable(entry.EntryName, false, ImGuiSelectableFlags.DontClosePopups);
                         ImGui.PopStyleColor();
 
-                        if (clicked)
+                        if (changedFolder)
                         {
                             CurrentFolder = entry.FullPath;
                             selectedEntry = null;
@@ -198,6 +200,8 @@ class FileBrowserUI : BaseUI
                         }
                     }
                 }
+
+                if (changedFolder) break;
             }
 
             ImGui.EndChild();
