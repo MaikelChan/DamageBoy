@@ -157,7 +157,7 @@ class FileBrowserUI : BaseUI
 
         ImGui.PopItemWidth();
 
-        if (ImGui.BeginChildFrame(1, new Vector2(ELEMENTS_WIDTH, 400)))
+        if (ImGui.BeginChild(1, new Vector2(ELEMENTS_WIDTH, 400)))
         {
             ImGuiListClipperPtr listClipper;
 
@@ -200,7 +200,7 @@ class FileBrowserUI : BaseUI
                 }
             }
 
-            ImGui.EndChildFrame();
+            ImGui.EndChild();
         }
 
         if (ImGui.Button("Cancel", new Vector2(BUTTON_WIDTH, 0)))

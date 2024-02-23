@@ -18,8 +18,7 @@ class Program
     {
         GameWindowSettings gameWindowSettings = new GameWindowSettings()
         {
-            UpdateFrequency = 0.0f,
-            RenderFrequency = 0.0f
+            UpdateFrequency = 0.0f
         };
 
         NativeWindowSettings nativeWindowSettings = new NativeWindowSettings()
@@ -32,7 +31,7 @@ class Program
 #else
             Flags = ContextFlags.ForwardCompatible,
 #endif
-            Size = new Vector2i(INITIAL_WIDTH, INITIAL_HEIGHT),
+            ClientSize = new Vector2i(INITIAL_WIDTH, INITIAL_HEIGHT),
             WindowState = WindowState.Normal
         };
 

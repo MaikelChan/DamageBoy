@@ -2,17 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+    <PublishAot>false</PublishAot>
     <Version>0.1.0</Version>
     <Description>Experimental GameBoy emulator written in C#, and it uses OpenGL for rendering, OpenAL for audio and ImGui for UI.</Description>
     <Authors>PacoChan</Authors>
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
     <Win32Resource />
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -20,10 +20,12 @@
 
   <ItemGroup>
     <PackageReference Include="ashleigh.openal.soft.redist" Version="1.21.1.2" />
-    <PackageReference Include="ImGui.NET" Version="1.89.5.2" />
-    <PackageReference Include="OpenTK.Graphics" Version="4.7.7" />
-    <PackageReference Include="OpenTK.OpenAL" Version="4.7.7" />
-    <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.7.7" />
+    <PackageReference Include="ImGui.NET" Version="1.90.1.1" />
+    <PackageReference Include="OpenTK.Audio.OpenAL" Version="4.8.2" />
+    <PackageReference Include="OpenTK.Core" Version="4.8.2" />
+    <PackageReference Include="OpenTK.Graphics" Version="4.8.2" />
+    <PackageReference Include="OpenTK.Mathematics" Version="4.8.2" />
+    <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.8.2" />
   </ItemGroup>
 
   <ItemGroup>
