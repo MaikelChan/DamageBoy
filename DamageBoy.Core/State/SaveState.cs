@@ -11,8 +11,6 @@ internal class SaveState
 
     const uint SAVE_SATATE_FORMAT_VERSION = 2;
 
-    const bool COMPRESS_SAVE_STATE = true;
-
     public SaveState(IState[] componentsStates, Cartridge cartridge)
     {
         this.componentsStates = componentsStates;
@@ -31,29 +29,30 @@ internal class SaveState
         using (BinaryWriter fsBw = new BinaryWriter(fs))
         {
             fsBw.Write(SAVE_SATATE_FORMAT_VERSION);
-            fsBw.Write(COMPRESS_SAVE_STATE);
+#if COMPRESS_SAVE_STATES
+            fsBw.Write(true);
+#else
+            fsBw.Write(false);
+#endif
 
             fs.Position = 0x10;
             fs.Write(cartridge.RawTitle, 0, Cartridge.RAW_TITLE_LENGTH);
 
-            if (COMPRESS_SAVE_STATE)
-            {
-                using (BrotliStream cfs = new BrotliStream(fs, CompressionMode.Compress, true))
-                using (BinaryWriter cfsBw = new BinaryWriter(cfs))
-                {
-                    for (int cs = 0; cs < componentsStates.Length; cs++)
-                    {
-                        componentsStates[cs].SaveOrLoadState(cfs, cfsBw, null, true);
-                    }
-                }
-            }
-            else
+#if COMPRESS_SAVE_STATES
+            using (BrotliStream cfs = new BrotliStream(fs, CompressionMode.Compress, true))
+            using (BinaryWriter cfsBw = new BinaryWriter(cfs))
             {
                 for (int cs = 0; cs < componentsStates.Length; cs++)
                 {
-                    componentsStates[cs].SaveOrLoadState(fs, fsBw, null, true);
+                    componentsStates[cs].SaveOrLoadState(cfs, cfsBw, null, true);
                 }
             }
+#else
+            for (int cs = 0; cs < componentsStates.Length; cs++)
+            {
+                componentsStates[cs].SaveOrLoadState(fs, fsBw, null, true);
+            }
+#endif
         }
 
         return true;
