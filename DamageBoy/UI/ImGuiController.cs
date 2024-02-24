@@ -45,6 +45,10 @@ internal class ImGuiController : IDisposable
         IntPtr context = ImGui.CreateContext();
         ImGui.SetCurrentContext(context);
         var io = ImGui.GetIO();
+        unsafe
+        {
+            ImGui.GetIO().NativePtr->IniFilename = null;
+        }
         io.Fonts.AddFontDefault();
 
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
