@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace DamageBoy.UI;
 
@@ -129,15 +130,18 @@ class FileBrowserUI : BaseUI
             }
         }
 
-        ImGui.SameLine();
-        ImGui.PushItemWidth(ELEMENTS_WIDTH - ((BUTTON_WIDTH + HORIZONTAL_SEPARATION) * 2));
-
-        if (ImGui.Combo("##Drive", ref currentDriveIndex, drivesNames[0..drivesCount], drivesCount))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            CurrentDriveChanged();
-        }
+            ImGui.SameLine();
+            ImGui.PushItemWidth(ELEMENTS_WIDTH - ((BUTTON_WIDTH + HORIZONTAL_SEPARATION) * 2));
 
-        ImGui.PopItemWidth();
+            if (ImGui.Combo("##Drive", ref currentDriveIndex, drivesNames, drivesNames.Length))
+            {
+                CurrentDriveChanged();
+            }
+
+            ImGui.PopItemWidth();
+        }
 
         ImGui.PushItemWidth(ELEMENTS_WIDTH);
 
@@ -145,12 +149,6 @@ class FileBrowserUI : BaseUI
         if (ImGui.InputText("##Current Directory", ref cf, 512))
         {
             CurrentDirectory = cf;
-
-            if (string.IsNullOrWhiteSpace(CurrentDirectory))
-            {
-                CurrentDriveChanged();
-            }
-
             selectedEntry = null;
             SetDriveIndexFromDirectory();
         }
@@ -252,6 +250,7 @@ class FileBrowserUI : BaseUI
         try
         {
             string[] directories = Directory.GetDirectories(CurrentDirectory, string.Empty, enumerationOptions);
+            Array.Sort(directories); // On linux, directories and files might be obtained in random order
 
             currentDirectoryEntries.Clear();
 
@@ -263,6 +262,7 @@ class FileBrowserUI : BaseUI
             if (onlyAllowDirectories) return;
 
             string[] files = Directory.GetFiles(CurrentDirectory, string.Empty);
+            Array.Sort(files);
 
             for (int f = 0; f < files.Length; f++)
             {
@@ -297,26 +297,26 @@ class FileBrowserUI : BaseUI
 
     #region Drive handling
 
-    readonly string[] drivesNames = new string[WINDOWS_MAX_DRIVES];
-    int drivesCount = 0;
+    string[] drivesNames = null;
     int currentDriveIndex = 0;
-
-    const int WINDOWS_MAX_DRIVES = 26;
 
     void UpdateDrives()
     {
-        drivesCount = 0;
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
 
         DriveInfo[] drives = DriveInfo.GetDrives();
+
+        List<string> driveNamesList = new List<string>();
 
         for (int d = 0; d < drives.Length; d++)
         {
             if (!drives[d].IsReady) continue;
-            drivesNames[drivesCount] = drives[d].Name;
-            drivesCount++;
+            driveNamesList.Add(drives[d].Name);
         }
 
-        if (currentDriveIndex < 0 || currentDriveIndex >= drivesCount)
+        drivesNames = driveNamesList.ToArray();
+
+        if (currentDriveIndex < 0 || currentDriveIndex >= drivesNames.Length)
         {
             currentDriveIndex = 0;
             CurrentDriveChanged();
@@ -325,6 +325,8 @@ class FileBrowserUI : BaseUI
 
     void SetDriveIndexFromDirectory()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
+
         DirectoryInfo info;
 
         try
@@ -344,7 +346,7 @@ class FileBrowserUI : BaseUI
             return;
         }
 
-        for (int d = 0; d < drivesCount; d++)
+        for (int d = 0; d < drivesNames.Length; d++)
         {
             if (drivesNames[d] == info.Root.Name)
             {
@@ -358,6 +360,8 @@ class FileBrowserUI : BaseUI
 
     void CurrentDriveChanged()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
+
         selectedEntry = null;
         CurrentDirectory = drivesNames[currentDriveIndex];
     }
