@@ -2,6 +2,8 @@
 
 Here you can check game compatibility. Games not listed here have not been tested (or maybe I just forgot to add them :P). Please note that the ones I've tested, have not been thoroughly played from beginning to end. So working games could still have unknown breaking issues.
 
+All games have been tested with the GameBoy boot ROM enabled. Without it, they could present additional issues.
+
 - :heavy_check_mark: Works fine
 - :large_blue_diamond: Works, but has some minor issues
 - :warning: Game boots, but has major issues
@@ -54,11 +56,15 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Gojira-kun | :heavy_check_mark: |
 | Indien dans la Ville, Un (F) | :large_blue_diamond: (Music glitches) |
 | Initial D Gaiden (J) | :warning: (The game freezes and has visual glitches when selecting the first game option. It shouldn't be selectable?) |
+| Jurassic Park - The Lost World | :heavy_check_mark: |
 | Kirby's Dream Land (UE) [!] | :heavy_check_mark: |
 | Kirby's Dream Land 2 (U) [S][!] | :heavy_check_mark: |
+| Kitchen Panic | :heavy_check_mark: |
 | Lamborghini American Challenge (U) [!] | :large_blue_diamond: (Some music sounds bad) |
 | Legend of Zelda, The - Link's Awakening (U) (V1.2) [!] | :heavy_check_mark: |
 | Little Mermaid, The (E) | :heavy_check_mark: |
+| Lucle | :heavy_check_mark: |
+| Marble Madness | :heavy_check_mark: |
 | Mario & Yoshi (E) [!] | :heavy_check_mark: |
 | Megaman - Dr Wily's Revenge | :heavy_check_mark: |
 | Megaman II | :heavy_check_mark: |
@@ -68,12 +74,20 @@ Here you can check game compatibility. Games not listed here have not been teste
 | Megami Tensei Gaiden - Last Bible | :large_blue_diamond: |
 | Megami Tensei Gaiden - Last Bible II | :large_blue_diamond: |
 | Metroid II - Return of Samus (W) [!] | :heavy_check_mark: |
+| Oni II - Oni Densetsu | :warning: (Crashes at first battle) |
+| Oni III - Kuro no Hakaishin | :heavy_check_mark: |
+| Oni IV - Kijin no Ketsuzoku | :heavy_check_mark: |
+| Oni V - Oni wo Tsugumono | :heavy_check_mark: |
+| Paperboy | :heavy_check_mark: |
+| Paperboy 2 | :heavy_check_mark: |
+| Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
 | Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
 | Pokemon - Yellow Version (UE) [C][!] | :heavy_check_mark: |
 | Prehistorik Man (UE) | :warning: (Audio and visual glitches) |
 | Probotector | :heavy_check_mark: |
 | Probotector 2 | :heavy_check_mark: |
 | Road Rash (UE) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
+| Simpsons, The - Bart & the Beanstalk | :large_blue_diamond: (Music sounds a bit weird) |
 | Spy vs Spy - Operation Boobytrap | :heavy_check_mark: |
 | Sunsoft Grand Prix | :heavy_check_mark: |
 | Super Bikkuriman - Densetsu no Sekiban | :heavy_check_mark: |
