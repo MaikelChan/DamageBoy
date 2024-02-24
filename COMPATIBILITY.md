@@ -1,6 +1,6 @@
 # DamageBoy Compatibility
 
-Here you can check game compatibility. Games not listed here have not been tested. Please note that the ones I've tested, have not been thoroughly played from beginning to end. So working games could still have unknown breaking issues.
+Here you can check game compatibility. Games not listed here have not been tested (or maybe I just forgot to add them :P). Please note that the ones I've tested, have not been thoroughly played from beginning to end. So working games could still have unknown breaking issues.
 
 - :heavy_check_mark: Works fine
 - :large_blue_diamond: Works, but has some minor issues
