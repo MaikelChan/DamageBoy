@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DamageBoy;
 
@@ -23,7 +24,7 @@ class Settings
         if (File.Exists(SETTINGS_FILE))
         {
             string json = File.ReadAllText(SETTINGS_FILE);
-            Data = JsonSerializer.Deserialize<SettingsData>(json);
+            Data = JsonSerializer.Deserialize(json, SourceGenerationContext.Default.SettingsData);
 
             Utils.Log(LogType.Info, $"Settings file successfully loaded: \"{SETTINGS_FILE}\"");
         }
@@ -38,12 +39,7 @@ class Settings
 
     public void Save()
     {
-        JsonSerializerOptions options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        };
-
-        string json = JsonSerializer.Serialize(Data, options);
+        string json = JsonSerializer.Serialize(Data, SourceGenerationContext.Default.SettingsData);
         File.WriteAllText(SETTINGS_FILE, json);
 
         Utils.Log(LogType.Info, $"Settings file successfully saved: \"{SETTINGS_FILE}\"");
@@ -135,4 +131,10 @@ public struct ColorSetting
     {
         return new Color4(R, G, B, 1f);
     }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(SettingsData))]
+internal partial class SourceGenerationContext : JsonSerializerContext
+{
 }

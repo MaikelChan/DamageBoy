@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 
 namespace DamageBoy.Graphics;
@@ -12,6 +13,9 @@ abstract class BaseRenderer : IDisposable
 
     public BaseRenderer()
     {
+        // This is required for AOT before any GL calls
+        GL.LoadBindings(new GLFWBindingsContext());
+
         Utils.Log(LogType.Info, "Vendor: " + GL.GetString(StringName.Vendor));
         Utils.Log(LogType.Info, "Renderer: " + GL.GetString(StringName.Renderer));
         Utils.Log(LogType.Info, "Version: " + GL.GetString(StringName.Version));
