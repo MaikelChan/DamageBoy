@@ -99,6 +99,8 @@ All games have been tested with the GameBoy boot ROM enabled. Without it, they c
 | Prehistorik Man (UE) | :warning: (Visual glitches) |
 | Probotector | :heavy_check_mark: |
 | Probotector 2 | :heavy_check_mark: |
+| R-Type | :heavy_check_mark: |
+| R-Type II | :warning: (Visual glitches) |
 | Road Rash (UE) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
 | Simpsons, The - Bart & the Beanstalk | :large_blue_diamond: (Music sounds a bit weird) |
 | Spy vs Spy - Operation Boobytrap | :heavy_check_mark: |
