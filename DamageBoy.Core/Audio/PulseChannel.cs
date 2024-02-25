@@ -54,6 +54,7 @@ class PulseChannel : SoundChannel, ISweep, IVolumeEnvelope
 
     // Current state
 
+    bool isEnveloping;
     int currentEnvelopeTimer;
     int currentVolume;
     int currentSweepTimer;
@@ -71,7 +72,7 @@ class PulseChannel : SoundChannel, ISweep, IVolumeEnvelope
     {
         if (updateVolume)
         {
-            if (LengthEnvelopeSteps > 0 && currentEnvelopeTimer > 0)
+            if (isEnveloping && currentEnvelopeTimer > 0)
             {
                 currentEnvelopeTimer--;
                 if (currentEnvelopeTimer == 0)
@@ -81,12 +82,20 @@ class PulseChannel : SoundChannel, ISweep, IVolumeEnvelope
                     if (EnvelopeDirection == EnvelopeDirections.Decrease)
                     {
                         currentVolume--;
-                        if (currentVolume < 0) currentVolume = 0;
+                        if (currentVolume <= 0)
+                        {
+                            currentVolume = 0;
+                            isEnveloping = false;
+                        }
                     }
                     else
                     {
                         currentVolume++;
-                        if (currentVolume > 0xF) currentVolume = 0xF;
+                        if (currentVolume >= 0xF)
+                        {
+                            currentVolume = 0xF;
+                            isEnveloping = false;
+                        }
                     }
                 }
             }
@@ -155,6 +164,7 @@ class PulseChannel : SoundChannel, ISweep, IVolumeEnvelope
 
         if (reset)
         {
+            isEnveloping = LengthEnvelopeSteps > 0;
             currentVolume = InitialVolume;
             currentEnvelopeTimer = LengthEnvelopeSteps;
             currentSweepTimer = SweepTime;
@@ -186,6 +196,26 @@ class PulseChannel : SoundChannel, ISweep, IVolumeEnvelope
         currentSweepTimer = 0;
         currentFrequency = 0;
         currentWaveCycle = 0f;
+    }
+
+    public void ZombieMode(byte value)
+    {
+        EnvelopeDirections newEnvelopeDirection = Helpers.GetBit(value, 3) ? EnvelopeDirections.Increase : EnvelopeDirections.Decrease;
+
+        if (EnvelopeDirection == EnvelopeDirections.Increase)
+        {
+            if (LengthEnvelopeSteps == 0) currentVolume = (byte)((currentVolume + 1) & 0xF);
+        }
+        else
+        {
+            if (LengthEnvelopeSteps == 0) currentVolume = (byte)((currentVolume + 1) & 0xF);
+            else currentVolume = (byte)((currentVolume + 2) & 0xF);
+        }
+
+        if (newEnvelopeDirection != EnvelopeDirection)
+        {
+            currentVolume = (byte)((16 - currentVolume) & 0xF);
+        }
     }
 
     public override void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)

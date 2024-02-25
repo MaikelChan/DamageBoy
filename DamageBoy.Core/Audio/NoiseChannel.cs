@@ -27,6 +27,7 @@ class NoiseChannel : SoundChannel, IVolumeEnvelope, INoise
 
     // Current state
 
+    bool isEnveloping;
     int currentEnvelopeTimer;
     int currentVolume;
     int currentNoiseClocksToWait;
@@ -43,7 +44,7 @@ class NoiseChannel : SoundChannel, IVolumeEnvelope, INoise
     {
         if (updateVolume)
         {
-            if (LengthEnvelopeSteps > 0 && currentEnvelopeTimer > 0)
+            if (isEnveloping && currentEnvelopeTimer > 0)
             {
                 currentEnvelopeTimer--;
                 if (currentEnvelopeTimer == 0)
@@ -53,12 +54,20 @@ class NoiseChannel : SoundChannel, IVolumeEnvelope, INoise
                     if (EnvelopeDirection == EnvelopeDirections.Decrease)
                     {
                         currentVolume--;
-                        if (currentVolume < 0) currentVolume = 0;
+                        if (currentVolume <= 0)
+                        {
+                            currentVolume = 0;
+                            isEnveloping = false;
+                        }
                     }
                     else
                     {
                         currentVolume++;
-                        if (currentVolume > 0xF) currentVolume = 0xF;
+                        if (currentVolume >= 0xF)
+                        {
+                            currentVolume = 0xF;
+                            isEnveloping = false;
+                        }
                     }
                 }
             }
@@ -104,6 +113,7 @@ class NoiseChannel : SoundChannel, IVolumeEnvelope, INoise
 
         if (reset)
         {
+            isEnveloping = LengthEnvelopeSteps > 0;
             currentVolume = InitialVolume;
             currentEnvelopeTimer = LengthEnvelopeSteps;
             currentNoiseSequence = (ushort)random.Next(ushort.MinValue, ushort.MaxValue + 1);
@@ -127,6 +137,26 @@ class NoiseChannel : SoundChannel, IVolumeEnvelope, INoise
         currentEnvelopeTimer = 0;
         currentVolume = 0;
         currentNoiseSequence = 0;
+    }
+
+    public void ZombieMode(byte value)
+    {
+        EnvelopeDirections newEnvelopeDirection = Helpers.GetBit(value, 3) ? EnvelopeDirections.Increase : EnvelopeDirections.Decrease;
+
+        if (EnvelopeDirection == EnvelopeDirections.Increase)
+        {
+            if (LengthEnvelopeSteps == 0) currentVolume = (byte)((currentVolume + 1) & 0xF);
+        }
+        else
+        {
+            if (LengthEnvelopeSteps == 0) currentVolume = (byte)((currentVolume + 1) & 0xF);
+            else currentVolume = (byte)((currentVolume + 2) & 0xF);
+        }
+
+        if (newEnvelopeDirection != EnvelopeDirection)
+        {
+            currentVolume = (byte)((16 - currentVolume) & 0xF);
+        }
     }
 
     public override void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)

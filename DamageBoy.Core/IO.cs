@@ -428,6 +428,7 @@ class IO : IState
         {
             if (!apu.AllSoundEnabled) return;
 
+            apu.Channel1.ZombieMode(value);
             apu.Channel1.LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
             apu.Channel1.EnvelopeDirection = Helpers.GetBit(value, 3) ? EnvelopeDirections.Increase : EnvelopeDirections.Decrease;
             apu.Channel1.InitialVolume = (byte)((value & 0b1111_0000) >> 4);
@@ -513,6 +514,7 @@ class IO : IState
         {
             if (!apu.AllSoundEnabled) return;
 
+            apu.Channel2.ZombieMode(value);
             apu.Channel2.LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
             apu.Channel2.EnvelopeDirection = Helpers.GetBit(value, 3) ? EnvelopeDirections.Increase : EnvelopeDirections.Decrease;
             apu.Channel2.InitialVolume = (byte)((value & 0b1111_0000) >> 4);
@@ -714,6 +716,7 @@ class IO : IState
         {
             if (!apu.AllSoundEnabled) return;
 
+            apu.Channel4.ZombieMode(value);
             apu.Channel4.LengthEnvelopeSteps = (byte)(value & 0b0000_0111);
             apu.Channel4.EnvelopeDirection = Helpers.GetBit(value, 3) ? EnvelopeDirections.Increase : EnvelopeDirections.Decrease;
             apu.Channel4.InitialVolume = (byte)((value & 0b1111_0000) >> 4);

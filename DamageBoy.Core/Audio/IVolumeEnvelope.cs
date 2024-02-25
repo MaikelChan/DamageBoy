@@ -12,4 +12,6 @@ interface IVolumeEnvelope
     byte LengthEnvelopeSteps { get; set; }
     EnvelopeDirections EnvelopeDirection { get; set; }
     byte InitialVolume { get; set; }
+
+    void ZombieMode(byte value);
 }
