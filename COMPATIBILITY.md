@@ -44,7 +44,10 @@ All games have been tested with the GameBoy boot ROM enabled. Without it, they c
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
 | Donkey Kong Land 2 | :x: (Crashes after title screen) |
 | Donkey Kong Land 3 | :x: (Crashes after title screen) |
+| Doraemon - Taiketsu Himitsudougu!! | :heavy_check_mark: |
+| Dr. Mario | :heavy_check_mark: |
 | Dragon's Lair - The Legend | :heavy_check_mark: |
+| Earthworm Jim | :heavy_check_mark: |
 | F-1 Race (W) (V1.1) [!] | :heavy_check_mark: |
 | Ferrari - Grand Prix Challenge (U) [!] | :heavy_check_mark: |
 | Ganso!! Yancha Maru | :heavy_check_mark: |
@@ -54,27 +57,37 @@ All games have been tested with the GameBoy boot ROM enabled. Without it, they c
 | Go! Go! Tank | :heavy_check_mark: |
 | God Medicine - Fantasy Sekai no Tanjou | :heavy_check_mark: |
 | Gojira-kun | :heavy_check_mark: |
-| Indien dans la Ville, Un (F) | :large_blue_diamond: (Music glitches) |
+| Indiana Jones and the Last Crusade | :heavy_check_mark: |
+| Indien dans la Ville, Un (F) | :heavy_check_mark: |
 | Initial D Gaiden (J) | :warning: (The game freezes and has visual glitches when selecting the first game option. It shouldn't be selectable?) |
+| Joe & Mac | :heavy_check_mark: |
 | Jurassic Park - The Lost World | :heavy_check_mark: |
+| Kamen Raider SD - Hashire! Mighty Riders | :heavy_check_mark: |
+| Kid Dracula | :heavy_check_mark: |
+| Kid Icarus - Of Myths and Monsters | :heavy_check_mark: |
+| Kirby's Block Ball | :heavy_check_mark: |
 | Kirby's Dream Land (UE) [!] | :heavy_check_mark: |
 | Kirby's Dream Land 2 (U) [S][!] | :heavy_check_mark: |
+| Kirby's Pinball Land | :heavy_check_mark: |
+| Kirby's Star Stacker | :large_blue_diamond: (Minor music issues) |
 | Kitchen Panic | :heavy_check_mark: |
-| Lamborghini American Challenge (U) [!] | :large_blue_diamond: (Some music sounds bad) |
+| Lamborghini American Challenge (U) [!] | :heavy_check_mark: |
 | Legend of Zelda, The - Link's Awakening (U) (V1.2) [!] | :heavy_check_mark: |
 | Little Mermaid, The (E) | :heavy_check_mark: |
 | Lucle | :heavy_check_mark: |
 | Marble Madness | :heavy_check_mark: |
 | Mario & Yoshi (E) [!] | :heavy_check_mark: |
+| Megalit | :heavy_check_mark: |
 | Megaman - Dr Wily's Revenge | :heavy_check_mark: |
 | Megaman II | :heavy_check_mark: |
 | Megaman III | :heavy_check_mark: |
 | Megaman IV | :heavy_check_mark: |
 | Megaman V | :warning: (Game resets when selecting certain levels) |
-| Megami Tensei Gaiden - Last Bible | :large_blue_diamond: |
-| Megami Tensei Gaiden - Last Bible II | :large_blue_diamond: |
+| Megami Tensei Gaiden - Last Bible | :large_blue_diamond: (Some flickering in the menu) |
+| Megami Tensei Gaiden - Last Bible II | :large_blue_diamond: (Some flickering in the menu) |
+| Metal Masters | :heavy_check_mark: |
 | Metroid II - Return of Samus (W) [!] | :heavy_check_mark: |
-| Oni II - Oni Densetsu | :warning: (Crashes at first battle) |
+| Oni II - Oni Densetsu | :x: (Crashes at first battle) |
 | Oni III - Kuro no Hakaishin | :heavy_check_mark: |
 | Oni IV - Kijin no Ketsuzoku | :heavy_check_mark: |
 | Oni V - Oni wo Tsugumono | :heavy_check_mark: |
@@ -83,12 +96,13 @@ All games have been tested with the GameBoy boot ROM enabled. Without it, they c
 | Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
 | Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
 | Pokemon - Yellow Version (UE) [C][!] | :heavy_check_mark: |
-| Prehistorik Man (UE) | :warning: (Audio and visual glitches) |
+| Prehistorik Man (UE) | :warning: (Visual glitches) |
 | Probotector | :heavy_check_mark: |
 | Probotector 2 | :heavy_check_mark: |
 | Road Rash (UE) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
 | Simpsons, The - Bart & the Beanstalk | :large_blue_diamond: (Music sounds a bit weird) |
 | Spy vs Spy - Operation Boobytrap | :heavy_check_mark: |
+| Street Racer | :heavy_check_mark: |
 | Sunsoft Grand Prix | :heavy_check_mark: |
 | Super Bikkuriman - Densetsu no Sekiban | :heavy_check_mark: |
 | Super Chinese Land | :heavy_check_mark: |
