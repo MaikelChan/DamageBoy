@@ -41,7 +41,8 @@ class AboutWindowUI : BaseUI
         ImGui.Text("   Z            : B");
         ImGui.Text("   X            : A");
         ImGui.Text("   Enter        : Start");
-        ImGui.Text("   Right Shift  : Select\n\n");
+        ImGui.Text("   Right Shift  : Select");
+        ImGui.Text("   Space        : Disable Framelimit\n\n");
         ImGui.Text("It can also be played with an XInput compatible controller.");
         ImGui.End();
     }

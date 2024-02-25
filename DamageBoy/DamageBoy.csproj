@@ -8,7 +8,7 @@
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
-    <Version>0.1.0</Version>
+    <Version>0.9.0</Version>
     <Description>Experimental GameBoy emulator written in C#, and it uses OpenGL for rendering, OpenAL for audio and ImGui for UI.</Description>
     <Authors>PacoChan</Authors>
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>

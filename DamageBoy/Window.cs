@@ -277,18 +277,25 @@ class Window : GameWindow
 
     void AudioBufferStateChanged(Sound.BufferStates audioBufferState)
     {
-        switch (audioBufferState)
+        if (disableFrameLimit)
         {
-            case Sound.BufferStates.Uninitialized:
-            case Sound.BufferStates.Ok:
-                gameBoy?.SetFrameLimiterState(FrameLimiterStates.Limited);
-                break;
-            case Sound.BufferStates.Underrun:
-                gameBoy?.SetFrameLimiterState(FrameLimiterStates.Unlimited);
-                break;
-            case Sound.BufferStates.Overrun:
-                gameBoy?.SetFrameLimiterState(FrameLimiterStates.Paused);
-                break;
+            gameBoy?.SetFrameLimiterState(FrameLimiterStates.Unlimited);
+        }
+        else
+        {
+            switch (audioBufferState)
+            {
+                case Sound.BufferStates.Uninitialized:
+                case Sound.BufferStates.Ok:
+                    gameBoy?.SetFrameLimiterState(FrameLimiterStates.Limited);
+                    break;
+                case Sound.BufferStates.Underrun:
+                    gameBoy?.SetFrameLimiterState(FrameLimiterStates.Unlimited);
+                    break;
+                case Sound.BufferStates.Overrun:
+                    gameBoy?.SetFrameLimiterState(FrameLimiterStates.Paused);
+                    break;
+            }
         }
     }
 
@@ -325,12 +332,15 @@ class Window : GameWindow
     const byte BUTTON_X = 2;
     const byte BUTTON_BACK = 6;
     const byte BUTTON_START = 7;
+    const byte BUTTON_RIGHT_THUMB = 10;
     const byte BUTTON_UP = 11;
     const byte BUTTON_RIGHT = 12;
     const byte BUTTON_DOWN = 13;
     const byte BUTTON_LEFT = 14;
 
     const float DEADZONE = 0.65f;
+
+    bool disableFrameLimit = false;
 
     unsafe void ProcessInput()
     {
@@ -359,6 +369,8 @@ class Window : GameWindow
         };
 
         gameBoy?.SetInput(inputState);
+
+        disableFrameLimit = KeyboardState.IsKeyDown(Keys.Space) || gamepadState.Buttons[BUTTON_RIGHT_THUMB] == pressed;
     }
 
 

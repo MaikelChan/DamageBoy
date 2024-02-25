@@ -8,7 +8,7 @@
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <PackageId>DamageBoy.Core</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.9.0</Version>
     <Authors>PacoChan</Authors>
     <Company>PacoChan</Company>
     <Product>DamageBoy</Product>
