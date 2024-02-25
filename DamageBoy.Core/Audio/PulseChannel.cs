@@ -18,7 +18,23 @@ class PulseChannel : SoundChannel, ISweep, IVolumeEnvelope
     // Sweep
 
     public byte SweepShift { get; set; }
-    public SweepTypes SweepType { get; set; }
+
+    SweepTypes sweepType;
+    public SweepTypes SweepType
+    {
+        get => sweepType;
+        set
+        {
+            if ((SweepShift > 0 || SweepTime > 0) &&
+                sweepType == SweepTypes.Decrease &&
+                value == SweepTypes.Increase)
+            {
+                Stop();
+            }
+
+            sweepType = value;
+        }
+    }
     public byte SweepTime { get; set; }
 
     // Pulse
