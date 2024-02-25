@@ -53,7 +53,7 @@ abstract class SoundChannel : IState
         if (updateLength && LengthType == LengthTypes.Counter)
         {
             currentLength--;
-            if (currentLength == 0)
+            if (currentLength <= 0)
             {
                 Stop();
                 return WAVE_SILENCE;
@@ -71,7 +71,7 @@ abstract class SoundChannel : IState
 
     public virtual void Initialize(bool reset)
     {
-        if (currentLength == 0) currentLength = MaxLength;
+        if (currentLength <= 0) currentLength = MaxLength;
     }
 
     public virtual void Reset()
