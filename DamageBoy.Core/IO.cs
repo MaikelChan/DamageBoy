@@ -118,6 +118,7 @@ class IO : IState
                 case 0x12: NR12 = value; break;
                 case 0x13: NR13 = value; break;
                 case 0x14: NR14 = value; break;
+                case 0x15: break; // Unused, but some games write to it for some reason
                 case 0x16: NR21 = value; break;
                 case 0x17: NR22 = value; break;
                 case 0x18: NR23 = value; break;
@@ -127,6 +128,7 @@ class IO : IState
                 case 0x1C: NR32 = value; break;
                 case 0x1D: NR33 = value; break;
                 case 0x1E: NR34 = value; break;
+                case 0x1F: break; // Unused, but some games write to it for some reason
                 case 0x20: NR41 = value; break;
                 case 0x21: NR42 = value; break;
                 case 0x22: NR43 = value; break;
