@@ -15,8 +15,35 @@ class Cartridge : IDisposable, IState
 
     public const int RAW_TITLE_LENGTH = 16;
 
+    public Modes Mode
+    {
+        get
+        {
+            switch (rom[0x143])
+            {
+                case 0x80: return Modes.GameBoyColorBackwardsCompatible;
+                case 0xC0: return Modes.GameBoyColor;
+                default: return Modes.GameBoy;
+            }
+        }
+    }
+    public enum Modes { GameBoy, GameBoyColorBackwardsCompatible, GameBoyColor }
+
     public byte[] RawTitle { get; }
-    public string Title { get; }
+    public string Title
+    {
+        get
+        {
+            switch (Mode)
+            {
+                case Modes.GameBoyColorBackwardsCompatible:
+                case Modes.GameBoyColor:
+                    return Encoding.ASCII.GetString(rom, 0x134, RAW_TITLE_LENGTH - 5).TrimEnd('\0');
+                default:
+                    return Encoding.ASCII.GetString(rom, 0x134, RAW_TITLE_LENGTH).TrimEnd('\0');
+            }
+        }
+    }
 
     public int RomSize
     {
@@ -62,8 +89,6 @@ class Cartridge : IDisposable, IState
 
         RawTitle = new byte[RAW_TITLE_LENGTH];
         Array.Copy(romData, 0x134, RawTitle, 0, RAW_TITLE_LENGTH);
-
-        Title = Encoding.ASCII.GetString(romData, 0x134, RAW_TITLE_LENGTH).TrimEnd('\0');
 
         switch (romData[0x147])
         {
