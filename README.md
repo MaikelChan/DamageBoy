@@ -7,7 +7,7 @@
 `DamageBoy` is the name of `Yet Another™` Experimental GameBoy emulator created for learning purposes. The name comes from `DMG`, which is the original codename for the GameBoy, which stands for `Dot Matrix Game`. The emulator is written in C#, it uses OpenGL for rendering, OpenAL for audio and ImGui for UI. Despite being optional, it's recommended to have a boot ROM (BIOS) file named `dmg_boot_rom` and put it in the same path as the DamageBoy executable.
 
 ## Features
-- It can run games with the most common Memory Bank Controllers: MBC1, MBC2, MBC3 and MBC5.
+- It can run games with the most common Memory Bank Controllers: MBC1, MBC2, MBC3, MBC5, HuC1 and HuC-3.
 - Most graphics features are supported: background, window, sprites, scrolling and mid-scanline effects.
 - Audio mostly implemented, but there could be small audio errors here and there.
 - It can be played with keyboard or with an XInput compatible controller.

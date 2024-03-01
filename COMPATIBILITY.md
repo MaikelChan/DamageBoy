@@ -41,6 +41,7 @@ All games have been tested with the GameBoy boot ROM enabled. Without it, they c
 | All-Star Baseball 99 (U) | :heavy_check_mark: |
 | Contra | :heavy_check_mark: |
 | Contra - The Alien Wars | :heavy_check_mark: |
+| Daikaijuu Monogatari - The Miracle of the Zone | :large_blue_diamond: (It's missing the custom infrared functionality) |
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
 | Donkey Kong Land 2 | :x: (Crashes after title screen) |
 | Donkey Kong Land 3 | :x: (Crashes after title screen) |
@@ -93,15 +94,21 @@ All games have been tested with the GameBoy boot ROM enabled. Without it, they c
 | Oni V - Oni wo Tsugumono | :heavy_check_mark: |
 | Paperboy | :heavy_check_mark: |
 | Paperboy 2 | :heavy_check_mark: |
+| Pokemon Card GB (J) | :large_blue_diamond: (It's missing the custom infrared functionality) |
 | Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
 | Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
 | Pokemon - Yellow Version (UE) [C][!] | :heavy_check_mark: |
+| Pocket Bomberman (J) | :large_blue_diamond: (It's missing the custom infrared functionality) |
+| Pocket Bomberman (E) | :heavy_check_mark: |
+| Pocket Family GB (J) | :warning: (It's missing the custom infrared and clock functionalities, which are required) |
 | Prehistorik Man (UE) | :warning: (Visual glitches) |
 | Probotector | :heavy_check_mark: |
 | Probotector 2 | :heavy_check_mark: |
 | R-Type | :heavy_check_mark: |
 | R-Type II | :warning: (Visual glitches) |
 | Road Rash (UE) | :x: (Game breaks because it depends on DMG hardware bug. It doesn't even run on a real GBC.) |
+| Robot Poncots - Star Version (J) | :large_blue_diamond: (It's missing the custom infrared functionality) |
+| Robot Poncots - Sun Version (J) | :large_blue_diamond: (It's missing the custom infrared functionality) |
 | Simpsons, The - Bart & the Beanstalk | :large_blue_diamond: (Music sounds a bit weird) |
 | Spy vs Spy - Operation Boobytrap | :heavy_check_mark: |
 | Street Racer | :heavy_check_mark: |
