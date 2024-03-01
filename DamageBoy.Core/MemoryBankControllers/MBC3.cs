@@ -53,7 +53,7 @@ class MBC3 : IMemoryBankController
 
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS:
                 {
-                    if (!cartridge.IsRamEnabled) return 0xFF;
+                    if (ram.AccessMode == CartridgeRam.AccessModes.None) return 0xFF;
 
                     if (IsRtcRegisterSelected)
                     {
@@ -88,7 +88,7 @@ class MBC3 : IMemoryBankController
             {
                 case >= Cartridge.ROM_BANK_START_ADDRESS and < 0x2000:
                 {
-                    cartridge.IsRamEnabled = (value & 0b0000_1111) == 0xA;
+                    ram.AccessMode = (value & 0b0000_1111) == 0xA ? CartridgeRam.AccessModes.ReadWrite : CartridgeRam.AccessModes.None;
                     break;
                 }
 
@@ -127,7 +127,7 @@ class MBC3 : IMemoryBankController
 
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS:
                 {
-                    if (!cartridge.IsRamEnabled) break;
+                    if (ram.AccessMode != CartridgeRam.AccessModes.ReadWrite) break;
 
                     if (IsRtcRegisterSelected)
                     {

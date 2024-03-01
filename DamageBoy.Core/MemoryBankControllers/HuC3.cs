@@ -33,6 +33,7 @@ internal class HuC3 : IMemoryBankController
         this.cartridge = cartridge;
         this.rom = rom;
         this.ram = ram;
+        this.ram.AccessMode = CartridgeRam.AccessModes.ReadWrite;
 
         romBank = 1;
         ramBank = 0;
@@ -161,10 +162,6 @@ internal class HuC3 : IMemoryBankController
                 {
                     switch (mode)
                     {
-                        //case Modes.None:
-                        //    break;
-                        //case Modes.RamRead:
-                        //    break;
                         case Modes.RamReadWrite:
                             ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
                             break;

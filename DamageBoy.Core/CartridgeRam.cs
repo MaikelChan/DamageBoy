@@ -1,11 +1,36 @@
-﻿namespace DamageBoy.Core;
+﻿using DamageBoy.Core.State;
+using System;
+using System.IO;
+using static DamageBoy.Core.GameBoy;
 
-class CartridgeRam
+namespace DamageBoy.Core;
+
+class CartridgeRam : IState, IDisposable
 {
+    readonly SaveUpdateDelegate saveUpdateCallback;
+
     readonly byte[] bytes;
     public byte[] Bytes => bytes;
 
-    public bool HasBeenModified { get; set; }
+    AccessModes accessMode;
+    public AccessModes AccessMode
+    {
+        get => accessMode;
+        set
+        {
+            if (accessMode == AccessModes.ReadWrite && value != AccessModes.ReadWrite && hasBeenModifiedSinceLastSave)
+            {
+                saveUpdateCallback?.Invoke(bytes);
+                hasBeenModifiedSinceLastSave = false;
+            }
+
+            accessMode = value;
+        }
+    }
+
+    public enum AccessModes : byte { None, Read, ReadWrite }
+
+    bool hasBeenModifiedSinceLastSave;
 
     public byte this[int index]
     {
@@ -19,13 +44,16 @@ class CartridgeRam
             if (bytes[index] == value) return;
 
             bytes[index] = value;
-            HasBeenModified = true;
+            hasBeenModifiedSinceLastSave = true;
         }
     }
 
-    public CartridgeRam(int ramSize, byte[] saveData)
+    public CartridgeRam(int ramSize, byte[] saveData, SaveUpdateDelegate saveUpdateCallback)
     {
-        HasBeenModified = false;
+        this.saveUpdateCallback = saveUpdateCallback;
+
+        hasBeenModifiedSinceLastSave = false;
+        accessMode = AccessModes.None;
 
         if (saveData == null)
         {
@@ -43,5 +71,18 @@ class CartridgeRam
                 bytes = saveData;
             }
         }
+    }
+
+    public void Dispose()
+    {
+        saveUpdateCallback?.Invoke(bytes);
+        hasBeenModifiedSinceLastSave = false;
+    }
+
+    public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
+    {
+        accessMode = (AccessModes)SaveState.SaveLoadValue(bw, br, save, (byte)accessMode);
+        SaveState.SaveLoadArray(stream, save, bytes, bytes.Length);
+        if (!save) hasBeenModifiedSinceLastSave = true;
     }
 }

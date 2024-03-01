@@ -44,7 +44,9 @@ public class GameBoy
 
     FrameLimiterStates frameLimiterState;
 
-    public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<byte, byte> addToAudioBufferCallback, Action<byte[]> saveUpdateCallback)
+    public delegate void SaveUpdateDelegate(byte[] saveData);
+
+    public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, Action<byte[]> screenUpdateCallback, Action<byte, byte> addToAudioBufferCallback, SaveUpdateDelegate saveUpdateCallback)
     {
         cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
 

@@ -9,7 +9,7 @@ internal class SaveState
     readonly IState[] componentsStates;
     readonly Cartridge cartridge;
 
-    const uint SAVE_SATATE_FORMAT_VERSION = 2;
+    const uint SAVE_SATATE_FORMAT_VERSION = 3;
 
     public SaveState(IState[] componentsStates, Cartridge cartridge)
     {

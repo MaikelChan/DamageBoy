@@ -8,41 +8,18 @@ class MBC2 : IMemoryBankController
 {
     readonly Cartridge cartridge;
     readonly byte[] rom;
-    readonly Action<byte[]> saveUpdateCallback;
-
     readonly CartridgeRam ram;
 
     byte romBank;
     int RomBank => romBank & ((cartridge.RomSize >> 14) - 1);
 
-    bool isMBC2RamEnabled;
-    bool IsMBC2RamEnabled
-    {
-        get
-        {
-            return isMBC2RamEnabled;
-        }
-        set
-        {
-            if (isMBC2RamEnabled && !value && ram.HasBeenModified)
-            {
-                saveUpdateCallback?.Invoke(ram.Bytes);
-                ram.HasBeenModified = false;
-            }
+    public const int RAM_SIZE = 512;
 
-            isMBC2RamEnabled = value;
-        }
-    }
-
-    const int RAM_SIZE = 512;
-
-    public MBC2(Cartridge cartridge, byte[] rom, byte[] saveData, Action<byte[]> saveUpdateCallback)
+    public MBC2(Cartridge cartridge, byte[] rom, CartridgeRam ram)
     {
         this.cartridge = cartridge;
         this.rom = rom;
-        this.saveUpdateCallback = saveUpdateCallback;
-
-        ram = new CartridgeRam(RAM_SIZE, saveData);
+        this.ram = ram;
 
         romBank = 1;
     }
@@ -65,7 +42,7 @@ class MBC2 : IMemoryBankController
 
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS:
                 {
-                    if (!IsMBC2RamEnabled) return 0xFF;
+                    if (ram.AccessMode == CartridgeRam.AccessModes.None) return 0xFF;
                     index -= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS;
                     index &= 0x1FF;
                     return (byte)(0b1111_0000 | (ram[index] & 0b0000_1111));
@@ -93,7 +70,7 @@ class MBC2 : IMemoryBankController
                     }
                     else
                     {
-                        IsMBC2RamEnabled = (value & 0b0000_1111) == 0xA;
+                        ram.AccessMode = (value & 0b0000_1111) == 0xA ? CartridgeRam.AccessModes.ReadWrite : CartridgeRam.AccessModes.None;
                     }
 
                     break;
@@ -106,7 +83,7 @@ class MBC2 : IMemoryBankController
 
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS:
                 {
-                    if (!IsMBC2RamEnabled) break;
+                    if (ram.AccessMode != CartridgeRam.AccessModes.ReadWrite) break;
                     index -= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS;
                     index &= 0x1FF;
                     ram[index] = (byte)(0b1111_0000 | (value & 0b0000_1111));
@@ -124,6 +101,5 @@ class MBC2 : IMemoryBankController
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
     {
         romBank = SaveState.SaveLoadValue(bw, br, save, romBank);
-        isMBC2RamEnabled = SaveState.SaveLoadValue(bw, br, save, isMBC2RamEnabled);
     }
 }
