@@ -129,6 +129,11 @@ class Cartridge : IDisposable, IState
                 mbc = new MBC5(this, romData, ram);
                 break;
 
+            case 0xFF:
+                ram = GetInitializedRam(saveData);
+                mbc = new HuC1(this, romData, ram);
+                break;
+
             default:
                 throw new NotImplementedException($"MBC with ID: 0x{romData[0x147]:X4} is not implemented");
         }
