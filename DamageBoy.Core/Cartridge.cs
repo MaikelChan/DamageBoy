@@ -129,6 +129,11 @@ class Cartridge : IDisposable, IState
                 mbc = new MBC5(this, romData, ram);
                 break;
 
+            case 0xFE:
+                ram = GetInitializedRam(saveData);
+                mbc = new HuC3(this, romData, ram);
+                break;
+
             case 0xFF:
                 ram = GetInitializedRam(saveData);
                 mbc = new HuC1(this, romData, ram);
