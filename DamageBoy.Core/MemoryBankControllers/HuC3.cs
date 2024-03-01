@@ -8,7 +8,7 @@ internal class HuC3 : IMemoryBankController
 {
     readonly Cartridge cartridge;
     readonly byte[] rom;
-    readonly byte[] ram;
+    readonly CartridgeRam ram;
 
     byte romBank;
     int RomBank => romBank & ((cartridge.RomSize >> 14) - 1);
@@ -28,7 +28,7 @@ internal class HuC3 : IMemoryBankController
     const int RTC_MEMORY_SIZE = 256; // TODO: Is it 256?
     const int RTC_TIME_SIZE = 7;
 
-    public HuC3(Cartridge cartridge, byte[] rom, byte[] ram)
+    public HuC3(Cartridge cartridge, byte[] rom, CartridgeRam ram)
     {
         this.cartridge = cartridge;
         this.rom = rom;
@@ -167,7 +167,6 @@ internal class HuC3 : IMemoryBankController
                         //    break;
                         case Modes.RamReadWrite:
                             ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
-                            cartridge.RamHasBeenModifiedSinceLastSave = true;
                             break;
                         case Modes.RtcCommandArgumentWrite:
                             rtcCommandArgument = value;

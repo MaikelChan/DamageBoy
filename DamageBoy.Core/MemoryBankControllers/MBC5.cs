@@ -8,7 +8,7 @@ class MBC5 : IMemoryBankController
 {
     readonly Cartridge cartridge;
     readonly byte[] rom;
-    readonly byte[] ram;
+    readonly CartridgeRam ram;
 
     byte romBankHi, romBankLo;
     int RomBank => ((romBankHi << 8) | romBankLo) & ((cartridge.RomSize >> 14) - 1);
@@ -16,7 +16,7 @@ class MBC5 : IMemoryBankController
     byte ramBank;
     int RamBank => ramBank & ((cartridge.RamSize >> 13) - 1);
 
-    public MBC5(Cartridge cartridge, byte[] rom, byte[] ram)
+    public MBC5(Cartridge cartridge, byte[] rom, CartridgeRam ram)
     {
         this.cartridge = cartridge;
         this.rom = rom;
@@ -93,7 +93,6 @@ class MBC5 : IMemoryBankController
                 {
                     if (!cartridge.IsRamEnabled) break;
                     ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
-                    cartridge.RamHasBeenModifiedSinceLastSave = true;
                     break;
                 }
 

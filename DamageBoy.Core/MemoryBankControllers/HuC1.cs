@@ -8,7 +8,7 @@ internal class HuC1 : IMemoryBankController
 {
     readonly Cartridge cartridge;
     readonly byte[] rom;
-    readonly byte[] ram;
+    readonly CartridgeRam ram;
 
     byte romBank;
     int RomBank => romBank & ((cartridge.RomSize >> 14) - 1);
@@ -19,7 +19,7 @@ internal class HuC1 : IMemoryBankController
     enum Modes : byte { Ram, Infrared }
     Modes mode;
 
-    public HuC1(Cartridge cartridge, byte[] rom, byte[] ram)
+    public HuC1(Cartridge cartridge, byte[] rom, CartridgeRam ram)
     {
         this.cartridge = cartridge;
         this.rom = rom;
@@ -117,7 +117,6 @@ internal class HuC1 : IMemoryBankController
                         case Modes.Ram:
                             //cartridge.IsRamEnabled = true;
                             ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
-                            cartridge.RamHasBeenModifiedSinceLastSave = true;
                             //cartridge.IsRamEnabled = false;
                             break;
                         case Modes.Infrared:

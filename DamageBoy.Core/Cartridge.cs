@@ -9,7 +9,7 @@ namespace DamageBoy.Core;
 class Cartridge : IDisposable, IState
 {
     readonly byte[] rom;
-    readonly byte[] ram;
+    readonly CartridgeRam ram;
     readonly IMemoryBankController mbc;
     readonly Action<byte[]> saveUpdateCallback;
 
@@ -20,28 +20,22 @@ class Cartridge : IDisposable, IState
 
     public bool IsRamEnabled
     {
-        get
-        {
-            if (ram != null) return isRamEnabled;
-            return false;
-        }
+        get => ram != null ? isRamEnabled : false;
 
         set
         {
             if (ram != null)
             {
-                if (isRamEnabled && !value && RamHasBeenModifiedSinceLastSave)
+                if (isRamEnabled && !value && ram.HasBeenModified)
                 {
-                    saveUpdateCallback?.Invoke(ram);
-                    RamHasBeenModifiedSinceLastSave = false;
+                    saveUpdateCallback?.Invoke(ram.Bytes);
+                    ram.HasBeenModified = false;
                 }
 
                 isRamEnabled = value;
             }
         }
     }
-
-    public bool RamHasBeenModifiedSinceLastSave { get; set; }
 
     public int RomSize
     {
@@ -102,20 +96,20 @@ class Cartridge : IDisposable, IState
             case 0x1:
             case 0x2:
             case 0x3:
-                ram = GetInitializedRam(saveData);
+                ram = new CartridgeRam(RamSize, saveData);
                 mbc = new MBC1(this, romData, ram);
                 break;
 
             case 0x5:
             case 0x6:
                 if (RamSize != 0) throw new InvalidDataException($"Cartridge with MBC2 and RAM of size ID: 0x{rom[0x149]:X2} shouldn't be valid.");
-                mbc = new MBC2(this, romData, saveUpdateCallback);
+                mbc = new MBC2(this, romData, saveData, saveUpdateCallback);
                 break;
 
             case 0x11:
             case 0x12:
             case 0x13:
-                ram = GetInitializedRam(saveData);
+                ram = new CartridgeRam(RamSize, saveData);
                 mbc = new MBC3(this, romData, ram);
                 break;
 
@@ -125,17 +119,17 @@ class Cartridge : IDisposable, IState
             case 0x1C:
             case 0x1D:
             case 0x1E:
-                ram = GetInitializedRam(saveData);
+                ram = new CartridgeRam(RamSize, saveData);
                 mbc = new MBC5(this, romData, ram);
                 break;
 
             case 0xFE:
-                ram = GetInitializedRam(saveData);
+                ram = new CartridgeRam(RamSize, saveData);
                 mbc = new HuC3(this, romData, ram);
                 break;
 
             case 0xFF:
-                ram = GetInitializedRam(saveData);
+                ram = new CartridgeRam(RamSize, saveData);
                 mbc = new HuC1(this, romData, ram);
                 break;
 
@@ -157,36 +151,7 @@ class Cartridge : IDisposable, IState
     {
         if (ram != null)
         {
-            saveUpdateCallback?.Invoke(ram);
-        }
-    }
-
-    byte[] GetInitializedRam(byte[] saveData)
-    {
-        int ramSize = RamSize;
-
-        if (ramSize == 0)
-        {
-            return null;
-        }
-        else
-        {
-            if (saveData == null)
-            {
-                return new byte[ramSize];
-            }
-            else
-            {
-                if (saveData.Length != ramSize)
-                {
-                    Utils.Log(LogType.Warning, $"Save data is {saveData.Length} bytes of size but the game expects {ramSize} bytes.");
-                    return new byte[ramSize];
-                }
-                else
-                {
-                    return saveData;
-                }
-            }
+            saveUpdateCallback?.Invoke(ram.Bytes);
         }
     }
 
@@ -194,8 +159,8 @@ class Cartridge : IDisposable, IState
     {
         if (ram != null)
         {
-            SaveState.SaveLoadArray(stream, save, ram, RamSize);
-            if (!save) RamHasBeenModifiedSinceLastSave = true;
+            SaveState.SaveLoadArray(stream, save, ram.Bytes, RamSize);
+            if (!save) ram.HasBeenModified = true;
         }
 
         isRamEnabled = SaveState.SaveLoadValue(bw, br, save, isRamEnabled);

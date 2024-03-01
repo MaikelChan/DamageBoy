@@ -8,7 +8,7 @@ class MBC1 : IMemoryBankController
 {
     readonly Cartridge cartridge;
     readonly byte[] rom;
-    readonly byte[] ram;
+    readonly CartridgeRam ram;
 
     public enum BankingModes : byte { RomMode, RamMode_AdvancedRomMode }
 
@@ -27,7 +27,7 @@ class MBC1 : IMemoryBankController
 
     const int CART_1_MEGABYTE_SIZE = 1 * 1024 * 1024;
 
-    public MBC1(Cartridge cartridge, byte[] rom, byte[] ram)
+    public MBC1(Cartridge cartridge, byte[] rom, CartridgeRam ram)
     {
         this.cartridge = cartridge;
         this.rom = rom;
@@ -133,7 +133,6 @@ class MBC1 : IMemoryBankController
                 {
                     if (!cartridge.IsRamEnabled) break;
                     ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
-                    cartridge.RamHasBeenModifiedSinceLastSave = true;
                     break;
                 }
 

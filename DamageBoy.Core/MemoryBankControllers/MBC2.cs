@@ -10,7 +10,7 @@ class MBC2 : IMemoryBankController
     readonly byte[] rom;
     readonly Action<byte[]> saveUpdateCallback;
 
-    readonly byte[] ram;
+    readonly CartridgeRam ram;
 
     byte romBank;
     int RomBank => romBank & ((cartridge.RomSize >> 14) - 1);
@@ -24,27 +24,25 @@ class MBC2 : IMemoryBankController
         }
         set
         {
-            if (isMBC2RamEnabled && !value && ramHasBeenModifiedSinceLastSave)
+            if (isMBC2RamEnabled && !value && ram.HasBeenModified)
             {
-                saveUpdateCallback?.Invoke(ram);
-                ramHasBeenModifiedSinceLastSave = false;
+                saveUpdateCallback?.Invoke(ram.Bytes);
+                ram.HasBeenModified = false;
             }
 
             isMBC2RamEnabled = value;
         }
     }
 
-    bool ramHasBeenModifiedSinceLastSave;
-
     const int RAM_SIZE = 512;
 
-    public MBC2(Cartridge cartridge, byte[] rom, Action<byte[]> saveUpdateCallback)
+    public MBC2(Cartridge cartridge, byte[] rom, byte[] saveData, Action<byte[]> saveUpdateCallback)
     {
         this.cartridge = cartridge;
         this.rom = rom;
         this.saveUpdateCallback = saveUpdateCallback;
 
-        ram = new byte[RAM_SIZE];
+        ram = new CartridgeRam(RAM_SIZE, saveData);
 
         romBank = 1;
     }
@@ -112,7 +110,6 @@ class MBC2 : IMemoryBankController
                     index -= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS;
                     index &= 0x1FF;
                     ram[index] = (byte)(0b1111_0000 | (value & 0b0000_1111));
-                    ramHasBeenModifiedSinceLastSave = true;
                     break;
                 }
 

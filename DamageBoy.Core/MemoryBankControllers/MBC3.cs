@@ -8,7 +8,7 @@ class MBC3 : IMemoryBankController
 {
     readonly Cartridge cartridge;
     readonly byte[] rom;
-    readonly byte[] ram;
+    readonly CartridgeRam ram;
 
     byte romBank;
     int RomBank => romBank & ((cartridge.RomSize >> 14) - 1);
@@ -24,7 +24,7 @@ class MBC3 : IMemoryBankController
     byte latchedDaysLo;
     byte latchedDaysHi;
 
-    public MBC3(Cartridge cartridge, byte[] rom, byte[] ram)
+    public MBC3(Cartridge cartridge, byte[] rom, CartridgeRam ram)
     {
         this.cartridge = cartridge;
         this.rom = rom;
@@ -136,7 +136,6 @@ class MBC3 : IMemoryBankController
                     else
                     {
                         ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
-                        cartridge.RamHasBeenModifiedSinceLastSave = true;
                     }
 
                     break;
