@@ -41,9 +41,12 @@ class Window : GameWindow
     EmulationStates stateBeforeMinimized;
 
     string SaveFilePath => Path.Combine(SAVES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFileName) + ".sav");
-    const string SAVES_FOLDER = "Saves";
 
+    const string SAVES_FOLDER = "Saves";
     const string BOOT_ROM_FILE_NAME = "dmg_boot_rom";
+    public const string GB_FILE_EXTENSION = ".gb";
+    public const string GBC_FILE_EXTENSION = ".gbc";
+    public const string ZIP_FILE_EXTENSION = ".zip";
 
     public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
     {
@@ -169,21 +172,25 @@ class Window : GameWindow
         string extension = Path.GetExtension(selectedRomFileName).ToLower();
         switch (extension)
         {
-            case ".gb":
+            case GB_FILE_EXTENSION:
+            case GBC_FILE_EXTENSION:
                 romData = File.ReadAllBytes(selectedRomFileName);
                 break;
 
-            case ".zip":
-                ZipArchive zip = ZipFile.OpenRead(selectedRomFileName);
-                for (int z = 0; z < zip.Entries.Count; z++)
+            case ZIP_FILE_EXTENSION:
+                using (ZipArchive zip = ZipFile.OpenRead(selectedRomFileName))
                 {
-                    if (Path.GetExtension(zip.Entries[z].Name) == ".gb")
+                    for (int z = 0; z < zip.Entries.Count; z++)
                     {
-                        using (Stream s = zip.Entries[z].Open())
-                        using (MemoryStream romStream = new MemoryStream())
+                        string entryExtension = Path.GetExtension(zip.Entries[z].Name);
+                        if (entryExtension == GB_FILE_EXTENSION || entryExtension == GBC_FILE_EXTENSION)
                         {
-                            s.CopyTo(romStream);
-                            romData = romStream.ToArray();
+                            using (Stream s = zip.Entries[z].Open())
+                            using (MemoryStream romStream = new MemoryStream())
+                            {
+                                s.CopyTo(romStream);
+                                romData = romStream.ToArray();
+                            }
                         }
                     }
                 }
@@ -196,7 +203,7 @@ class Window : GameWindow
 
         if (romData == null)
         {
-            Utils.Log(LogType.Error, $"A valid GameBoy ROM has not been found in \"{selectedRomFileName}\"");
+            Utils.Log(LogType.Error, $"A valid GameBoy ROM has not been found in \"{selectedRomFileName}\".");
             return false;
         }
 
@@ -204,11 +211,11 @@ class Window : GameWindow
 
         if (File.Exists(SaveFilePath))
         {
-            Utils.Log(LogType.Info, $"A file save for this ROM has been found at \"{SaveFilePath}\"");
+            Utils.Log(LogType.Info, $"A file save for this ROM has been found at \"{SaveFilePath}\".");
             saveData = File.ReadAllBytes(SaveFilePath);
         }
 
-        Utils.Log(LogType.Info, $"ROM file successfully loaded: {selectedRomFileName}");
+        Utils.Log(LogType.Info, $"ROM file successfully loaded: {selectedRomFileName}.");
 
         try
         {

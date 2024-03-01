@@ -1,14 +1,14 @@
 ﻿using DamageBoy.Core.Audio;
 using DamageBoy.Core.State;
-using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using static DamageBoy.Core.GameBoy;
 
 namespace DamageBoy.Core;
 
 class APU : IState
 {
-    readonly Action<byte, byte> addToAudioBufferCallback;
+    readonly AddToAudioBufferDelegate addToAudioBufferCallback;
 
     readonly SoundChannel[] soundChannels;
 
@@ -31,7 +31,7 @@ class APU : IState
     const int VOLUME_ENVELOPE_INTERVAL_HZ = 64;
     const int SWEEP_INTERVAL_HZ = 128;
 
-    public APU(Action<byte, byte> addToAudioBufferCallback)
+    public APU(AddToAudioBufferDelegate addToAudioBufferCallback)
     {
         this.addToAudioBufferCallback = addToAudioBufferCallback;
 

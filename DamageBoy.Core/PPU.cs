@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using static DamageBoy.Core.GameBoy;
 
 namespace DamageBoy.Core;
 
@@ -10,8 +11,8 @@ class PPU : IDisposable, IState
     readonly InterruptHandler interruptHandler;
     readonly VRAM vram;
     readonly DMA dma;
-    readonly Action<byte[]> screenUpdateCallback;
-    readonly Action finishedVBlankCallback;
+    readonly ScreenUpdateDelegate screenUpdateCallback;
+    readonly FinishedVBlankDelegate finishedVBlankCallback;
 
     readonly byte[][] lcdPixelBuffers;
     readonly byte[] spriteIndicesInCurrentLine;
@@ -96,7 +97,9 @@ class PPU : IDisposable, IState
 
     readonly byte[] currentLineColorIndices = new byte[Constants.RES_X];
 
-    public PPU(InterruptHandler interruptHandler, VRAM vram, DMA dma, Action<byte[]> screenUpdateCallback, Action finishedVBlankCallback)
+    public delegate void FinishedVBlankDelegate();
+
+    public PPU(InterruptHandler interruptHandler, VRAM vram, DMA dma, ScreenUpdateDelegate screenUpdateCallback, FinishedVBlankDelegate finishedVBlankCallback)
     {
         this.interruptHandler = interruptHandler;
         this.vram = vram;

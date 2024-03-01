@@ -28,7 +28,8 @@ class MainUI : BaseUI
 
         MainMenuHeight = MAIN_MENU_DEFAULT_HEIGHT;
 
-        fileBrowserUI = new FileBrowserUI("Open ROM", settings.Data.LastRomDirectory, ".gb|.zip", false, window.OpenROM);
+        string extensions = $"{Window.GB_FILE_EXTENSION}|{Window.GBC_FILE_EXTENSION}|{Window.ZIP_FILE_EXTENSION}";
+        fileBrowserUI = new FileBrowserUI("Open ROM", settings.Data.LastRomDirectory, extensions, false, window.OpenROM);
         aboutWindowUI = new AboutWindowUI();
     }
 
