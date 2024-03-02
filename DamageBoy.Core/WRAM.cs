@@ -6,7 +6,7 @@ namespace DamageBoy.Core;
 
 class WRAM : IState
 {
-    readonly GameBoyModes gameBoyMode;
+    readonly GameBoyModes gbMode;
 
 #if GBC
     public byte Bank { get; set; }
@@ -17,29 +17,30 @@ class WRAM : IState
     public const ushort START_ADDRESS = 0xC000;
     public const ushort END_ADDRESS = 0xE000;
     public const ushort DMG_SIZE = END_ADDRESS - START_ADDRESS;
-    public const ushort CGB_SIZE = 0x8000;
 #if GBC
-    public const ushort SIZE = CGB_SIZE;
-#else
-    public const ushort SIZE = DMG_SIZE;
+    public const ushort CGB_SIZE = 0x8000;
 #endif
 
     public const ushort ECHO_START_ADDRESS = 0xE000;
     public const ushort ECHO_END_ADDRESS = 0xFE00;
 
-    public WRAM(GameBoyModes mode)
+    public WRAM(GameBoyModes gbMode)
     {
-        gameBoyMode = mode;
+        this.gbMode = gbMode;
 
+#if GBC
         Bank = 1;
-        bytes = new byte[SIZE];
+        bytes = new byte[gbMode == GameBoyModes.CGB ? CGB_SIZE : DMG_SIZE];
+#else
+        bytes = new byte[DMG_SIZE];
+#endif
     }
 
     public byte this[int index]
     {
         get
         {
-            if (gameBoyMode == GameBoyModes.CGB)
+            if (gbMode == GameBoyModes.CGB)
             {
                 switch (index)
                 {
@@ -56,7 +57,7 @@ class WRAM : IState
 
         set
         {
-            if (gameBoyMode == GameBoyModes.CGB)
+            if (gbMode == GameBoyModes.CGB)
             {
                 switch (index)
                 {
@@ -74,9 +75,9 @@ class WRAM : IState
 
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
     {
-        SaveState.SaveLoadArray(stream, save, bytes, gameBoyMode == GameBoyModes.CGB ? CGB_SIZE : DMG_SIZE);
+        SaveState.SaveLoadArray(stream, save, bytes, bytes.Length);
 #if GBC
-        if (gameBoyMode == GameBoyModes.CGB)
+        if (gbMode == GameBoyModes.CGB)
         {
             Bank = SaveState.SaveLoadValue(bw, br, save, Bank);
         }

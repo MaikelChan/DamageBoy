@@ -128,7 +128,7 @@ class PPU : IDisposable, IState
             {
                 if (CanCPUAccessVRAM())
                 {
-                    return vram[index - VRAM.START_ADDRESS];
+                    return vram[index];
                 }
                 else
                 {
@@ -159,7 +159,7 @@ class PPU : IDisposable, IState
             if (index >= VRAM.START_ADDRESS && index < VRAM.END_ADDRESS)
             {
                 if (CanCPUAccessVRAM())
-                    vram[index - VRAM.START_ADDRESS] = value;
+                    vram[index] = value;
                 else
                     Utils.Log(LogType.Warning, $"Tried to write to VRAM while in {LCDStatusMode} mode.");
             }
@@ -314,8 +314,8 @@ class PPU : IDisposable, IState
 
         if (BGDisplayEnable)
         {
-            ushort tileMapAddress = (ushort)((BGTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.START_ADDRESS);
-            ushort tileDataAddress = (ushort)((BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.START_ADDRESS);
+            ushort tileMapAddress = BGTileMapDisplaySelect ? VRAM.START_TILE_MAP_2_ADDRESS : VRAM.START_TILE_MAP_1_ADDRESS;
+            ushort tileDataAddress = BGAndWindowTileDataSelect ? VRAM.START_TILE_DATA_1_ADDRESS : VRAM.START_TILE_DATA_2_ADDRESS;
 
             int sY = (LY + ScrollY) & 0xFF;
 
@@ -350,8 +350,8 @@ class PPU : IDisposable, IState
 
         if (WindowDisplayEnable)
         {
-            ushort tileMapAddress = (ushort)((WindowTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.START_ADDRESS);
-            ushort tileDataAddress = (ushort)((BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.START_ADDRESS);
+            ushort tileMapAddress = WindowTileMapDisplaySelect ? VRAM.START_TILE_MAP_2_ADDRESS : VRAM.START_TILE_MAP_1_ADDRESS;
+            ushort tileDataAddress = BGAndWindowTileDataSelect ? VRAM.START_TILE_DATA_1_ADDRESS : VRAM.START_TILE_DATA_2_ADDRESS;
 
             int sY = (LY - WindowY) & 0xFF;
 
@@ -408,11 +408,11 @@ class PPU : IDisposable, IState
                     continue;
                 }
 
-                ushort tileDataAddress = (ushort)(spriteTile * TILE_BYTES_SIZE + spriteRow);
+                ushort tileDataAddress = (ushort)(spriteTile * TILE_BYTES_SIZE + spriteRow + VRAM.START_ADDRESS);
 
                 // Prevent sprites being able to draw data from the BG exclusive area.
                 // Some games like Super Bikkuriman try to do this, and it should not be rendered.
-                if (tileDataAddress >= 0x1000) continue;
+                if (tileDataAddress >= 0x1000 + VRAM.START_ADDRESS) continue;
 
                 int minX = Math.Max(spriteX, 0);
                 int maxX = Math.Min(spriteX + 8, Constants.RES_X);

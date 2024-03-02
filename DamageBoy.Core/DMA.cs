@@ -42,7 +42,7 @@ class DMA : IState
             switch (index)
             {
                 case >= Cartridge.ROM_BANK_START_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
-                case >= VRAM.START_ADDRESS and < VRAM.END_ADDRESS: return vram[index - VRAM.START_ADDRESS];
+                case >= VRAM.START_ADDRESS and < VRAM.END_ADDRESS: return vram[index];
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: return cartridge[index];
                 case >= WRAM.START_ADDRESS and < WRAM.END_ADDRESS: return wram[index - WRAM.START_ADDRESS];
                 default: throw new IndexOutOfRangeException($"DMA tried to read from out of range memory: 0x{index:X4}");
