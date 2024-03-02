@@ -330,12 +330,28 @@ class PPU : IDisposable, IState
                 if (!BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
 
                 ushort currentTileDataAddress = tileDataAddress;
-                currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + ((sY & 0x7) << 1));
+
+#if IS_CGB
+                byte attributes = vram.GetTileMapAttributes(currentTileMapAddress);
+                int palette = attributes & 0b0000_0111;
+                int bank = (attributes & 0b0000_1000) >> 3;
+                bool invX = (attributes & 0b0010_0000) != 0;
+                bool invY = (attributes & 0b0100_0000) != 0;
+                bool priority = (attributes & 0b1000_0000) != 0;
+                currentTileDataAddress += (ushort)(VRAM.DMG_SIZE * bank);
+
+                byte bitX = (byte)(invX ? sX & 0x7 : 7 - (sX & 0x7));
+                byte bitY = (byte)(invY ? 7 - (sY & 0x7) : sY & 0x7);
+#else
+                byte bitX = (byte)(7 - (sX & 0x7));
+                byte bitY = (byte)(sY & 0x7);
+#endif
+
+                currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + (bitY << 1));
 
                 int currentLCDPixel = LY * Constants.RES_X + (x);
 
-                byte bit = (byte)(7 - (sX & 0x7));
-                currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bit);
+                currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bitX);
                 lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetBGColor(currentLineColorIndices[x]);
             }
         }

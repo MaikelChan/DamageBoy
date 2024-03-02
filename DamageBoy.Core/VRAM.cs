@@ -74,6 +74,13 @@ class VRAM : IState
         }
     }
 
+#if IS_CGB
+    public byte GetTileMapAttributes(ushort tileMapAddress)
+    {
+        return bytes[tileMapAddress - START_ADDRESS + DMG_SIZE];
+    }
+#endif
+
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
     {
         SaveState.SaveLoadArray(stream, save, bytes, DMG_SIZE);
