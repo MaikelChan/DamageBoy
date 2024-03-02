@@ -18,6 +18,7 @@ public enum Buttons
 
 class IO : IState
 {
+    readonly WRAM wram;
     readonly PPU ppu;
     readonly DMA dma;
     readonly Timer timer;
@@ -31,8 +32,9 @@ class IO : IState
 
     public const ushort INTERRUPT_ENABLE_REGISTER_ADDRESS = 0xFFFF;
 
-    public IO(PPU ppu, DMA dma, Timer timer, APU apu, Serial serial, InterruptHandler interruptHandler)
+    public IO(WRAM wram, PPU ppu, DMA dma, Timer timer, APU apu, Serial serial, InterruptHandler interruptHandler)
     {
+        this.wram = wram;
         this.ppu = ppu;
         this.dma = dma;
         this.timer = timer;
@@ -94,6 +96,9 @@ class IO : IState
                 case 0x49: return OBP1;
                 case 0x4A: return WY;
                 case 0x4B: return WX;
+#if GBC
+                case 0x70: return SVBK;
+#endif
                 case 0xFF: return IE;
                 default:
                     Utils.Log(LogType.Warning, $"Read from IO Port 0x{index:X2} not implemented.");
@@ -150,6 +155,9 @@ class IO : IState
                 case 0x4A: WY = value; break;
                 case 0x4B: WX = value; break;
                 case 0x50: BootROMDisabled = true; break;
+#if GBC
+                case 0x70: SVBK = value; break;
+#endif
                 case 0xFF: IE = value; break;
                 default:
                     Utils.Log(LogType.Warning, $"Write to IO Port 0x{index:X2} not implemented.");
@@ -1043,6 +1051,27 @@ class IO : IState
     /// // Disables the Boot ROM.
     /// </summary>
     public bool BootROMDisabled { get; private set; }
+
+    #endregion
+
+    #region GameBoy Color
+
+#if GBC
+
+    /// <summary>
+    /// FF70 - SVBK (CGB Mode only): WRAM bank (R/W)
+    /// </summary>
+    byte SVBK
+    {
+        get => wram.Bank;
+        set
+        {
+            byte bank = (byte)(value & 0b0000_0111);
+            wram.Bank = (byte)(bank == 0 ? 1 : bank);
+        }
+    }
+
+#endif
 
     #endregion
 

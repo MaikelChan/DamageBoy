@@ -20,9 +20,16 @@ public enum FrameLimiterStates
     Paused
 }
 
+public enum GameBoyModes
+{
+    DMG,
+    CGB
+}
+
 public class GameBoy
 {
-    readonly RAM ram;
+    readonly WRAM wram;
+    readonly HRAM hram;
     readonly VRAM vram;
     readonly InterruptHandler interruptHandler;
     readonly Serial serial;
@@ -40,6 +47,7 @@ public class GameBoy
 
     public string GameTitle => cartridge.Title;
 
+    public GameBoyModes Mode { get; }
     public EmulationStates EmulationState { get; private set; }
 
     FrameLimiterStates frameLimiterState;
@@ -51,17 +59,23 @@ public class GameBoy
     public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, ScreenUpdateDelegate screenUpdateCallback, AddToAudioBufferDelegate addToAudioBufferCallback, SaveUpdateDelegate saveUpdateCallback)
     {
         cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
+#if GBC
+        Mode = cartridge.Mode == Cartridge.Modes.GameBoy ? GameBoyModes.DMG : GameBoyModes.CGB;
+#else
+        Mode = Cartridge.Modes.GameBoy;
+#endif
 
-        ram = new RAM();
+        wram = new WRAM(Mode);
+        hram = new HRAM();
         vram = new VRAM();
         interruptHandler = new InterruptHandler();
         serial = new Serial(interruptHandler);
-        dma = new DMA(cartridge, ram, vram);
+        dma = new DMA(cartridge, wram, vram);
         timer = new Timer(interruptHandler);
         apu = new APU(addToAudioBufferCallback);
         ppu = new PPU(interruptHandler, vram, dma, screenUpdateCallback, ProcessSaveState);
-        io = new IO(ppu, dma, timer, apu, serial, interruptHandler);
-        mmu = new MMU(io, ram, ppu, dma, bootRom, cartridge);
+        io = new IO(wram, ppu, dma, timer, apu, serial, interruptHandler);
+        mmu = new MMU(io, wram, hram, ppu, dma, bootRom, cartridge);
         cpu = new CPU(mmu, bootRom != null);
 
         frameLimiterState = FrameLimiterStates.Limited;
@@ -211,7 +225,8 @@ public class GameBoy
         IState[] componentsStates = new IState[]
         {
             cartridge,
-            ram,
+            wram,
+            hram,
             vram,
             interruptHandler,
             serial,

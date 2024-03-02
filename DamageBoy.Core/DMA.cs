@@ -7,7 +7,7 @@ namespace DamageBoy.Core;
 class DMA : IState
 {
     readonly Cartridge cartridge;
-    readonly RAM ram;
+    readonly WRAM wram;
     readonly VRAM vram;
 
     public byte SourceBaseAddress
@@ -21,10 +21,10 @@ class DMA : IState
     ushort sourceAddress;
     int currentOffset;
 
-    public DMA(Cartridge cartridge, RAM ram, VRAM vram)
+    public DMA(Cartridge cartridge, WRAM wram, VRAM vram)
     {
         this.cartridge = cartridge;
-        this.ram = ram;
+        this.wram = wram;
         this.vram = vram;
 
         currentOffset = VRAM.OAM_SIZE;
@@ -41,7 +41,7 @@ class DMA : IState
                 case >= Cartridge.ROM_BANK_START_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
                 case >= VRAM.VRAM_START_ADDRESS and < VRAM.VRAM_END_ADDRESS: return vram.VRam[index - VRAM.VRAM_START_ADDRESS];
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: return cartridge[index];
-                case >= RAM.INTERNAL_RAM_START_ADDRESS and < RAM.INTERNAL_RAM_END_ADDRESS: return ram.InternalRam[index - RAM.INTERNAL_RAM_START_ADDRESS];
+                case >= WRAM.START_ADDRESS and < WRAM.END_ADDRESS: return wram[index - WRAM.START_ADDRESS];
                 default: throw new IndexOutOfRangeException($"DMA tried to read from out of range memory: 0x{index:X4}");
             }
         }
