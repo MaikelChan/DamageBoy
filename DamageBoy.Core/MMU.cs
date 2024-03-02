@@ -36,7 +36,7 @@ class MMU
             switch (index)
             {
                 case >= GameBoy.BOOT_ROM_START_ADDRESS and < GameBoy.BOOT_ROM_END_ADDRESS: return io.BootROMDisabled ? cartridge[index] : bootRom[index];
-#if GBC
+#if IS_CGB
                 case >= GameBoy.BOOT_ROM_END_ADDRESS and < GameBoy.CGB_BOOT_ROM_SECOND_PART_START_ADDRESS: return cartridge[index];
                 case >= GameBoy.CGB_BOOT_ROM_SECOND_PART_START_ADDRESS and < GameBoy.CGB_BOOT_ROM_SECOND_PART_END_ADDRESS: return io.BootROMDisabled ? cartridge[index] : bootRom[index];
                 case >= GameBoy.CGB_BOOT_ROM_SECOND_PART_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
@@ -67,7 +67,7 @@ class MMU
             switch (index)
             {
                 case >= GameBoy.BOOT_ROM_START_ADDRESS and < GameBoy.BOOT_ROM_END_ADDRESS: if (io.BootROMDisabled) cartridge[index] = value; break;
-#if GBC
+#if IS_CGB
                 case >= GameBoy.BOOT_ROM_END_ADDRESS and < GameBoy.CGB_BOOT_ROM_SECOND_PART_START_ADDRESS: cartridge[index] = value; break;
                 case >= GameBoy.CGB_BOOT_ROM_SECOND_PART_START_ADDRESS and < GameBoy.CGB_BOOT_ROM_SECOND_PART_END_ADDRESS: if (io.BootROMDisabled) cartridge[index] = value; break;
                 case >= GameBoy.CGB_BOOT_ROM_SECOND_PART_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: cartridge[index] = value; break;

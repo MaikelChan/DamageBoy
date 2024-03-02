@@ -1,4 +1,6 @@
-﻿using DamageBoy.Core.State;
+﻿#if IS_CGB
+
+using DamageBoy.Core.State;
 using System;
 using System.IO;
 
@@ -111,3 +113,5 @@ class HDMA : IState
         RemainingLength = SaveState.SaveLoadValue(bw, br, save, RemainingLength);
     }
 }
+
+#endif

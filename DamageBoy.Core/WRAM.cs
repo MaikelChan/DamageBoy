@@ -8,7 +8,7 @@ class WRAM : IState
 {
     readonly GameBoyModes gbMode;
 
-#if GBC
+#if IS_CGB
     public byte Bank { get; set; }
 #endif
 
@@ -17,7 +17,7 @@ class WRAM : IState
     public const ushort START_ADDRESS = 0xC000;
     public const ushort END_ADDRESS = 0xE000;
     public const ushort DMG_SIZE = END_ADDRESS - START_ADDRESS;
-#if GBC
+#if IS_CGB
     public const ushort CGB_SIZE = 0x8000;
 #endif
 
@@ -28,7 +28,7 @@ class WRAM : IState
     {
         this.gbMode = gbMode;
 
-#if GBC
+#if IS_CGB
         Bank = 1;
         bytes = new byte[gbMode == GameBoyModes.CGB ? CGB_SIZE : DMG_SIZE];
 #else
@@ -76,7 +76,7 @@ class WRAM : IState
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
     {
         SaveState.SaveLoadArray(stream, save, bytes, bytes.Length);
-#if GBC
+#if IS_CGB
         if (gbMode == GameBoyModes.CGB)
         {
             Bank = SaveState.SaveLoadValue(bw, br, save, Bank);

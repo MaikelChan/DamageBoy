@@ -17,12 +17,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants);GBC</DefineConstants>
+    <DefineConstants>$(DefineConstants);IS_CGB</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>$(DefineConstants);GBC</DefineConstants>
+    <DefineConstants>$(DefineConstants);IS_CGB</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

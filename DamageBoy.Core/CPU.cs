@@ -86,7 +86,7 @@ class CPU : IDisposable, IState
 
         if (!isThereBootRom)
         {
-#if GBC // TODO: https://gbdev.io/pandocs/Power_Up_Sequence.html#cpu-registers
+#if IS_CGB // TODO: https://gbdev.io/pandocs/Power_Up_Sequence.html#cpu-registers
             if (gameBoyMode == GameBoyModes.CGB)
             {
                 AF = 0x1180;

@@ -100,7 +100,7 @@ class IO : IState
                 case 0x49: return OBP1;
                 case 0x4A: return WY;
                 case 0x4B: return WX;
-#if GBC
+#if IS_CGB
                 case 0x4F: return VBK;
                 case 0x51: return HDMA1;
                 case 0x52: return HDMA2;
@@ -171,7 +171,7 @@ class IO : IState
                 case 0x4A: WY = value; break;
                 case 0x4B: WX = value; break;
                 case 0x50: BootROMDisabled = true; break;
-#if GBC
+#if IS_CGB
                 case 0x4F: VBK = value; break;
                 case 0x51: HDMA1 = value; break;
                 case 0x52: HDMA2 = value; break;
@@ -1084,7 +1084,7 @@ class IO : IState
 
     #region GameBoy Color
 
-#if GBC
+#if IS_CGB
 
     /// <summary>
     /// FF4F — VBK (CGB Mode only): VRAM bank (R/W)

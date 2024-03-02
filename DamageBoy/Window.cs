@@ -43,7 +43,7 @@ class Window : GameWindow
     string SaveFilePath => Path.Combine(SAVES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFileName) + ".sav");
 
     const string SAVES_FOLDER = "Saves";
-#if GBC
+#if IS_CGB
     const string BOOT_ROM_FILE_NAME = "cgb_boot_rom";
 #else
     const string BOOT_ROM_FILE_NAME = "dmg_boot_rom";

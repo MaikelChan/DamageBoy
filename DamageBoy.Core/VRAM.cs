@@ -7,7 +7,7 @@ class VRAM : IState
 {
     readonly GameBoyModes gbMode;
 
-#if GBC
+#if IS_CGB
     public byte Bank { get; set; }
 #endif
 
@@ -16,7 +16,7 @@ class VRAM : IState
     public const ushort START_ADDRESS = 0x8000;
     public const ushort END_ADDRESS = 0xA000;
     public const ushort DMG_SIZE = END_ADDRESS - START_ADDRESS;
-#if GBC
+#if IS_CGB
     public const ushort CGB_SIZE = DMG_SIZE << 1;
 #endif
 
@@ -36,7 +36,7 @@ class VRAM : IState
     {
         this.gbMode = gbMode;
 
-#if GBC
+#if IS_CGB
         Bank = 0;
         bytes = new byte[gbMode == GameBoyModes.CGB ? CGB_SIZE : DMG_SIZE];
 #else
