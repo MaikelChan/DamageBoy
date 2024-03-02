@@ -50,9 +50,9 @@ class VRAM : IState
         {
             if (gbMode == GameBoyModes.CGB)
             {
-                return bytes[index + (DMG_SIZE * Bank) - START_ADDRESS];
-                //if (index < END_TILE_DATA_ADDRESS) return bytes[index + (DMG_SIZE * Bank) - START_ADDRESS];
-                //else return bytes[index - START_ADDRESS];
+                //return bytes[index + (DMG_SIZE * Bank) - START_ADDRESS];
+                if (index < END_TILE_DATA_ADDRESS) return bytes[index + (DMG_SIZE * Bank) - START_ADDRESS];
+                else return bytes[index - START_ADDRESS];
             }
             else
             {
