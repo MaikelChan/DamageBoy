@@ -76,7 +76,7 @@ public class GameBoy
         ppu = new PPU(interruptHandler, vram, dma, screenUpdateCallback, ProcessSaveState);
         io = new IO(wram, ppu, dma, timer, apu, serial, interruptHandler);
         mmu = new MMU(io, wram, hram, ppu, dma, bootRom, cartridge);
-        cpu = new CPU(mmu, bootRom != null);
+        cpu = new CPU(Mode, mmu, bootRom != null);
 
         frameLimiterState = FrameLimiterStates.Limited;
 
