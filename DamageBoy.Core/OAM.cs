@@ -3,18 +3,18 @@ using System.IO;
 
 namespace DamageBoy.Core;
 
-class VRAM : IState
+class OAM : IState
 {
     readonly byte[] bytes;
 
-    public const ushort START_ADDRESS = 0x8000;
-    public const ushort END_ADDRESS = 0xA000;
+    public const ushort START_ADDRESS = 0xFE00;
+    public const ushort END_ADDRESS = 0xFEA0;
     public const ushort SIZE = END_ADDRESS - START_ADDRESS;
 
     public const ushort UNUSABLE_START_ADDRESS = 0xFEA0;
     public const ushort UNUSABLE_END_ADDRESS = 0xFF00;
 
-    public VRAM()
+    public OAM()
     {
         bytes = new byte[SIZE];
     }

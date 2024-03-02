@@ -43,11 +43,11 @@ class MMU
 #else
                 case >= GameBoy.BOOT_ROM_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
 #endif
-                case >= VRAM.VRAM_START_ADDRESS and < VRAM.VRAM_END_ADDRESS: return ppu[index];
+                case >= VRAM.START_ADDRESS and < VRAM.END_ADDRESS: return ppu[index];
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: return cartridge[index];
                 case >= WRAM.START_ADDRESS and < WRAM.END_ADDRESS: return wram[index - WRAM.START_ADDRESS];
                 case >= WRAM.ECHO_START_ADDRESS and < WRAM.ECHO_END_ADDRESS: return wram[index - WRAM.ECHO_START_ADDRESS];
-                case >= VRAM.OAM_START_ADDRESS and < VRAM.OAM_END_ADDRESS: return ppu[index];
+                case >= OAM.START_ADDRESS and < OAM.END_ADDRESS: return ppu[index];
                 case >= VRAM.UNUSABLE_START_ADDRESS and < VRAM.UNUSABLE_END_ADDRESS: return 0xFF;
                 case >= IO.IO_PORTS_START_ADDRESS and < IO.IO_PORTS_END_ADDRESS: return io[index - IO.IO_PORTS_START_ADDRESS];
                 case >= HRAM.START_ADDRESS and < HRAM.END_ADDRESS: return hram[index - HRAM.START_ADDRESS];
@@ -74,11 +74,11 @@ class MMU
 #else
                 case >= GameBoy.BOOT_ROM_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: cartridge[index] = value; break;
 #endif
-                case >= VRAM.VRAM_START_ADDRESS and < VRAM.VRAM_END_ADDRESS: ppu[index] = value; break;
+                case >= VRAM.START_ADDRESS and < VRAM.END_ADDRESS: ppu[index] = value; break;
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: cartridge[index] = value; break;
                 case >= WRAM.START_ADDRESS and < WRAM.END_ADDRESS: wram[index - WRAM.START_ADDRESS] = value; break;
                 case >= WRAM.ECHO_START_ADDRESS and < WRAM.ECHO_END_ADDRESS: wram[index - WRAM.ECHO_START_ADDRESS] = value; break;
-                case >= VRAM.OAM_START_ADDRESS and < VRAM.OAM_END_ADDRESS: ppu[index] = value; break;
+                case >= OAM.START_ADDRESS and < OAM.END_ADDRESS: ppu[index] = value; break;
                 case >= VRAM.UNUSABLE_START_ADDRESS and < VRAM.UNUSABLE_END_ADDRESS: break;
                 case >= IO.IO_PORTS_START_ADDRESS and < IO.IO_PORTS_END_ADDRESS: io[index - IO.IO_PORTS_START_ADDRESS] = value; break;
                 case >= HRAM.START_ADDRESS and < HRAM.END_ADDRESS: hram[index - HRAM.START_ADDRESS] = value; break;

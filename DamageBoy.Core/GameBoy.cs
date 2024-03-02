@@ -31,6 +31,7 @@ public class GameBoy
     readonly WRAM wram;
     readonly HRAM hram;
     readonly VRAM vram;
+    readonly OAM oam;
     readonly InterruptHandler interruptHandler;
     readonly Serial serial;
     readonly DMA dma;
@@ -79,12 +80,13 @@ public class GameBoy
         wram = new WRAM(Mode);
         hram = new HRAM();
         vram = new VRAM();
+        oam = new OAM();
         interruptHandler = new InterruptHandler();
         serial = new Serial(interruptHandler);
-        dma = new DMA(cartridge, wram, vram);
+        dma = new DMA(cartridge, wram, vram, oam);
         timer = new Timer(interruptHandler);
         apu = new APU(addToAudioBufferCallback);
-        ppu = new PPU(interruptHandler, vram, dma, screenUpdateCallback, ProcessSaveState);
+        ppu = new PPU(interruptHandler, vram, oam, dma, screenUpdateCallback, ProcessSaveState);
         io = new IO(wram, ppu, dma, timer, apu, serial, interruptHandler);
         mmu = new MMU(io, wram, hram, ppu, dma, bootRom, cartridge);
         cpu = new CPU(Mode, mmu, bootRom != null);
@@ -239,6 +241,7 @@ public class GameBoy
             wram,
             hram,
             vram,
+            oam,
             interruptHandler,
             serial,
             dma,

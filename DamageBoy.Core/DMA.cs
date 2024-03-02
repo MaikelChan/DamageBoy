@@ -9,6 +9,7 @@ class DMA : IState
     readonly Cartridge cartridge;
     readonly WRAM wram;
     readonly VRAM vram;
+    readonly OAM oam;
 
     public byte SourceBaseAddress
     {
@@ -16,18 +17,20 @@ class DMA : IState
         set { sourceAddress = (ushort)(value << 8); Begin(); }
     }
 
-    public bool IsBusy => currentOffset < VRAM.OAM_SIZE;
+    public bool IsBusy => currentOffset < OAM.SIZE;
 
     ushort sourceAddress;
     int currentOffset;
 
-    public DMA(Cartridge cartridge, WRAM wram, VRAM vram)
+    public DMA(Cartridge cartridge, WRAM wram, VRAM vram, OAM oam)
     {
         this.cartridge = cartridge;
         this.wram = wram;
         this.vram = vram;
+        this.oam = oam;
 
-        currentOffset = VRAM.OAM_SIZE;
+        currentOffset = OAM.SIZE;
+        this.oam = oam;
     }
 
     byte this[int index]
@@ -39,7 +42,7 @@ class DMA : IState
             switch (index)
             {
                 case >= Cartridge.ROM_BANK_START_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
-                case >= VRAM.VRAM_START_ADDRESS and < VRAM.VRAM_END_ADDRESS: return vram.VRam[index - VRAM.VRAM_START_ADDRESS];
+                case >= VRAM.START_ADDRESS and < VRAM.END_ADDRESS: return vram[index - VRAM.START_ADDRESS];
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: return cartridge[index];
                 case >= WRAM.START_ADDRESS and < WRAM.END_ADDRESS: return wram[index - WRAM.START_ADDRESS];
                 default: throw new IndexOutOfRangeException($"DMA tried to read from out of range memory: 0x{index:X4}");
@@ -50,7 +53,7 @@ class DMA : IState
         {
             switch (index)
             {
-                case >= VRAM.OAM_START_ADDRESS and < VRAM.OAM_END_ADDRESS: vram.Oam[index - VRAM.OAM_START_ADDRESS] = value; break;
+                case >= OAM.START_ADDRESS and < OAM.END_ADDRESS: oam[index - OAM.START_ADDRESS] = value; break;
                 default: throw new IndexOutOfRangeException($"DMA tried to write to out of range memory: 0x{index:X4}");
             }
         }
@@ -66,7 +69,7 @@ class DMA : IState
             return;
         }
 
-        this[VRAM.OAM_START_ADDRESS + currentOffset] = this[sourceAddress + currentOffset];
+        this[OAM.START_ADDRESS + currentOffset] = this[sourceAddress + currentOffset];
         currentOffset++;
     }
 

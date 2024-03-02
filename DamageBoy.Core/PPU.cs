@@ -10,6 +10,7 @@ class PPU : IDisposable, IState
 {
     readonly InterruptHandler interruptHandler;
     readonly VRAM vram;
+    readonly OAM oam;
     readonly DMA dma;
     readonly ScreenUpdateDelegate screenUpdateCallback;
     readonly FinishedVBlankDelegate finishedVBlankCallback;
@@ -99,10 +100,11 @@ class PPU : IDisposable, IState
 
     public delegate void FinishedVBlankDelegate();
 
-    public PPU(InterruptHandler interruptHandler, VRAM vram, DMA dma, ScreenUpdateDelegate screenUpdateCallback, FinishedVBlankDelegate finishedVBlankCallback)
+    public PPU(InterruptHandler interruptHandler, VRAM vram, OAM oam, DMA dma, ScreenUpdateDelegate screenUpdateCallback, FinishedVBlankDelegate finishedVBlankCallback)
     {
         this.interruptHandler = interruptHandler;
         this.vram = vram;
+        this.oam = oam;
         this.dma = dma;
         this.screenUpdateCallback = screenUpdateCallback;
         this.finishedVBlankCallback = finishedVBlankCallback;
@@ -122,11 +124,11 @@ class PPU : IDisposable, IState
     {
         get
         {
-            if (index >= VRAM.VRAM_START_ADDRESS && index < VRAM.VRAM_END_ADDRESS)
+            if (index >= VRAM.START_ADDRESS && index < VRAM.END_ADDRESS)
             {
                 if (CanCPUAccessVRAM())
                 {
-                    return vram.VRam[index - VRAM.VRAM_START_ADDRESS];
+                    return vram[index - VRAM.START_ADDRESS];
                 }
                 else
                 {
@@ -134,11 +136,11 @@ class PPU : IDisposable, IState
                     return 0xFF;
                 }
             }
-            else if (index >= VRAM.OAM_START_ADDRESS && index < VRAM.OAM_END_ADDRESS)
+            else if (index >= OAM.START_ADDRESS && index < OAM.END_ADDRESS)
             {
                 if (CanCPUAccessOAM())
                 {
-                    return vram.Oam[index - VRAM.OAM_START_ADDRESS];
+                    return oam[index - OAM.START_ADDRESS];
                 }
                 else
                 {
@@ -154,17 +156,17 @@ class PPU : IDisposable, IState
 
         set
         {
-            if (index >= VRAM.VRAM_START_ADDRESS && index < VRAM.VRAM_END_ADDRESS)
+            if (index >= VRAM.START_ADDRESS && index < VRAM.END_ADDRESS)
             {
                 if (CanCPUAccessVRAM())
-                    vram.VRam[index - VRAM.VRAM_START_ADDRESS] = value;
+                    vram[index - VRAM.START_ADDRESS] = value;
                 else
                     Utils.Log(LogType.Warning, $"Tried to write to VRAM while in {LCDStatusMode} mode.");
             }
-            else if (index >= VRAM.OAM_START_ADDRESS && index < VRAM.OAM_END_ADDRESS)
+            else if (index >= OAM.START_ADDRESS && index < OAM.END_ADDRESS)
             {
                 if (CanCPUAccessOAM())
-                    vram.Oam[index - VRAM.OAM_START_ADDRESS] = value;
+                    oam[index - OAM.START_ADDRESS] = value;
                 else
                     Utils.Log(LogType.Warning, $"Tried to write to OAM while in {LCDStatusMode} mode.");
             }
@@ -264,11 +266,11 @@ class PPU : IDisposable, IState
     {
         if (!LCDDisplayEnable) return;
         if (LCDStatusMode != Modes.OamSearch) return;
-        if (modifiedAddress < VRAM.OAM_START_ADDRESS || modifiedAddress >= VRAM.UNUSABLE_END_ADDRESS - 1) return;
+        if (modifiedAddress < OAM.START_ADDRESS || modifiedAddress >= VRAM.UNUSABLE_END_ADDRESS - 1) return;
 
-        for (int m = 0; m < VRAM.OAM_SIZE; m++)
+        for (int m = 0; m < OAM.SIZE; m++)
         {
-            vram.Oam[m] = (byte)m;
+            oam[m] = (byte)m;
         }
     }
 
@@ -312,8 +314,8 @@ class PPU : IDisposable, IState
 
         if (BGDisplayEnable)
         {
-            ushort tileMapAddress = (ushort)((BGTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.VRAM_START_ADDRESS);
-            ushort tileDataAddress = (ushort)((BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.VRAM_START_ADDRESS);
+            ushort tileMapAddress = (ushort)((BGTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.START_ADDRESS);
+            ushort tileDataAddress = (ushort)((BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.START_ADDRESS);
 
             int sY = (LY + ScrollY) & 0xFF;
 
@@ -324,7 +326,7 @@ class PPU : IDisposable, IState
                 ushort currentTileMapAddress = tileMapAddress;
                 currentTileMapAddress += (ushort)((sY >> 3) * BG_TILES_X + (sX >> 3));
 
-                byte tile = vram.VRam[currentTileMapAddress];
+                byte tile = vram[currentTileMapAddress];
                 if (!BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
 
                 ushort currentTileDataAddress = tileDataAddress;
@@ -348,8 +350,8 @@ class PPU : IDisposable, IState
 
         if (WindowDisplayEnable)
         {
-            ushort tileMapAddress = (ushort)((WindowTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.VRAM_START_ADDRESS);
-            ushort tileDataAddress = (ushort)((BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.VRAM_START_ADDRESS);
+            ushort tileMapAddress = (ushort)((WindowTileMapDisplaySelect ? 0x9C00 : 0x9800) - VRAM.START_ADDRESS);
+            ushort tileDataAddress = (ushort)((BGAndWindowTileDataSelect ? 0x8000 : 0x8800) - VRAM.START_ADDRESS);
 
             int sY = (LY - WindowY) & 0xFF;
 
@@ -366,7 +368,7 @@ class PPU : IDisposable, IState
                 ushort currentTileMapAddress = tileMapAddress;
                 currentTileMapAddress += (ushort)((sY >> 3) * BG_TILES_X + (sX >> 3));
 
-                byte tile = vram.VRam[currentTileMapAddress];
+                byte tile = vram[currentTileMapAddress];
                 if (!BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
 
                 ushort currentTileDataAddress = tileDataAddress;
@@ -479,8 +481,8 @@ class PPU : IDisposable, IState
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     byte GetColorIndex(ushort pixelAddress, byte bit)
     {
-        int v1 = (vram.VRam[pixelAddress + 0] & (1 << bit)) != 0 ? 1 : 0;
-        int v2 = (vram.VRam[pixelAddress + 1] & (1 << bit)) != 0 ? 1 : 0;
+        int v1 = (vram[pixelAddress + 0] & (1 << bit)) != 0 ? 1 : 0;
+        int v2 = (vram[pixelAddress + 1] & (1 << bit)) != 0 ? 1 : 0;
         return (byte)((v2 << 1) | v1);
     }
 
@@ -533,7 +535,7 @@ class PPU : IDisposable, IState
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     byte GetOAM(int index)
     {
-        return dma.IsBusy ? (byte)0xFF : vram.Oam[index];
+        return dma.IsBusy ? (byte)0xFF : oam[index];
     }
 
     bool CanCPUAccessVRAM()
