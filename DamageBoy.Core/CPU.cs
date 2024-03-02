@@ -2666,7 +2666,7 @@ class CPU : IDisposable, IState
 
         if (!bootromFinishedExecuting)
         {
-            if (PC >= 0x100)
+            if (PC == GameBoy.BOOT_ROM_END_ADDRESS)
             {
                 bootromFinishedExecuting = true;
                 totalCycles = 0;

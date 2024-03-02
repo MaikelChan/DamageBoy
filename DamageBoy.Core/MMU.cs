@@ -12,9 +12,6 @@ class MMU
     readonly byte[] bootRom;
     readonly Cartridge cartridge;
 
-    public const ushort BOOT_ROM_START_ADDRESS = 0x0;
-    public const ushort BOOT_ROM_END_ADDRESS = 0x100;
-
     public MMU(IO io, WRAM wram, HRAM hram, PPU ppu, DMA dma, byte[] bootRom, Cartridge cartridge)
     {
         this.io = io;
@@ -38,8 +35,14 @@ class MMU
 
             switch (index)
             {
-                case >= BOOT_ROM_START_ADDRESS and < BOOT_ROM_END_ADDRESS: return io.BootROMDisabled ? cartridge[index] : bootRom[index];
-                case >= BOOT_ROM_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
+                case >= GameBoy.BOOT_ROM_START_ADDRESS and < GameBoy.BOOT_ROM_END_ADDRESS: return io.BootROMDisabled ? cartridge[index] : bootRom[index];
+#if GBC
+                case >= GameBoy.BOOT_ROM_END_ADDRESS and < GameBoy.CGB_BOOT_ROM_SECOND_PART_START_ADDRESS: return cartridge[index];
+                case >= GameBoy.CGB_BOOT_ROM_SECOND_PART_START_ADDRESS and < GameBoy.CGB_BOOT_ROM_SECOND_PART_END_ADDRESS: return io.BootROMDisabled ? cartridge[index] : bootRom[index];
+                case >= GameBoy.CGB_BOOT_ROM_SECOND_PART_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
+#else
+                case >= GameBoy.BOOT_ROM_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: return cartridge[index];
+#endif
                 case >= VRAM.VRAM_START_ADDRESS and < VRAM.VRAM_END_ADDRESS: return ppu[index];
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: return cartridge[index];
                 case >= WRAM.START_ADDRESS and < WRAM.END_ADDRESS: return wram[index - WRAM.START_ADDRESS];
@@ -63,8 +66,14 @@ class MMU
 
             switch (index)
             {
-                case >= BOOT_ROM_START_ADDRESS and < BOOT_ROM_END_ADDRESS: if (io.BootROMDisabled) cartridge[index] = value; break;
-                case >= BOOT_ROM_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: cartridge[index] = value; break;
+                case >= GameBoy.BOOT_ROM_START_ADDRESS and < GameBoy.BOOT_ROM_END_ADDRESS: if (io.BootROMDisabled) cartridge[index] = value; break;
+#if GBC
+                case >= GameBoy.BOOT_ROM_END_ADDRESS and < GameBoy.CGB_BOOT_ROM_SECOND_PART_START_ADDRESS: cartridge[index] = value; break;
+                case >= GameBoy.CGB_BOOT_ROM_SECOND_PART_START_ADDRESS and < GameBoy.CGB_BOOT_ROM_SECOND_PART_END_ADDRESS: if (io.BootROMDisabled) cartridge[index] = value; break;
+                case >= GameBoy.CGB_BOOT_ROM_SECOND_PART_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: cartridge[index] = value; break;
+#else
+                case >= GameBoy.BOOT_ROM_END_ADDRESS and < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS: cartridge[index] = value; break;
+#endif
                 case >= VRAM.VRAM_START_ADDRESS and < VRAM.VRAM_END_ADDRESS: ppu[index] = value; break;
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS: cartridge[index] = value; break;
                 case >= WRAM.START_ADDRESS and < WRAM.END_ADDRESS: wram[index - WRAM.START_ADDRESS] = value; break;

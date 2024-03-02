@@ -45,10 +45,8 @@ class Window : GameWindow
     const string SAVES_FOLDER = "Saves";
 #if GBC
     const string BOOT_ROM_FILE_NAME = "cgb_boot_rom";
-    const int BOOT_ROM_SIZE = 0x900;
 #else
     const string BOOT_ROM_FILE_NAME = "dmg_boot_rom";
-    const int BOOT_ROM_SIZE = 0x100;
 #endif
     public const string GB_FILE_EXTENSION = ".gb";
     public const string GBC_FILE_EXTENSION = ".gbc";
@@ -166,9 +164,9 @@ class Window : GameWindow
         {
             bootRom = File.ReadAllBytes(BOOT_ROM_FILE_NAME);
 
-            if (bootRom.Length != BOOT_ROM_SIZE)
+            if (bootRom.Length != GameBoy.BOOT_ROM_SIZE)
             {
-                Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be {BOOT_ROM_SIZE}. Ignoring it.");
+                Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be {GameBoy.BOOT_ROM_SIZE}. Ignoring it.");
                 bootRom = null;
             }
         }

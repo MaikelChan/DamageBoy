@@ -56,6 +56,17 @@ public class GameBoy
     public delegate void AddToAudioBufferDelegate(byte leftChannel, byte rightChannel);
     public delegate void SaveUpdateDelegate(byte[] saveData);
 
+    public const ushort BOOT_ROM_START_ADDRESS = 0x0;
+    public const ushort BOOT_ROM_END_ADDRESS = 0x100;
+
+#if GBC
+    public const ushort CGB_BOOT_ROM_SECOND_PART_START_ADDRESS = 0x200;
+    public const ushort CGB_BOOT_ROM_SECOND_PART_END_ADDRESS = 0x900;
+    public const ushort BOOT_ROM_SIZE = CGB_BOOT_ROM_SECOND_PART_END_ADDRESS;
+#else
+    public const ushort BOOT_ROM_SIZE = BOOT_ROM_END_ADDRESS;
+#endif
+
     public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, ScreenUpdateDelegate screenUpdateCallback, AddToAudioBufferDelegate addToAudioBufferCallback, SaveUpdateDelegate saveUpdateCallback)
     {
         cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
