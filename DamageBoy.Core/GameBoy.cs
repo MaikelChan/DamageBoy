@@ -35,6 +35,7 @@ public class GameBoy
     readonly InterruptHandler interruptHandler;
     readonly Serial serial;
     readonly DMA dma;
+    readonly HDMA hdma;
     readonly Timer timer;
     readonly APU apu;
     readonly PPU ppu;
@@ -84,10 +85,11 @@ public class GameBoy
         interruptHandler = new InterruptHandler();
         serial = new Serial(interruptHandler);
         dma = new DMA(cartridge, wram, vram, oam);
+        hdma = new HDMA(cartridge, wram, vram);
         timer = new Timer(interruptHandler);
         apu = new APU(addToAudioBufferCallback);
         ppu = new PPU(interruptHandler, vram, oam, dma, screenUpdateCallback, ProcessSaveState);
-        io = new IO(wram, vram, ppu, dma, timer, apu, serial, interruptHandler);
+        io = new IO(wram, vram, ppu, dma, hdma, timer, apu, serial, interruptHandler);
         mmu = new MMU(io, wram, hram, ppu, dma, bootRom, cartridge);
         cpu = new CPU(Mode, mmu, bootRom != null);
 
@@ -153,6 +155,7 @@ public class GameBoy
             cpu.Update();
             serial.Update();
             dma.Update();
+            hdma.Update();
 #if !DEBUG
             }
             catch (Exception ex)
@@ -245,6 +248,7 @@ public class GameBoy
             interruptHandler,
             serial,
             dma,
+            hdma,
             timer,
             apu,
             ppu,
