@@ -19,7 +19,6 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <DefineConstants>$(DefineConstants);COMPRESS_SAVE_STATES</DefineConstants>
   </PropertyGroup>
 
 </Project>

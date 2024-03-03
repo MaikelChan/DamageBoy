@@ -279,6 +279,8 @@ class Window : GameWindow
         gameBoy.Channel2Enabled = settings.Data.Channel2Enabled;
         gameBoy.Channel3Enabled = settings.Data.Channel3Enabled;
         gameBoy.Channel4Enabled = settings.Data.Channel4Enabled;
+
+        gameBoy.CompressSaveStates = settings.Data.CompressSaveStates;
     }
 
 #if DEBUG

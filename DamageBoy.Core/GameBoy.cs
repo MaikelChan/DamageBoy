@@ -209,6 +209,8 @@ public class GameBoy
     public bool Channel3Enabled { get => apu.Channel3Enabled; set => apu.Channel3Enabled = value; }
     public bool Channel4Enabled { get => apu.Channel4Enabled; set => apu.Channel4Enabled = value; }
 
+    public bool CompressSaveStates { get; set; }
+
     #endregion
 
     #region Save States
@@ -264,7 +266,7 @@ public class GameBoy
             cpu
         };
 
-        saveState = new SaveState(componentsStates, cartridge);
+        saveState = new SaveState(this, cartridge, componentsStates);
     }
 
     void DoSaveState()

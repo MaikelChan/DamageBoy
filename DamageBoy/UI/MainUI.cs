@@ -124,6 +124,13 @@ class MainUI : BaseUI
                     settings.Data.PauseWhileMinimized = pauseWhileMinimized;
                 }
 
+                bool compressSaveStates = settings.Data.CompressSaveStates;
+                if (ImGui.Checkbox("Compress Save States", ref compressSaveStates))
+                {
+                    settings.Data.CompressSaveStates = compressSaveStates;
+                    window.UpdateGameBoySettings();
+                }
+
                 ImGui.Separator();
 
                 ImGui.Dummy(separatorMargin);

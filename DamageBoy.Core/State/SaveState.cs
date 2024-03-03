@@ -6,15 +6,17 @@ namespace DamageBoy.Core.State;
 
 internal class SaveState
 {
-    readonly IState[] componentsStates;
+    readonly GameBoy gameBoy;
     readonly Cartridge cartridge;
+    readonly IState[] componentsStates;
 
     const uint SAVE_SATATE_FORMAT_VERSION = 4;
 
-    public SaveState(IState[] componentsStates, Cartridge cartridge)
+    public SaveState(GameBoy gameBoy, Cartridge cartridge, IState[] componentsStates)
     {
-        this.componentsStates = componentsStates;
+        this.gameBoy = gameBoy;
         this.cartridge = cartridge;
+        this.componentsStates = componentsStates;
     }
 
     public bool Save(string fileName)
@@ -29,32 +31,31 @@ internal class SaveState
         using (BinaryWriter fsBw = new BinaryWriter(fs))
         {
             fsBw.Write(SAVE_SATATE_FORMAT_VERSION);
-#if COMPRESS_SAVE_STATES
-            fsBw.Write(true);
-#else
-            fsBw.Write(false);
-#endif
+            fsBw.Write(gameBoy.CompressSaveStates);
 
             fs.Position = 0x10;
             fs.Write(cartridge.RawTitle, 0, Cartridge.RAW_TITLE_LENGTH);
 
-#if COMPRESS_SAVE_STATES
-            using (BrotliStream cfs = new BrotliStream(fs, CompressionMode.Compress, true))
-            using (BinaryWriter cfsBw = new BinaryWriter(cfs))
+            if (gameBoy.CompressSaveStates)
+            {
+                using (BrotliStream cfs = new BrotliStream(fs, CompressionMode.Compress, true))
+                using (BinaryWriter cfsBw = new BinaryWriter(cfs))
+                {
+                    for (int cs = 0; cs < componentsStates.Length; cs++)
+                    {
+                        if (componentsStates[cs] == null) continue;
+                        componentsStates[cs].SaveOrLoadState(cfs, cfsBw, null, true);
+                    }
+                }
+            }
+            else
             {
                 for (int cs = 0; cs < componentsStates.Length; cs++)
                 {
                     if (componentsStates[cs] == null) continue;
-                    componentsStates[cs].SaveOrLoadState(cfs, cfsBw, null, true);
+                    componentsStates[cs].SaveOrLoadState(fs, fsBw, null, true);
                 }
             }
-#else
-            for (int cs = 0; cs < componentsStates.Length; cs++)
-            {
-                if (componentsStates[cs] == null) continue;
-                componentsStates[cs].SaveOrLoadState(fs, fsBw, null, true);
-            }
-#endif
         }
 
         return true;
