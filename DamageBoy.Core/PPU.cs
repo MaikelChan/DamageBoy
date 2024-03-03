@@ -8,6 +8,7 @@ namespace DamageBoy.Core;
 
 class PPU : IDisposable, IState
 {
+    readonly GameBoyModes gbMode;
     readonly InterruptHandler interruptHandler;
     readonly VRAM vram;
     readonly OAM oam;
@@ -100,8 +101,9 @@ class PPU : IDisposable, IState
 
     public delegate void FinishedVBlankDelegate();
 
-    public PPU(InterruptHandler interruptHandler, VRAM vram, OAM oam, DMA dma, ScreenUpdateDelegate screenUpdateCallback, FinishedVBlankDelegate finishedVBlankCallback)
+    public PPU(GameBoyModes gbMode, InterruptHandler interruptHandler, VRAM vram, OAM oam, DMA dma, ScreenUpdateDelegate screenUpdateCallback, FinishedVBlankDelegate finishedVBlankCallback)
     {
+        this.gbMode = gbMode;
         this.interruptHandler = interruptHandler;
         this.vram = vram;
         this.oam = oam;
@@ -326,25 +328,28 @@ class PPU : IDisposable, IState
                 ushort currentTileMapAddress = tileMapAddress;
                 currentTileMapAddress += (ushort)((sY >> 3) * BG_TILES_X + (sX >> 3));
 
-                byte tile = vram[currentTileMapAddress];
+                byte tile = vram.GetRawBytes(currentTileMapAddress);
                 if (!BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
 
                 ushort currentTileDataAddress = tileDataAddress;
 
-#if IS_CGB
-                byte attributes = vram.GetTileMapAttributes(currentTileMapAddress);
-                int palette = attributes & 0b0000_0111;
-                int bank = (attributes & 0b0000_1000) >> 3;
-                bool invX = (attributes & 0b0010_0000) != 0;
-                bool invY = (attributes & 0b0100_0000) != 0;
-                bool priority = (attributes & 0b1000_0000) != 0;
-                currentTileDataAddress += (ushort)(VRAM.DMG_SIZE * bank);
-
-                byte bitX = (byte)(invX ? sX & 0x7 : 7 - (sX & 0x7));
-                byte bitY = (byte)(invY ? 7 - (sY & 0x7) : sY & 0x7);
-#else
                 byte bitX = (byte)(7 - (sX & 0x7));
                 byte bitY = (byte)(sY & 0x7);
+
+#if IS_CGB
+                if (gbMode == GameBoyModes.CGB)
+                {
+                    byte attributes = vram.GetRawBytes(currentTileMapAddress + VRAM.DMG_SIZE);
+                    int palette = attributes & 0b0000_0111;
+                    bool bank = (attributes & 0b0000_1000) != 0;
+                    bool invX = (attributes & 0b0010_0000) != 0;
+                    bool invY = (attributes & 0b0100_0000) != 0;
+                    bool priority = (attributes & 0b1000_0000) != 0;
+
+                    if (bank) currentTileDataAddress += VRAM.DMG_SIZE;
+                    if (invX) bitX = (byte)(7 - bitX);
+                    if (invY) bitY = (byte)(7 - bitY);
+                }
 #endif
 
                 currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + (bitY << 1));
@@ -384,16 +389,35 @@ class PPU : IDisposable, IState
                 ushort currentTileMapAddress = tileMapAddress;
                 currentTileMapAddress += (ushort)((sY >> 3) * BG_TILES_X + (sX >> 3));
 
-                byte tile = vram[currentTileMapAddress];
+                byte tile = vram.GetRawBytes(currentTileMapAddress);
                 if (!BGAndWindowTileDataSelect) tile = (byte)((tile + 0x80) & 0xFF);
 
                 ushort currentTileDataAddress = tileDataAddress;
-                currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + ((sY & 0x7) << 1));
+
+                byte bitX = (byte)(7 - (sX & 0x7));
+                byte bitY = (byte)(sY & 0x7);
+
+#if IS_CGB
+                if (gbMode == GameBoyModes.CGB)
+                {
+                    byte attributes = vram.GetRawBytes(currentTileMapAddress + VRAM.DMG_SIZE);
+                    int palette = attributes & 0b0000_0111;
+                    bool bank = (attributes & 0b0000_1000) != 0;
+                    bool invX = (attributes & 0b0010_0000) != 0;
+                    bool invY = (attributes & 0b0100_0000) != 0;
+                    bool priority = (attributes & 0b1000_0000) != 0;
+
+                    if (bank) currentTileDataAddress += VRAM.DMG_SIZE;
+                    if (invX) bitX = (byte)(7 - bitX);
+                    if (invY) bitY = (byte)(7 - bitY);
+                }
+#endif
+
+                currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + (bitY << 1));
 
                 int currentLCDPixel = LY * Constants.RES_X + x;
 
-                byte bit = (byte)(7 - (sX & 0x7));
-                currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bit);
+                currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bitX);
                 lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetBGColor(currentLineColorIndices[x]);
             }
         }
@@ -497,8 +521,8 @@ class PPU : IDisposable, IState
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     byte GetColorIndex(ushort pixelAddress, byte bit)
     {
-        int v1 = (vram[pixelAddress + 0] & (1 << bit)) != 0 ? 1 : 0;
-        int v2 = (vram[pixelAddress + 1] & (1 << bit)) != 0 ? 1 : 0;
+        int v1 = (vram.GetRawBytes(pixelAddress + 0) & (1 << bit)) != 0 ? 1 : 0;
+        int v2 = (vram.GetRawBytes(pixelAddress + 1) & (1 << bit)) != 0 ? 1 : 0;
         return (byte)((v2 << 1) | v1);
     }
 

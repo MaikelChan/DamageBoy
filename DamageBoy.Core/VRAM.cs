@@ -48,41 +48,29 @@ class VRAM : IState
     {
         get
         {
-            if (gbMode == GameBoyModes.CGB)
-            {
-                //return bytes[index + (DMG_SIZE * Bank) - START_ADDRESS];
-                if (index < END_TILE_DATA_ADDRESS) return bytes[index + (DMG_SIZE * Bank) - START_ADDRESS];
-                else return bytes[index - START_ADDRESS];
-            }
-            else
-            {
-                return bytes[index - START_ADDRESS];
-            }
+            if (gbMode == GameBoyModes.CGB) return bytes[index + (DMG_SIZE * Bank) - START_ADDRESS];
+            else return bytes[index - START_ADDRESS];
         }
         set
         {
-            if (gbMode == GameBoyModes.CGB)
-            {
-                bytes[index + (DMG_SIZE * Bank) - START_ADDRESS] = value;
-                //if (index < END_TILE_DATA_ADDRESS) bytes[index + (DMG_SIZE * Bank) - START_ADDRESS] = value;
-                //else bytes[index - START_ADDRESS] = value;
-            }
-            else
-            {
-                bytes[index - START_ADDRESS] = value;
-            }
+            if (gbMode == GameBoyModes.CGB) bytes[index + (DMG_SIZE * Bank) - START_ADDRESS] = value;
+            else bytes[index - START_ADDRESS] = value;
         }
     }
 
-#if IS_CGB
-    public byte GetTileMapAttributes(ushort tileMapAddress)
+    public byte GetRawBytes(int address)
     {
-        return bytes[tileMapAddress - START_ADDRESS + DMG_SIZE];
+        return bytes[address - START_ADDRESS];
     }
-#endif
 
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
     {
         SaveState.SaveLoadArray(stream, save, bytes, DMG_SIZE);
+#if IS_CGB
+        if (gbMode == GameBoyModes.CGB)
+        {
+            Bank = SaveState.SaveLoadValue(bw, br, save, Bank);
+        }
+#endif
     }
 }

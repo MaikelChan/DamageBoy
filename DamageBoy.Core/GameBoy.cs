@@ -88,7 +88,7 @@ public class GameBoy
         hdma = new HDMA(cartridge, wram, vram);
         timer = new Timer(interruptHandler);
         apu = new APU(addToAudioBufferCallback);
-        ppu = new PPU(interruptHandler, vram, oam, dma, screenUpdateCallback, ProcessSaveState);
+        ppu = new PPU(Mode, interruptHandler, vram, oam, dma, screenUpdateCallback, ProcessSaveState);
         io = new IO(wram, vram, ppu, dma, hdma, timer, apu, serial, interruptHandler);
         mmu = new MMU(io, wram, hram, ppu, dma, bootRom, cartridge);
         cpu = new CPU(Mode, mmu, bootRom != null);
