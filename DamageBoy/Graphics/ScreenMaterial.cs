@@ -11,6 +11,7 @@ class ScreenMaterial : Material
     public Color4 Color2 { get; set; }
     public Color4 Color3 { get; set; }
     public float LcdEffect { get; set; }
+    public float ColorMode { get; set; }
 
     public ScreenMaterial(BaseRenderer renderer) : base(renderer, vsSource, fsSource)
     {
@@ -21,6 +22,7 @@ class ScreenMaterial : Material
         DefineUniform("uColor2", UniformTypes.Float3);
         DefineUniform("uColor3", UniformTypes.Float3);
         DefineUniform("uLcdEffect", UniformTypes.Float1);
+        DefineUniform("uColorMode", UniformTypes.Float1);
     }
 
     public override void SetUniforms(GlobalUniforms globalUniforms)
@@ -32,6 +34,7 @@ class ScreenMaterial : Material
         SetUniform("uColor2", new Vector3(Color2.R, Color2.G, Color2.B));
         SetUniform("uColor3", new Vector3(Color3.R, Color3.G, Color3.B));
         SetUniform("uLcdEffect", LcdEffect);
+        SetUniform("uColorMode", ColorMode);
     }
 
     const string vsSource = @"#version 330 core
@@ -56,6 +59,7 @@ uniform vec3 uColor1;
 uniform vec3 uColor2;
 uniform vec3 uColor3;
 uniform float uLcdEffect;
+uniform float uColorMode;
 
 out vec4 fragColor;
 
@@ -73,17 +77,19 @@ float Remap(float value, float low1, float high1, float low2, float high2)
 
 void main()
 {
-    float pixels = texture(uMainTexture, uv0).r;
+    vec3 pixels = texture(uMainTexture, uv0).rgb;
 
     //vec3 off = mix(uColor0 * 0.5, uColor0 * 1.2, uv0.y);
     //vec3 on = uColor3;
     //vec3 color = mix(off, on, pixels);
 
     vec3 color;
-    if (pixels < 0.25) color = uColor0;
-    else if (pixels >= 0.25 && pixels < 0.5) color = uColor1;
-    else if (pixels >= 0.5 && pixels < 0.75) color = uColor2;
+    if (pixels.r < 0.25) color = uColor0;
+    else if (pixels.r >= 0.25 && pixels.r < 0.5) color = uColor1;
+    else if (pixels.r >= 0.5 && pixels.r < 0.75) color = uColor2;
     else color = uColor3;
+
+    color = mix(color, pixels, uColorMode);
 
     float grid = pow(cos((uv0.y * HEIGHT * PI * 2) + PI) * 0.5 + 0.5, DOTS_POWER);
     grid *= pow(cos((uv0.x * WIDTH * PI * 2) + PI) * 0.5 + 0.5, DOTS_POWER);

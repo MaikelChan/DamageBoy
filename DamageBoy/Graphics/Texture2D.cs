@@ -3,7 +3,7 @@ using System;
 
 namespace DamageBoy.Graphics;
 
-public enum TextureFormats { RGBA8888, R8 }
+public enum TextureFormats { RGBA8888, RGB555, R8 }
 
 class Texture2D : Texture
 {
@@ -15,13 +15,19 @@ class Texture2D : Texture
 
         renderer.PipelineState.BindTexture(TextureTarget.Texture2D, 0, TextureID);
 
-        if (textureFormat == TextureFormats.RGBA8888)
+        switch (textureFormat)
         {
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
-        }
-        else
-        {
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R8, width, height, 0, PixelFormat.Red, PixelType.UnsignedByte, data);
+            case TextureFormats.RGBA8888:
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+                break;
+            case TextureFormats.RGB555:
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb5A1, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedShort5551, data);
+                break;
+            case TextureFormats.R8:
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R8, width, height, 0, PixelFormat.Red, PixelType.UnsignedByte, data);
+                break;
+            default:
+                throw new NotImplementedException($"Texture format {textureFormat} is not implemented.");
         }
 
         //if (IsPowerOf2(image.Width) && IsPowerOf2(image.Height))
@@ -44,7 +50,7 @@ class Texture2D : Texture
 #endif
     }
 
-    public void Update(byte[] pixelData)
+    public void Update(ushort[] pixelData)
     {
         if (pixelData == null)
         {
@@ -53,13 +59,19 @@ class Texture2D : Texture
 
         renderer.PipelineState.BindTexture(TextureTarget.Texture2D, 0, TextureID);
 
-        if (textureFormat == TextureFormats.RGBA8888)
+        switch (textureFormat)
         {
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Rgba, PixelType.UnsignedByte, pixelData);
-        }
-        else
-        {
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Red, PixelType.UnsignedByte, pixelData);
+            case TextureFormats.RGBA8888:
+                GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Rgba, PixelType.UnsignedByte, pixelData);
+                break;
+            case TextureFormats.RGB555:
+                GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Rgba, PixelType.UnsignedShort5551, pixelData);
+                break;
+            case TextureFormats.R8:
+                GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Red, PixelType.UnsignedByte, pixelData);
+                break;
+            default:
+                throw new NotImplementedException($"Texture format {textureFormat} is not implemented.");
         }
     }
 

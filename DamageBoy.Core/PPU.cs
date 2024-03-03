@@ -16,7 +16,7 @@ class PPU : IDisposable, IState
     readonly ScreenUpdateDelegate screenUpdateCallback;
     readonly FinishedVBlankDelegate finishedVBlankCallback;
 
-    readonly byte[][] lcdPixelBuffers;
+    readonly ushort[][] lcdPixelBuffers;
     readonly byte[] spriteIndicesInCurrentLine;
     byte spritesAmountInCurrentLine;
 
@@ -86,10 +86,11 @@ class PPU : IDisposable, IState
     const int VERTICAL_BLANK_LINES = 10;
     public const int SCREEN_CLOCKS = VERTICAL_BLANK_CLOCKS * (Constants.RES_Y + VERTICAL_BLANK_LINES);
 
-    const byte COLOR_BLACK = 0;
-    const byte COLOR_DARK_GRAY = 85;
-    const byte COLOR_LIGHT_GRAY = 170;
-    const byte COLOR_WHITE = 255;
+    //R5G5B5A1
+    const ushort COLOR_BLACK = 0x0001;
+    const ushort COLOR_DARK_GRAY = 0x5295;
+    const ushort COLOR_LIGHT_GRAY = 0xAD6B;
+    const ushort COLOR_WHITE = 0xFFFF;
 
     public enum Modes : byte { HorizontalBlank, VerticalBlank, OamSearch, PixelTransfer }
     public enum CoincidenceFlagModes : byte { Different, Equals }
@@ -112,9 +113,9 @@ class PPU : IDisposable, IState
         this.finishedVBlankCallback = finishedVBlankCallback;
 
         // Initialize double buffer
-        lcdPixelBuffers = new byte[2][];
-        lcdPixelBuffers[0] = new byte[Constants.RES_X * Constants.RES_Y];
-        lcdPixelBuffers[1] = new byte[Constants.RES_X * Constants.RES_Y];
+        lcdPixelBuffers = new ushort[2][];
+        lcdPixelBuffers[0] = new ushort[Constants.RES_X * Constants.RES_Y];
+        lcdPixelBuffers[1] = new ushort[Constants.RES_X * Constants.RES_Y];
         currentBuffer = 0;
 
         spriteIndicesInCurrentLine = new byte[MAX_SPRITES_PER_LINE];
@@ -523,7 +524,7 @@ class PPU : IDisposable, IState
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    byte GetBGColor(byte colorIndex)
+    ushort GetBGColor(byte colorIndex)
     {
         switch (GetBGPaletteColor(colorIndex))
         {
@@ -536,7 +537,7 @@ class PPU : IDisposable, IState
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    byte GetSpriteColor(byte colorIndex, bool palette)
+    ushort GetSpriteColor(byte colorIndex, bool palette)
     {
         byte color = palette ? GetObjPalette1Color(colorIndex) : GetObjPalette0Color(colorIndex);
 

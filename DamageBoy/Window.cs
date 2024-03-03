@@ -226,7 +226,10 @@ class Window : GameWindow
         try
         {
             gameBoy = new GameBoy(settings.Data.HardwareType, bootRom, romData, saveData, ScreenUpdate, AddToAudioBuffer, SaveUpdate);
-            (renderer as Renderer).RenderMode = Renderer.RenderModes.LCD;
+
+            Renderer rend = renderer as Renderer;
+            rend.RenderMode = Renderer.RenderModes.LCD;
+            rend.IsColorMode = gameBoy.IsColorMode;
 
             UpdateGameBoySettings();
             sound.Start();
@@ -260,7 +263,9 @@ class Window : GameWindow
                 gameBoy = null;
                 sound.Stop();
 
-                (renderer as Renderer).RenderMode = Renderer.RenderModes.Logo;
+                Renderer rend = renderer as Renderer;
+                rend.RenderMode = Renderer.RenderModes.Logo;
+                rend.IsColorMode = false;
 
                 emulationStoppedCallback?.Invoke();
             });
@@ -318,7 +323,7 @@ class Window : GameWindow
 
     #region GameBoy Callbacks
 
-    void ScreenUpdate(byte[] pixels)
+    void ScreenUpdate(ushort[] pixels)
     {
         if (IsExiting) return;
 

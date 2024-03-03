@@ -38,7 +38,7 @@ abstract class BaseRenderer : IDisposable
 
     public abstract void Render(double deltaTime);
     public abstract void Resize(int width, int height);
-    public abstract void ScreenUpdate(byte[] vram);
+    public abstract void ScreenUpdate(ushort[] vram);
 
     #region GL Info
 

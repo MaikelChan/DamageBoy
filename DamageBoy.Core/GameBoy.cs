@@ -65,7 +65,7 @@ public class GameBoy
 
     FrameLimiterStates frameLimiterState;
 
-    public delegate void ScreenUpdateDelegate(byte[] pixels);
+    public delegate void ScreenUpdateDelegate(ushort[] pixels);
     public delegate void AddToAudioBufferDelegate(byte leftChannel, byte rightChannel);
     public delegate void SaveUpdateDelegate(byte[] saveData);
 

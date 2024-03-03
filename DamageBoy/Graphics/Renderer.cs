@@ -26,11 +26,12 @@ class Renderer : BaseRenderer
 
     public enum RenderModes { Logo, LCD }
     public RenderModes RenderMode { get; set; }
+    public bool IsColorMode { get; set; }
 
     const int LOGO_WIDTH = 1024;
     const int LOGO_HEIGHT = 1024;
 
-    byte[] pixels;
+    ushort[] pixels;
 
     public Renderer(Settings settings) : base()
     {
@@ -50,7 +51,7 @@ class Renderer : BaseRenderer
 
         // Screen texture and material
 
-        screenTexture = new Texture2D(this, Constants.RES_X, Constants.RES_Y, TextureFormats.R8, IntPtr.Zero, "Screen Texture");
+        screenTexture = new Texture2D(this, Constants.RES_X, Constants.RES_Y, TextureFormats.RGB555, IntPtr.Zero, "Screen Texture");
         screenTexture.SetMinFilter(TextureMinFilter.Nearest);
         screenTexture.SetMagFilter(TextureMagFilter.Nearest);
         screenTexture.SetWrapS(TextureWrapMode.ClampToEdge);
@@ -92,6 +93,7 @@ class Renderer : BaseRenderer
         logoMaterial.MainTexture = logoTexture;
 
         RenderMode = RenderModes.Logo;
+        IsColorMode = false;
     }
 
     public override void Dispose()
@@ -138,6 +140,7 @@ class Renderer : BaseRenderer
             screenMaterial.Color2 = settings.Data.GbColor2.ToColor4();
             screenMaterial.Color3 = settings.Data.GbColor3.ToColor4();
             screenMaterial.LcdEffect = settings.Data.LcdEffectVisibility;
+            screenMaterial.ColorMode = IsColorMode ? 1f : 0f;
             screenMaterial.SetUniforms(globalUniforms);
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
@@ -209,7 +212,7 @@ class Renderer : BaseRenderer
         logoViewportY = (height - logoViewportHeight) >> 1;
     }
 
-    public override void ScreenUpdate(byte[] pixels)
+    public override void ScreenUpdate(ushort[] pixels)
     {
         this.pixels = pixels;
     }
