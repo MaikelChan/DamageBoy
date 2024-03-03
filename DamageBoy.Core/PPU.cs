@@ -64,6 +64,43 @@ class PPU : IDisposable, IState
     public byte ObjectPalette0 { get; set; }
     public byte ObjectPalette1 { get; set; }
 
+    // Color Palettes
+
+    public ushort ColorBgPaletteAddress { get; set; }
+    public bool ColorBgPaletteAutoIncrement { get; set; }
+    public byte ColorBgPalette
+    {
+        get
+        {
+            if (CanCPUAccessVRAM()) return colorBgPalette[ColorBgPaletteAddress];
+            return 0xFF;
+        }
+        set
+        {
+            if (CanCPUAccessVRAM()) colorBgPalette[ColorBgPaletteAddress] = value;
+            if (ColorBgPaletteAutoIncrement) ColorBgPaletteAddress++;
+        }
+    }
+
+    public ushort ColorObjPaletteAddress { get; set; }
+    public bool ColorObjPaletteAutoIncrement { get; set; }
+    public byte ColorObjPalette
+    {
+        get
+        {
+            if (CanCPUAccessVRAM()) return colorObjPalette[ColorObjPaletteAddress];
+            return 0xFF;
+        }
+        set
+        {
+            if (CanCPUAccessVRAM()) colorObjPalette[ColorObjPaletteAddress] = value;
+            if (ColorObjPaletteAutoIncrement) ColorObjPaletteAddress++;
+        }
+    }
+
+    readonly byte[] colorBgPalette;
+    readonly byte[] colorObjPalette;
+
     // Constants
 
     const byte BG_TILES_X = 32;
@@ -92,6 +129,8 @@ class PPU : IDisposable, IState
     const ushort COLOR_LIGHT_GRAY = 0xAD6B;
     const ushort COLOR_WHITE = 0xFFFF;
 
+    const byte COLOR_PALETTE_SIZE = 64;
+
     public enum Modes : byte { HorizontalBlank, VerticalBlank, OamSearch, PixelTransfer }
     public enum CoincidenceFlagModes : byte { Different, Equals }
 
@@ -117,6 +156,12 @@ class PPU : IDisposable, IState
         lcdPixelBuffers[0] = new ushort[Constants.RES_X * Constants.RES_Y];
         lcdPixelBuffers[1] = new ushort[Constants.RES_X * Constants.RES_Y];
         currentBuffer = 0;
+
+        if (gameBoy.IsColorMode)
+        {
+            colorBgPalette = new byte[COLOR_PALETTE_SIZE];
+            colorObjPalette = new byte[COLOR_PALETTE_SIZE];
+        }
 
         spriteIndicesInCurrentLine = new byte[MAX_SPRITES_PER_LINE];
 
@@ -337,10 +382,12 @@ class PPU : IDisposable, IState
                 byte bitX = (byte)(7 - (sX & 0x7));
                 byte bitY = (byte)(sY & 0x7);
 
+                byte palette = 0;
+
                 if (gameBoy.IsColorMode)
                 {
                     byte attributes = vram.GetRawBytes(currentTileMapAddress + VRAM.DMG_SIZE);
-                    int palette = attributes & 0b0000_0111;
+                    palette = (byte)(attributes & 0b0000_0111);
                     bool bank = (attributes & 0b0000_1000) != 0;
                     bool invX = (attributes & 0b0010_0000) != 0;
                     bool invY = (attributes & 0b0100_0000) != 0;
@@ -355,8 +402,13 @@ class PPU : IDisposable, IState
 
                 int currentLCDPixel = LY * Constants.RES_X + (x);
 
+                if (currentTileMapAddress == 0x9a42)
+                {
+                    int lmao = 0;
+                }
+
                 currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bitX);
-                lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetBGColor(currentLineColorIndices[x]);
+                lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetBGColor(currentLineColorIndices[x], palette);
             }
         }
         else
@@ -396,10 +448,12 @@ class PPU : IDisposable, IState
                 byte bitX = (byte)(7 - (sX & 0x7));
                 byte bitY = (byte)(sY & 0x7);
 
+                byte palette = 0;
+
                 if (gameBoy.IsColorMode)
                 {
                     byte attributes = vram.GetRawBytes(currentTileMapAddress + VRAM.DMG_SIZE);
-                    int palette = attributes & 0b0000_0111;
+                    palette = (byte)(attributes & 0b0000_0111);
                     bool bank = (attributes & 0b0000_1000) != 0;
                     bool invX = (attributes & 0b0010_0000) != 0;
                     bool invY = (attributes & 0b0100_0000) != 0;
@@ -415,7 +469,7 @@ class PPU : IDisposable, IState
                 int currentLCDPixel = LY * Constants.RES_X + x;
 
                 currentLineColorIndices[x] = GetColorIndex(currentTileDataAddress, bitX);
-                lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetBGColor(currentLineColorIndices[x]);
+                lcdPixelBuffers[currentBuffer][currentLCDPixel] = GetBGColor(currentLineColorIndices[x], palette);
             }
         }
 
@@ -431,7 +485,10 @@ class PPU : IDisposable, IState
                 int spriteY = GetOAM(spriteEntryAddress + 0) - SPRITE_MAX_HEIGHT;
                 int spriteX = GetOAM(spriteEntryAddress + 1) - SPRITE_WIDTH;
 
-                bool spritePalette = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 4);
+                byte spritePalette;
+
+                if (gameBoy.IsColorMode) spritePalette = (byte)(GetOAM(spriteEntryAddress + 3) & 0b0000_0111);
+                else spritePalette = (byte)(Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 4) ? 1 : 0);
                 bool spriteInvX = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 5);
                 bool spriteInvY = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 6);
                 bool spritePriority = Helpers.GetBit(GetOAM(spriteEntryAddress + 3), 7);
@@ -524,30 +581,53 @@ class PPU : IDisposable, IState
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    ushort GetBGColor(byte colorIndex)
+    ushort GetBGColor(byte colorIndex, byte palette)
     {
-        switch (GetBGPaletteColor(colorIndex))
+        if (gameBoy.IsColorMode)
         {
-            case 0: return COLOR_WHITE;
-            case 1: return COLOR_LIGHT_GRAY;
-            case 2: return COLOR_DARK_GRAY;
-            case 3: return COLOR_BLACK;
-            default: throw new ArgumentException("Not valid BG palette color index: " + colorIndex);
+            int paletteIndex = (palette << 3) | (colorIndex << 1);
+            int color = (colorBgPalette[paletteIndex + 1] << 8) | colorBgPalette[paletteIndex + 0];
+            color <<= 1; // Bgra texture format
+            //color = (ushort)((color << 11) | ((color & 0x3e0) << 1) | ((color & 0x7c00) >> 9) | 1); // Rgba texture format
+
+            return (ushort)color;
+        }
+        else
+        {// 01 23 45 67 - 89 AB CD EF
+            switch (GetBGPaletteColor(colorIndex))
+            {
+                case 0: return COLOR_WHITE;
+                case 1: return COLOR_LIGHT_GRAY;
+                case 2: return COLOR_DARK_GRAY;
+                case 3: return COLOR_BLACK;
+                default: throw new ArgumentException("Not valid BG palette color index: " + colorIndex);
+            }
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    ushort GetSpriteColor(byte colorIndex, bool palette)
+    ushort GetSpriteColor(byte colorIndex, byte palette)
     {
-        byte color = palette ? GetObjPalette1Color(colorIndex) : GetObjPalette0Color(colorIndex);
-
-        switch (color)
+        if (gameBoy.IsColorMode)
         {
-            case 0: return COLOR_WHITE;
-            case 1: return COLOR_LIGHT_GRAY;
-            case 2: return COLOR_DARK_GRAY;
-            case 3: return COLOR_BLACK;
-            default: throw new ArgumentException($"Not valid Obj palette {palette} color index: {colorIndex}");
+            int paletteIndex = (palette << 3) | (colorIndex << 1);
+            int color = (colorObjPalette[paletteIndex + 1] << 8) | colorObjPalette[paletteIndex + 0];
+            color <<= 1; // Bgra texture format
+
+            return (ushort)color;
+        }
+        else
+        {
+            byte color = palette > 0 ? GetObjPalette1Color(colorIndex) : GetObjPalette0Color(colorIndex);
+
+            switch (color)
+            {
+                case 0: return COLOR_WHITE;
+                case 1: return COLOR_LIGHT_GRAY;
+                case 2: return COLOR_DARK_GRAY;
+                case 3: return COLOR_BLACK;
+                default: throw new ArgumentException($"Not valid Obj palette {palette} color index: {colorIndex}");
+            }
         }
     }
 
@@ -625,5 +705,16 @@ class PPU : IDisposable, IState
         BackgroundPalette = SaveState.SaveLoadValue(bw, br, save, BackgroundPalette);
         ObjectPalette0 = SaveState.SaveLoadValue(bw, br, save, ObjectPalette0);
         ObjectPalette1 = SaveState.SaveLoadValue(bw, br, save, ObjectPalette1);
+
+        if (gameBoy.IsColorMode)
+        {
+            SaveState.SaveLoadArray(stream, save, colorBgPalette, colorBgPalette.Length);
+            ColorBgPaletteAddress = SaveState.SaveLoadValue(bw, br, save, ColorBgPaletteAddress);
+            ColorBgPaletteAutoIncrement = SaveState.SaveLoadValue(bw, br, save, ColorBgPaletteAutoIncrement);
+
+            SaveState.SaveLoadArray(stream, save, colorObjPalette, colorObjPalette.Length);
+            ColorObjPaletteAddress = SaveState.SaveLoadValue(bw, br, save, ColorObjPaletteAddress);
+            ColorObjPaletteAutoIncrement = SaveState.SaveLoadValue(bw, br, save, ColorObjPaletteAutoIncrement);
+        }
     }
 }

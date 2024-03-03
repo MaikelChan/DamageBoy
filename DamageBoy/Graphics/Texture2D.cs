@@ -21,7 +21,7 @@ class Texture2D : Texture
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
                 break;
             case TextureFormats.RGB555:
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb5A1, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedShort5551, data);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgb5A1, width, height, 0, PixelFormat.Bgra, PixelType.UnsignedShort5551, data);
                 break;
             case TextureFormats.R8:
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.R8, width, height, 0, PixelFormat.Red, PixelType.UnsignedByte, data);
@@ -65,7 +65,7 @@ class Texture2D : Texture
                 GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Rgba, PixelType.UnsignedByte, pixelData);
                 break;
             case TextureFormats.RGB555:
-                GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Rgba, PixelType.UnsignedShort5551, pixelData);
+                GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Bgra, PixelType.UnsignedShort5551, pixelData);
                 break;
             case TextureFormats.R8:
                 GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, Width, Height, PixelFormat.Red, PixelType.UnsignedByte, pixelData);

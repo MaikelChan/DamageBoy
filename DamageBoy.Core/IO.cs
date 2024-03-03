@@ -109,12 +109,10 @@ class IO : IState
                 case 0x53: return HDMA3;
                 case 0x54: return HDMA4;
                 case 0x55: return HDMA5;
-                // TODO Palettes ----------------
-                case 0x68: return 0xFF;
-                case 0x69: return 0xFF;
-                case 0x6A: return 0xFF;
-                case 0x6B: return 0xFF;
-                // ------------------------------
+                case 0x68: return BCPS_BGPI;
+                case 0x69: return BCPD_BGPD;
+                case 0x6A: return OCPS_OBPI;
+                case 0x6B: return OCPD_OBPD;
                 case 0x70: return SVBK;
 
                 case 0xFF: return IE;
@@ -180,12 +178,10 @@ class IO : IState
                 case 0x53: HDMA3 = value; break;
                 case 0x54: HDMA4 = value; break;
                 case 0x55: HDMA5 = value; break;
-                // TODO Palettes ----------------
-                case 0x68: break;
-                case 0x69: break;
-                case 0x6A: break;
-                case 0x6B: break;
-                // ------------------------------
+                case 0x68: BCPS_BGPI = value; break;
+                case 0x69: BCPD_BGPD = value; break;
+                case 0x6A: OCPS_OBPI = value; break;
+                case 0x6B: OCPD_OBPD = value; break;
                 case 0x70: SVBK = value; break;
 
                 case 0xFF: IE = value; break;
@@ -1173,6 +1169,84 @@ class IO : IState
             hdma.TransferMode = Helpers.GetBit(value, 7) ? HDMA.TransferModes.HBlank : HDMA.TransferModes.GeneralPurpose;
             hdma.InitialLength = (byte)(value & 0b0111_1111);
             hdma.Begin();
+        }
+    }
+
+    /// <summary>
+    /// FF68 — BCPS/BGPI (CGB Mode only): Background color palette specification / Background palette index
+    /// </summary>
+    byte BCPS_BGPI
+    {
+        get
+        {
+            if (IsGbcRegisterUnavailable("BCPS/BGPI")) return 0xFF;
+            byte register = (byte)(ppu.ColorBgPaletteAutoIncrement ? 0x80 : 0x0);
+            register |= (byte)(ppu.ColorBgPaletteAddress & 0b0011_1111);
+            return register;
+        }
+
+        set
+        {
+            if (IsGbcRegisterUnavailable("BCPS/BGPI")) return;
+            ppu.ColorBgPaletteAutoIncrement = (value & 0x80) != 0;
+            ppu.ColorBgPaletteAddress = (byte)(value & 0b0011_1111);
+        }
+    }
+
+    /// <summary>
+    /// FF69 — BCPD/BGPD (CGB Mode only): Background color palette data / Background palette data
+    /// </summary>
+    byte BCPD_BGPD
+    {
+        get
+        {
+            if (IsGbcRegisterUnavailable("BCPD/BGPD")) return 0xFF;
+            return ppu.ColorBgPalette;
+        }
+
+        set
+        {
+            if (IsGbcRegisterUnavailable("BCPD/BGPD")) return;
+            ppu.ColorBgPalette = value;
+        }
+    }
+
+    /// <summary>
+    /// FF6A — OCPS/OBPI (CGB Mode only): OBJ color palette specification / OBJ palette index
+    /// </summary>
+    byte OCPS_OBPI
+    {
+        get
+        {
+            if (IsGbcRegisterUnavailable("OCPS/OBPI")) return 0xFF;
+            byte register = (byte)(ppu.ColorObjPaletteAutoIncrement ? 0x80 : 0x0);
+            register |= (byte)(ppu.ColorObjPaletteAddress & 0b0011_1111);
+            return register;
+        }
+
+        set
+        {
+            if (IsGbcRegisterUnavailable("OCPS/OBPI")) return;
+            ppu.ColorObjPaletteAutoIncrement = (value & 0x80) != 0;
+            ppu.ColorObjPaletteAddress = (byte)(value & 0b0011_1111);
+        }
+    }
+
+    /// <summary>
+    /// FF6B — OCPD/OBPD (CGB Mode only): OBJ color palette data / OBJ palette data
+    /// </summary>
+    byte OCPD_OBPD
+    {
+        get
+        {
+            if (IsGbcRegisterUnavailable("OCPD/OBPD")) return 0xFF;
+            return ppu.ColorObjPalette;
+        }
+
+        set
+        {
+            if (IsGbcRegisterUnavailable("OCPD/OBPD")) return;
+            ppu.ColorObjPalette = value;
         }
     }
 
