@@ -6,47 +6,38 @@ namespace DamageBoy.Core;
 
 class WRAM : IState
 {
-    readonly GameBoyModes gbMode;
+    readonly GameBoy gameBoy;
 
-#if IS_CGB
     public byte Bank { get; set; }
-#endif
-
     readonly byte[] bytes;
 
     public const ushort START_ADDRESS = 0xC000;
     public const ushort END_ADDRESS = 0xE000;
     public const ushort DMG_SIZE = END_ADDRESS - START_ADDRESS;
-#if IS_CGB
     public const ushort CGB_SIZE = 0x8000;
-#endif
 
     public const ushort ECHO_START_ADDRESS = 0xE000;
     public const ushort ECHO_END_ADDRESS = 0xFE00;
 
-    public WRAM(GameBoyModes gbMode)
+    public WRAM(GameBoy gameBoy)
     {
-        this.gbMode = gbMode;
+        this.gameBoy = gameBoy;
 
-#if IS_CGB
         Bank = 1;
-        bytes = new byte[gbMode == GameBoyModes.CGB ? CGB_SIZE : DMG_SIZE];
-#else
-        bytes = new byte[DMG_SIZE];
-#endif
+        bytes = new byte[gameBoy.IsColorMode ? CGB_SIZE : DMG_SIZE];
     }
 
     public byte this[int index]
     {
         get
         {
-            if (gbMode == GameBoyModes.CGB)
+            if (gameBoy.IsColorMode)
             {
                 switch (index)
                 {
                     case >= 0x0 and < 0x1000: return bytes[index];
                     case >= 0x1000 and < 0x2000: return bytes[(Bank << 12) + index - 0x1000];
-                    default: throw new InvalidOperationException($"Tried to read from invalid Internal RAM address: 0x{index:X4}");
+                    default: throw new InvalidOperationException($"Tried to read from invalid WRAM address: 0x{index:X4}");
                 }
             }
             else
@@ -57,13 +48,13 @@ class WRAM : IState
 
         set
         {
-            if (gbMode == GameBoyModes.CGB)
+            if (gameBoy.IsColorMode)
             {
                 switch (index)
                 {
                     case >= 0x0 and < 0x1000: bytes[index] = value; break;
                     case >= 0x1000 and < 0x2000: bytes[(Bank << 12) + index - 0x1000] = value; break;
-                    default: throw new InvalidOperationException($"Tried to write to invalid Internal RAM address: 0x{index:X4}");
+                    default: throw new InvalidOperationException($"Tried to write to invalid WRAM address: 0x{index:X4}");
                 }
             }
             else
@@ -76,11 +67,10 @@ class WRAM : IState
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
     {
         SaveState.SaveLoadArray(stream, save, bytes, bytes.Length);
-#if IS_CGB
-        if (gbMode == GameBoyModes.CGB)
+
+        if (gameBoy.IsColorMode)
         {
             Bank = SaveState.SaveLoadValue(bw, br, save, Bank);
         }
-#endif
     }
 }

@@ -43,11 +43,10 @@ class Window : GameWindow
     string SaveFilePath => Path.Combine(SAVES_FOLDER, Path.GetFileNameWithoutExtension(selectedRomFileName) + ".sav");
 
     const string SAVES_FOLDER = "Saves";
-#if IS_CGB
-    const string BOOT_ROM_FILE_NAME = "cgb_boot_rom";
-#else
-    const string BOOT_ROM_FILE_NAME = "dmg_boot_rom";
-#endif
+
+    const string DMG_BOOT_ROM_FILE_NAME = "dmg_boot_rom";
+    const string CGB_BOOT_ROM_FILE_NAME = "cgb_boot_rom";
+
     public const string GB_FILE_EXTENSION = ".gb";
     public const string GBC_FILE_EXTENSION = ".gbc";
     public const string ZIP_FILE_EXTENSION = ".zip";
@@ -160,13 +159,16 @@ class Window : GameWindow
 
         byte[] bootRom = null;
 
-        if (File.Exists(BOOT_ROM_FILE_NAME))
+        string bootRomName = settings.Data.HardwareType == HardwareTypes.CGB ? CGB_BOOT_ROM_FILE_NAME : DMG_BOOT_ROM_FILE_NAME;
+        if (File.Exists(bootRomName))
         {
-            bootRom = File.ReadAllBytes(BOOT_ROM_FILE_NAME);
+            bootRom = File.ReadAllBytes(bootRomName);
 
-            if (bootRom.Length != GameBoy.BOOT_ROM_SIZE)
+            ushort bootRomSize = settings.Data.HardwareType == HardwareTypes.CGB ? GameBoy.CGB_BOOT_ROM_SIZE : GameBoy.DMG_BOOT_ROM_SIZE;
+
+            if (bootRom.Length != bootRomSize)
             {
-                Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be {GameBoy.BOOT_ROM_SIZE}. Ignoring it.");
+                Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be {bootRomSize}. Ignoring it.");
                 bootRom = null;
             }
         }
@@ -223,7 +225,7 @@ class Window : GameWindow
 
         try
         {
-            gameBoy = new GameBoy(bootRom, romData, saveData, ScreenUpdate, AddToAudioBuffer, SaveUpdate);
+            gameBoy = new GameBoy(settings.Data.HardwareType, bootRom, romData, saveData, ScreenUpdate, AddToAudioBuffer, SaveUpdate);
             (renderer as Renderer).RenderMode = Renderer.RenderModes.LCD;
 
             UpdateGameBoySettings();

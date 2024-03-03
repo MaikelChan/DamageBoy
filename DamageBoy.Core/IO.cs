@@ -18,6 +18,7 @@ public enum Buttons
 
 class IO : IState
 {
+    readonly GameBoy gameBoy;
     readonly WRAM wram;
     readonly VRAM vram;
     readonly PPU ppu;
@@ -34,8 +35,9 @@ class IO : IState
 
     public const ushort INTERRUPT_ENABLE_REGISTER_ADDRESS = 0xFFFF;
 
-    public IO(WRAM wram, VRAM vram, PPU ppu, DMA dma, HDMA hdma, Timer timer, APU apu, Serial serial, InterruptHandler interruptHandler)
+    public IO(GameBoy gameBoy, WRAM wram, VRAM vram, PPU ppu, DMA dma, HDMA hdma, Timer timer, APU apu, Serial serial, InterruptHandler interruptHandler)
     {
+        this.gameBoy = gameBoy;
         this.wram = wram;
         this.vram = vram;
         this.ppu = ppu;
@@ -100,7 +102,7 @@ class IO : IState
                 case 0x49: return OBP1;
                 case 0x4A: return WY;
                 case 0x4B: return WX;
-#if IS_CGB
+
                 case 0x4F: return VBK;
                 case 0x51: return HDMA1;
                 case 0x52: return HDMA2;
@@ -114,7 +116,7 @@ class IO : IState
                 case 0x6B: return 0xFF;
                 // ------------------------------
                 case 0x70: return SVBK;
-#endif
+
                 case 0xFF: return IE;
                 default:
                     Utils.Log(LogType.Warning, $"Read from IO Port 0x{index:X2} not implemented.");
@@ -171,7 +173,7 @@ class IO : IState
                 case 0x4A: WY = value; break;
                 case 0x4B: WX = value; break;
                 case 0x50: BootROMDisabled = true; break;
-#if IS_CGB
+
                 case 0x4F: VBK = value; break;
                 case 0x51: HDMA1 = value; break;
                 case 0x52: HDMA2 = value; break;
@@ -185,7 +187,7 @@ class IO : IState
                 case 0x6B: break;
                 // ------------------------------
                 case 0x70: SVBK = value; break;
-#endif
+
                 case 0xFF: IE = value; break;
                 default:
                     Utils.Log(LogType.Warning, $"Write to IO Port 0x{index:X2} not implemented.");
@@ -1084,15 +1086,21 @@ class IO : IState
 
     #region GameBoy Color
 
-#if IS_CGB
-
     /// <summary>
     /// FF4F — VBK (CGB Mode only): VRAM bank (R/W)
     /// </summary>
     byte VBK
     {
-        get => (byte)(0b1111_1110 | (vram.Bank & 0b0000_0001));
-        set => vram.Bank = (byte)(value & 0b0000_0001);
+        get
+        {
+            if (IsGbcRegisterUnavailable("VBK")) return 0xFF;
+            return (byte)(0b1111_1110 | (vram.Bank & 0b0000_0001));
+        }
+        set
+        {
+            if (IsGbcRegisterUnavailable("VBK")) return;
+            vram.Bank = (byte)(value & 0b0000_0001);
+        }
     }
 
     /// <summary>
@@ -1101,7 +1109,11 @@ class IO : IState
     byte HDMA1
     {
         get => 0xFF;
-        set => hdma.SourceHighAddress = value;
+        set
+        {
+            if (IsGbcRegisterUnavailable("HDMA1")) return;
+            hdma.SourceHighAddress = value;
+        }
     }
 
     /// <summary>
@@ -1110,7 +1122,11 @@ class IO : IState
     byte HDMA2
     {
         get => 0xFF;
-        set => hdma.SourceLowAddress = value;
+        set
+        {
+            if (IsGbcRegisterUnavailable("HDMA2")) return;
+            hdma.SourceLowAddress = value;
+        }
     }
 
     /// <summary>
@@ -1119,7 +1135,11 @@ class IO : IState
     byte HDMA3
     {
         get => 0xFF;
-        set => hdma.DestinationHighAddress = value;
+        set
+        {
+            if (IsGbcRegisterUnavailable("HDMA3")) return;
+            hdma.DestinationHighAddress = value;
+        }
     }
 
     /// <summary>
@@ -1128,7 +1148,11 @@ class IO : IState
     byte HDMA4
     {
         get => 0xFF;
-        set => hdma.DestinationLowAddress = value;
+        set
+        {
+            if (IsGbcRegisterUnavailable("HDMA4")) return;
+            hdma.DestinationLowAddress = value;
+        }
     }
 
     /// <summary>
@@ -1138,12 +1162,14 @@ class IO : IState
     {
         get
         {
+            if (IsGbcRegisterUnavailable("HDMA5")) return 0xFF;
             if (!hdma.IsBusy) return 0xFF;
             return (byte)(hdma.RemainingLength & 0b0111_1111);
         }
 
         set
         {
+            if (IsGbcRegisterUnavailable("HDMA5")) return;
             hdma.TransferMode = Helpers.GetBit(value, 7) ? HDMA.TransferModes.HBlank : HDMA.TransferModes.GeneralPurpose;
             hdma.InitialLength = (byte)(value & 0b0111_1111);
             hdma.Begin();
@@ -1155,15 +1181,27 @@ class IO : IState
     /// </summary>
     byte SVBK
     {
-        get => wram.Bank;
+        get
+        {
+            if (IsGbcRegisterUnavailable("SVBK")) return 0xFF;
+            return wram.Bank;
+        }
+
         set
         {
+            if (IsGbcRegisterUnavailable("SVBK")) return;
             byte bank = (byte)(value & 0b0000_0111);
             wram.Bank = (byte)(bank == 0 ? 1 : bank);
         }
     }
 
-#endif
+    bool IsGbcRegisterUnavailable(string registerName)
+    {
+        if (gameBoy.IsColorMode) return false;
+
+        Utils.Log(LogType.Warning, $"Trying to access GBC register \"{registerName}\" in GB mode.");
+        return true;
+    }
 
     #endregion
 

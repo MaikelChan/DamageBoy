@@ -7,7 +7,7 @@ namespace DamageBoy.Core;
 
 class CPU : IDisposable, IState
 {
-    readonly GameBoyModes gameBoyMode;
+    readonly GameBoy gameBoy;
     readonly MMU mmu;
 
     int clocksToWait;
@@ -74,9 +74,9 @@ class CPU : IDisposable, IState
         set => F = Helpers.SetBit(F, 4, value);
     }
 
-    public CPU(GameBoyModes gameBoyMode, MMU mmu, bool isThereBootRom)
+    public CPU(GameBoy gameBoy, MMU mmu, bool isThereBootRom)
     {
-        this.gameBoyMode = gameBoyMode;
+        this.gameBoy = gameBoy;
         this.mmu = mmu;
 
         // If there's no boot ROM, the emulator will initialize some stuff.
@@ -86,27 +86,31 @@ class CPU : IDisposable, IState
 
         if (!isThereBootRom)
         {
-#if IS_CGB // TODO: https://gbdev.io/pandocs/Power_Up_Sequence.html#cpu-registers
-            if (gameBoyMode == GameBoyModes.CGB)
+            // TODO: https://gbdev.io/pandocs/Power_Up_Sequence.html#cpu-registers
+            if (gameBoy.HardwareType == HardwareTypes.CGB)
             {
-                AF = 0x1180;
-                BC = 0x0000;
-                DE = 0xFF56;
-                HL = 0x000D;
+                if (gameBoy.IsGameGbcCompatible)
+                {
+                    AF = 0x1180;
+                    BC = 0x0000;
+                    DE = 0xFF56;
+                    HL = 0x000D;
+                }
+                else
+                {
+                    AF = 0x1180;
+                    BC = 0x0000;
+                    DE = 0x0008;
+                    HL = 0x007C;
+                }
             }
             else
             {
-                AF = 0x1180;
-                BC = 0x0000;
-                DE = 0x0008;
-                HL = 0x007C;
+                AF = 0x01B0;
+                BC = 0x0013;
+                DE = 0x00D8;
+                HL = 0x014D;
             }
-#else
-            AF = 0x01B0;
-            BC = 0x0013;
-            DE = 0x00D8;
-            HL = 0x014D;
-#endif
             SP = 0xFFFE;
             PC = 0x0100;
 
@@ -2666,7 +2670,7 @@ class CPU : IDisposable, IState
 
         if (!bootromFinishedExecuting)
         {
-            if (PC == GameBoy.BOOT_ROM_END_ADDRESS)
+            if (PC == GameBoy.DMG_BOOT_ROM_END_ADDRESS)
             {
                 bootromFinishedExecuting = true;
                 totalCycles = 0;

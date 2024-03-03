@@ -15,29 +15,28 @@ class Cartridge : IDisposable, IState
 
     public const int RAW_TITLE_LENGTH = 16;
 
-    public Modes Mode
+    public GameTypes Type
     {
         get
         {
             switch (rom[0x143])
             {
-                case 0x80: return Modes.GameBoyColorBackwardsCompatible;
-                case 0xC0: return Modes.GameBoyColor;
-                default: return Modes.GameBoy;
+                case 0x80: return GameTypes.GameBoyColorBackwardsCompatible;
+                case 0xC0: return GameTypes.GameBoyColor;
+                default: return GameTypes.GameBoy;
             }
         }
     }
-    public enum Modes { GameBoy, GameBoyColorBackwardsCompatible, GameBoyColor }
 
     public byte[] RawTitle { get; }
     public string Title
     {
         get
         {
-            switch (Mode)
+            switch (Type)
             {
-                case Modes.GameBoyColorBackwardsCompatible:
-                case Modes.GameBoyColor:
+                case GameTypes.GameBoyColorBackwardsCompatible:
+                case GameTypes.GameBoyColor:
                     return Encoding.ASCII.GetString(rom, 0x134, RAW_TITLE_LENGTH - 5).TrimEnd('\0');
                 default:
                     return Encoding.ASCII.GetString(rom, 0x134, RAW_TITLE_LENGTH).TrimEnd('\0');

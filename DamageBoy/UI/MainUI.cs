@@ -1,4 +1,5 @@
-﻿using DamageBoy.Graphics;
+﻿using DamageBoy.Core;
+using DamageBoy.Graphics;
 using ImGuiNET;
 using System.Numerics;
 
@@ -105,6 +106,16 @@ class MainUI : BaseUI
 
             if (ImGui.BeginMenu("Settings"))
             {
+                ImGui.TextColored(menuHeaderColor, "Hardware");
+
+                int hardwareType = (int)settings.Data.HardwareType;
+                ImGui.RadioButton("GameBoy", ref hardwareType, 0); ImGui.SameLine();
+                ImGui.RadioButton("GameBoy Color", ref hardwareType, 1);
+                settings.Data.HardwareType = (HardwareTypes)hardwareType;
+
+                ImGui.Separator();
+
+                ImGui.Dummy(separatorMargin);
                 ImGui.TextColored(menuHeaderColor, "General");
 
                 bool pauseWhileMinimized = settings.Data.PauseWhileMinimized;

@@ -24,6 +24,6 @@ class HRAM : IState
 
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
     {
-        SaveState.SaveLoadArray(stream, save, bytes, SIZE);
+        SaveState.SaveLoadArray(stream, save, bytes, bytes.Length);
     }
 }

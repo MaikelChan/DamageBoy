@@ -20,10 +20,17 @@ public enum FrameLimiterStates
     Paused
 }
 
-public enum GameBoyModes
+public enum HardwareTypes
 {
     DMG,
     CGB
+}
+
+public enum GameTypes
+{
+    GameBoy,
+    GameBoyColorBackwardsCompatible,
+    GameBoyColor
 }
 
 public class GameBoy
@@ -49,7 +56,11 @@ public class GameBoy
 
     public string GameTitle => cartridge.Title;
 
-    public GameBoyModes Mode { get; }
+    public HardwareTypes HardwareType { get; }
+    public GameTypes GameType => cartridge.Type;
+    public bool IsGameGbcCompatible => cartridge.Type != GameTypes.GameBoy;
+    public bool IsColorMode => HardwareType == HardwareTypes.CGB && cartridge.Type != GameTypes.GameBoy;
+
     public EmulationStates EmulationState { get; private set; }
 
     FrameLimiterStates frameLimiterState;
@@ -58,40 +69,36 @@ public class GameBoy
     public delegate void AddToAudioBufferDelegate(byte leftChannel, byte rightChannel);
     public delegate void SaveUpdateDelegate(byte[] saveData);
 
-    public const ushort BOOT_ROM_START_ADDRESS = 0x0;
-    public const ushort BOOT_ROM_END_ADDRESS = 0x100;
+    public const ushort DMG_BOOT_ROM_START_ADDRESS = 0x0;
+    public const ushort DMG_BOOT_ROM_END_ADDRESS = 0x100;
+    public const ushort DMG_BOOT_ROM_SIZE = DMG_BOOT_ROM_END_ADDRESS - DMG_BOOT_ROM_START_ADDRESS;
 
-#if IS_CGB
+    public const ushort CGB_BOOT_ROM_START_ADDRESS = 0x0;
+    public const ushort CGB_BOOT_ROM_FIRST_PART_END_ADDRESS = 0x100;
     public const ushort CGB_BOOT_ROM_SECOND_PART_START_ADDRESS = 0x200;
-    public const ushort CGB_BOOT_ROM_SECOND_PART_END_ADDRESS = 0x900;
-    public const ushort BOOT_ROM_SIZE = CGB_BOOT_ROM_SECOND_PART_END_ADDRESS;
-#else
-    public const ushort BOOT_ROM_SIZE = BOOT_ROM_END_ADDRESS;
-#endif
+    public const ushort CGB_BOOT_ROM_END_ADDRESS = 0x900;
+    public const ushort CGB_BOOT_ROM_SIZE = CGB_BOOT_ROM_END_ADDRESS - CGB_BOOT_ROM_START_ADDRESS;
 
-    public GameBoy(byte[] bootRom, byte[] romData, byte[] saveData, ScreenUpdateDelegate screenUpdateCallback, AddToAudioBufferDelegate addToAudioBufferCallback, SaveUpdateDelegate saveUpdateCallback)
+    public GameBoy(HardwareTypes hardwareType, byte[] bootRom, byte[] romData, byte[] saveData, ScreenUpdateDelegate screenUpdateCallback, AddToAudioBufferDelegate addToAudioBufferCallback, SaveUpdateDelegate saveUpdateCallback)
     {
         cartridge = new Cartridge(romData, saveData, saveUpdateCallback);
-#if IS_CGB
-        Mode = cartridge.Mode == Cartridge.Modes.GameBoy ? GameBoyModes.DMG : GameBoyModes.CGB;
-#else
-        Mode = Cartridge.Modes.GameBoy;
-#endif
 
-        wram = new WRAM(Mode);
+        HardwareType = hardwareType;
+
+        wram = new WRAM(this);
         hram = new HRAM();
-        vram = new VRAM(Mode);
+        vram = new VRAM(this);
         oam = new OAM();
         interruptHandler = new InterruptHandler();
         serial = new Serial(interruptHandler);
         dma = new DMA(cartridge, wram, vram, oam);
-        hdma = new HDMA(cartridge, wram, vram);
+        if (IsColorMode) hdma = new HDMA(cartridge, wram, vram);
         timer = new Timer(interruptHandler);
         apu = new APU(addToAudioBufferCallback);
-        ppu = new PPU(Mode, interruptHandler, vram, oam, dma, screenUpdateCallback, ProcessSaveState);
-        io = new IO(wram, vram, ppu, dma, hdma, timer, apu, serial, interruptHandler);
-        mmu = new MMU(io, wram, hram, ppu, dma, bootRom, cartridge);
-        cpu = new CPU(Mode, mmu, bootRom != null);
+        ppu = new PPU(this, interruptHandler, vram, oam, dma, screenUpdateCallback, ProcessSaveState);
+        io = new IO(this, wram, vram, ppu, dma, hdma, timer, apu, serial, interruptHandler);
+        mmu = new MMU(this, io, wram, hram, ppu, dma, bootRom, cartridge);
+        cpu = new CPU(this, mmu, bootRom != null);
 
         frameLimiterState = FrameLimiterStates.Limited;
 
@@ -155,7 +162,8 @@ public class GameBoy
             cpu.Update();
             serial.Update();
             dma.Update();
-            hdma.Update();
+            if (IsColorMode) hdma.Update();
+
 #if !DEBUG
             }
             catch (Exception ex)

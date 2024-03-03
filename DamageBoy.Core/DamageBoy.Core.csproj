@@ -15,13 +15,11 @@
     <Description>Experimental GameBoy emulator written in C#, and it uses OpenGL for rendering, OpenAL for audio and ImGui for UI.</Description>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants);IS_CGB</DefineConstants>
-  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <DefineConstants>$(DefineConstants);COMPRESS_SAVE_STATES;IS_CGB</DefineConstants>
+    <DefineConstants>$(DefineConstants);COMPRESS_SAVE_STATES</DefineConstants>
   </PropertyGroup>
 
 </Project>

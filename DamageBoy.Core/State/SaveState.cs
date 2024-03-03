@@ -44,12 +44,14 @@ internal class SaveState
             {
                 for (int cs = 0; cs < componentsStates.Length; cs++)
                 {
+                    if (componentsStates[cs] == null) continue;
                     componentsStates[cs].SaveOrLoadState(cfs, cfsBw, null, true);
                 }
             }
 #else
             for (int cs = 0; cs < componentsStates.Length; cs++)
             {
+                if (componentsStates[cs] == null) continue;
                 componentsStates[cs].SaveOrLoadState(fs, fsBw, null, true);
             }
 #endif
@@ -106,6 +108,7 @@ internal class SaveState
                 {
                     for (int cs = 0; cs < componentsStates.Length; cs++)
                     {
+                        if (componentsStates[cs] == null) continue;
                         componentsStates[cs].SaveOrLoadState(cfs, null, cfsBr, false);
                     }
                 }
@@ -114,6 +117,7 @@ internal class SaveState
             {
                 for (int cs = 0; cs < componentsStates.Length; cs++)
                 {
+                    if (componentsStates[cs] == null) continue;
                     componentsStates[cs].SaveOrLoadState(fs, null, fsBr, false);
                 }
             }

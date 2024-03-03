@@ -8,7 +8,7 @@ namespace DamageBoy.Core;
 
 class PPU : IDisposable, IState
 {
-    readonly GameBoyModes gbMode;
+    readonly GameBoy gameBoy;
     readonly InterruptHandler interruptHandler;
     readonly VRAM vram;
     readonly OAM oam;
@@ -101,9 +101,9 @@ class PPU : IDisposable, IState
 
     public delegate void FinishedVBlankDelegate();
 
-    public PPU(GameBoyModes gbMode, InterruptHandler interruptHandler, VRAM vram, OAM oam, DMA dma, ScreenUpdateDelegate screenUpdateCallback, FinishedVBlankDelegate finishedVBlankCallback)
+    public PPU(GameBoy gameBoy, InterruptHandler interruptHandler, VRAM vram, OAM oam, DMA dma, ScreenUpdateDelegate screenUpdateCallback, FinishedVBlankDelegate finishedVBlankCallback)
     {
-        this.gbMode = gbMode;
+        this.gameBoy = gameBoy;
         this.interruptHandler = interruptHandler;
         this.vram = vram;
         this.oam = oam;
@@ -336,8 +336,7 @@ class PPU : IDisposable, IState
                 byte bitX = (byte)(7 - (sX & 0x7));
                 byte bitY = (byte)(sY & 0x7);
 
-#if IS_CGB
-                if (gbMode == GameBoyModes.CGB)
+                if (gameBoy.IsColorMode)
                 {
                     byte attributes = vram.GetRawBytes(currentTileMapAddress + VRAM.DMG_SIZE);
                     int palette = attributes & 0b0000_0111;
@@ -350,7 +349,6 @@ class PPU : IDisposable, IState
                     if (invX) bitX = (byte)(7 - bitX);
                     if (invY) bitY = (byte)(7 - bitY);
                 }
-#endif
 
                 currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + (bitY << 1));
 
@@ -397,8 +395,7 @@ class PPU : IDisposable, IState
                 byte bitX = (byte)(7 - (sX & 0x7));
                 byte bitY = (byte)(sY & 0x7);
 
-#if IS_CGB
-                if (gbMode == GameBoyModes.CGB)
+                if (gameBoy.IsColorMode)
                 {
                     byte attributes = vram.GetRawBytes(currentTileMapAddress + VRAM.DMG_SIZE);
                     int palette = attributes & 0b0000_0111;
@@ -411,7 +408,6 @@ class PPU : IDisposable, IState
                     if (invX) bitX = (byte)(7 - bitX);
                     if (invY) bitY = (byte)(7 - bitY);
                 }
-#endif
 
                 currentTileDataAddress += (ushort)(tile * TILE_BYTES_SIZE + (bitY << 1));
 

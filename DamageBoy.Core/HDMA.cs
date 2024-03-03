@@ -1,6 +1,4 @@
-﻿#if IS_CGB
-
-using DamageBoy.Core.State;
+﻿using DamageBoy.Core.State;
 using System;
 using System.IO;
 
@@ -26,8 +24,6 @@ class HDMA : IState
     public ushort DestinationAddress => (ushort)(((DestinationHighAddress << 8) | (DestinationLowAddress)) & 0b0001_1111_1111_0000);
 
     public bool IsBusy => RemainingLength > 0;
-
-    const byte MAX_LENGTH = 0x7f;
 
     public HDMA(Cartridge cartridge, WRAM wram, VRAM vram)
     {
@@ -113,5 +109,3 @@ class HDMA : IState
         RemainingLength = SaveState.SaveLoadValue(bw, br, save, RemainingLength);
     }
 }
-
-#endif
