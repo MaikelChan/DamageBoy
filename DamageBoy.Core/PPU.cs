@@ -72,12 +72,14 @@ class PPU : IDisposable, IState
     {
         get
         {
-            if (CanCPUAccessVRAM()) return colorBgPalette[ColorBgPaletteAddress];
-            return 0xFF;
+            // if (CanCPUAccessVRAM())  TODO: Timing problems seem to sometimes not set the colors correctly 
+            return colorBgPalette[ColorBgPaletteAddress];
+            //return 0xFF;
         }
         set
         {
-            if (CanCPUAccessVRAM()) colorBgPalette[ColorBgPaletteAddress] = value;
+            // if (CanCPUAccessVRAM())  TODO: Timing problems seem to sometimes not set the colors correctly 
+            colorBgPalette[ColorBgPaletteAddress] = value;
             if (ColorBgPaletteAutoIncrement) ColorBgPaletteAddress++;
         }
     }
@@ -88,12 +90,14 @@ class PPU : IDisposable, IState
     {
         get
         {
-            if (CanCPUAccessVRAM()) return colorObjPalette[ColorObjPaletteAddress];
-            return 0xFF;
+            // if (CanCPUAccessVRAM())  TODO: Timing problems seem to sometimes not set the colors correctly 
+            return colorObjPalette[ColorObjPaletteAddress];
+            //return 0xFF;
         }
         set
         {
-            if (CanCPUAccessVRAM()) colorObjPalette[ColorObjPaletteAddress] = value;
+            // if (CanCPUAccessVRAM())  TODO: Timing problems seem to sometimes not set the colors correctly 
+            colorObjPalette[ColorObjPaletteAddress] = value;
             if (ColorObjPaletteAutoIncrement) ColorObjPaletteAddress++;
         }
     }
