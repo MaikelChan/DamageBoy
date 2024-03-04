@@ -33,7 +33,7 @@ internal class HuC3 : IMemoryBankController
         this.cartridge = cartridge;
         this.rom = rom;
         this.ram = ram;
-        this.ram.AccessMode = CartridgeRam.AccessModes.ReadWrite;
+        if (ram != null) ram.AccessMode = CartridgeRam.AccessModes.ReadWrite;
 
         romBank = 1;
         ramBank = 0;
@@ -70,6 +70,7 @@ internal class HuC3 : IMemoryBankController
                             return 0xFF;
                         case Modes.RamRead:
                         case Modes.RamReadWrite:
+                            if (ram == null) return 0xFF;
                             return ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS];
                         case Modes.RtcCommandResponseRead:
                             return rtcCommandArgument;
@@ -163,6 +164,7 @@ internal class HuC3 : IMemoryBankController
                     switch (mode)
                     {
                         case Modes.RamReadWrite:
+                            if (ram == null) break;
                             ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
                             break;
                         case Modes.RtcCommandArgumentWrite:

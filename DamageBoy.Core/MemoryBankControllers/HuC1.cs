@@ -24,7 +24,7 @@ internal class HuC1 : IMemoryBankController
         this.cartridge = cartridge;
         this.rom = rom;
         this.ram = ram;
-        this.ram.AccessMode = CartridgeRam.AccessModes.ReadWrite;
+        if (ram != null) ram.AccessMode = CartridgeRam.AccessModes.ReadWrite;
 
         romBank = 1;
         ramBank = 0;
@@ -52,6 +52,7 @@ internal class HuC1 : IMemoryBankController
                     switch (mode)
                     {
                         case Modes.Ram:
+                            if (ram == null) return 0xFF;
                             return ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS];
                         case Modes.Infrared:
                             return 0xC0;
@@ -116,6 +117,7 @@ internal class HuC1 : IMemoryBankController
                     switch (mode)
                     {
                         case Modes.Ram:
+                            if (ram == null) break;
                             ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
                             break;
                         case Modes.Infrared:

@@ -98,7 +98,7 @@ class Cartridge : IDisposable, IState
             case 0x1:
             case 0x2:
             case 0x3:
-                ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
+                if (RamSize != 0) ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
                 mbc = new MBC1(this, romData, ram);
                 break;
 
@@ -112,7 +112,7 @@ class Cartridge : IDisposable, IState
             case 0x11:
             case 0x12:
             case 0x13:
-                ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
+                if (RamSize != 0) ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
                 mbc = new MBC3(this, romData, ram);
                 break;
 
@@ -122,17 +122,17 @@ class Cartridge : IDisposable, IState
             case 0x1C:
             case 0x1D:
             case 0x1E:
-                ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
+                if (RamSize != 0) ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
                 mbc = new MBC5(this, romData, ram);
                 break;
 
             case 0xFE:
-                ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
+                if (RamSize != 0) ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
                 mbc = new HuC3(this, romData, ram);
                 break;
 
             case 0xFF:
-                ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
+                if (RamSize != 0) ram = new CartridgeRam(RamSize, saveData, saveUpdateCallback);
                 mbc = new HuC1(this, romData, ram);
                 break;
 

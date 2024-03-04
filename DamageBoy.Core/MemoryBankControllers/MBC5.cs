@@ -45,6 +45,7 @@ class MBC5 : IMemoryBankController
 
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS:
                 {
+                    if (ram == null) return 0xFF;
                     if (ram.AccessMode == CartridgeRam.AccessModes.None) return 0xFF;
                     return ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS];
                 }
@@ -62,6 +63,7 @@ class MBC5 : IMemoryBankController
             {
                 case >= Cartridge.ROM_BANK_START_ADDRESS and < 0x2000:
                 {
+                    if (ram == null) break;
                     ram.AccessMode = (value & 0b0000_1111) == 0xA ? CartridgeRam.AccessModes.ReadWrite : CartridgeRam.AccessModes.None;
                     break;
                 }
@@ -91,6 +93,7 @@ class MBC5 : IMemoryBankController
 
                 case >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS and < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS:
                 {
+                    if (ram == null) break;
                     if (ram.AccessMode != CartridgeRam.AccessModes.ReadWrite) break;
                     ram[(RamBank << 13) + index - Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS] = value;
                     break;
