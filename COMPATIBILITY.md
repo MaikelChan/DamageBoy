@@ -95,9 +95,9 @@ All games have been tested with the GameBoy boot ROM enabled. Without it, they c
 | Paperboy | :heavy_check_mark: |
 | Paperboy 2 | :heavy_check_mark: |
 | Pokemon Card GB (J) | :large_blue_diamond: (It's missing the custom infrared functionality) |
-| Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
-| Pokemon - Red Version (UE) [S][!] | :heavy_check_mark: |
-| Pokemon - Yellow Version (UE) [C][!] | :heavy_check_mark: |
+| Pokemon - Red Version | :heavy_check_mark: |
+| Pokemon - Blue Version | :heavy_check_mark: |
+| Pokemon - Yellow Version | :heavy_check_mark: |
 | Pocket Bomberman (J) | :large_blue_diamond: (It's missing the custom infrared functionality) |
 | Pocket Bomberman (E) | :heavy_check_mark: |
 | Pocket Family GB (J) | :warning: (It's missing the custom infrared and clock functionalities, which are required) |
@@ -139,6 +139,7 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 
 - :heavy_check_mark: Passes the test
 - :x: Fails the test
+- :large_orange_diamond: Irrelevant - The emulator doesn't support the console revision the test targets 
 
 ### Blargg's tests
 
@@ -177,17 +178,17 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | -- | -- |
 | acceptance/add_sp_e_timing.gb | :x: |
 | acceptance/boot_div2-S.gb | :x: |
-| acceptance/boot_div-dmg0.gb | :x: |
+| acceptance/boot_div-dmg0.gb | :large_orange_diamond: |
 | acceptance/boot_div-dmgABCmgb.gb | :x: |
 | acceptance/boot_div-S.gb | :x: |
-| acceptance/boot_hwio-dmg0.gb | :x: |
-| acceptance/boot_hwio-dmgABCmgb.gb | :x: |
+| acceptance/boot_hwio-dmg0.gb | :large_orange_diamond: |
+| acceptance/boot_hwio-dmgABCmgb.gb | :heavy_check_mark: |
 | acceptance/boot_hwio-S.gb | :x: |
-| acceptance/boot_regs-dmg0.gb | :x: |
+| acceptance/boot_regs-dmg0.gb | :large_orange_diamond: |
 | acceptance/boot_regs-dmgABC.gb | :heavy_check_mark: |
-| acceptance/boot_regs-mgb.gb | :x: |
-| acceptance/boot_regs-sgb.gb | :x: |
-| acceptance/boot_regs-sgb2.gb | :x: |
+| acceptance/boot_regs-mgb.gb | :large_orange_diamond: |
+| acceptance/boot_regs-sgb.gb | :large_orange_diamond: |
+| acceptance/boot_regs-sgb2.gb | :large_orange_diamond: |
 | acceptance/call_cc_timing.gb | :x: (Doesn't even finish) |
 | acceptance/call_cc_timing2.gb | :x: |
 | acceptance/call_timing.gb | :x: (Doesn't even finish) |
@@ -279,11 +280,11 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | emulator-only/mbc5/rom_64Mb.gb | :heavy_check_mark: |
 | emulator-only/mbc5/rom_512kb.gb | :heavy_check_mark: |
 | manual-only/sprite_priority.gb | :heavy_check_mark: |
-| misc/boot_div-A.gb | :x: |
-| misc/boot_div-cgb0.gb | :x: |
+| misc/boot_div-A.gb | :large_orange_diamond: |
+| misc/boot_div-cgb0.gb | :large_orange_diamond: |
 | misc/boot_div-cgbABCDE.gb | :x: |
 | misc/boot_hwio-C.gb | :heavy_check_mark: |
-| misc/boot_regs-A.gb | :x: |
+| misc/boot_regs-A.gb | :large_orange_diamond: |
 | misc/boot_regs-cgb.gb | :heavy_check_mark: |
 | misc/bits/unused_hwio-C.gb | :heavy_check_mark: |
 | misc/ppu/vblank_stat_intr-C.gb | :x: |
