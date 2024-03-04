@@ -159,17 +159,20 @@ class Window : GameWindow
 
         byte[] bootRom = null;
 
-        string bootRomName = settings.Data.HardwareType == HardwareTypes.CGB ? CGB_BOOT_ROM_FILE_NAME : DMG_BOOT_ROM_FILE_NAME;
-        if (File.Exists(bootRomName))
+        if (settings.Data.LoadBootRom)
         {
-            bootRom = File.ReadAllBytes(bootRomName);
-
-            ushort bootRomSize = settings.Data.HardwareType == HardwareTypes.CGB ? GameBoy.CGB_BOOT_ROM_SIZE : GameBoy.DMG_BOOT_ROM_SIZE;
-
-            if (bootRom.Length != bootRomSize)
+            string bootRomName = settings.Data.HardwareType == HardwareTypes.CGB ? CGB_BOOT_ROM_FILE_NAME : DMG_BOOT_ROM_FILE_NAME;
+            if (File.Exists(bootRomName))
             {
-                Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be {bootRomSize}. Ignoring it.");
-                bootRom = null;
+                bootRom = File.ReadAllBytes(bootRomName);
+
+                ushort bootRomSize = settings.Data.HardwareType == HardwareTypes.CGB ? GameBoy.CGB_BOOT_ROM_SIZE : GameBoy.DMG_BOOT_ROM_SIZE;
+
+                if (bootRom.Length != bootRomSize)
+                {
+                    Utils.Log(LogType.Error, $"The boot ROM is {bootRom.Length} bytes, but it should be {bootRomSize}. Ignoring it.");
+                    bootRom = null;
+                }
             }
         }
 

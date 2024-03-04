@@ -51,10 +51,11 @@ class SettingsData
     public string LastRomDirectory { get; set; }
     public List<string> RecentRoms { get; set; }
 
-    public HardwareTypes HardwareType { get; set; }
-
     public bool PauseWhileMinimized { get; set; }
     public bool CompressSaveStates { get; set; }
+    public bool LoadBootRom { get; set; }
+
+    public HardwareTypes HardwareType { get; set; }
 
     public ColorSetting GbColor0 { get; set; }
     public ColorSetting GbColor1 { get; set; }
@@ -73,10 +74,11 @@ class SettingsData
         LastRomDirectory = Environment.CurrentDirectory;
         RecentRoms = new List<string>(Window.MAX_RECENT_ROMS);
 
-        HardwareType = HardwareTypes.CGB;
-
         PauseWhileMinimized = true;
         CompressSaveStates = true;
+        LoadBootRom = true;
+
+        HardwareType = HardwareTypes.CGB;
 
         DefaultColors();
         LcdEffectVisibility = 1.0f;
