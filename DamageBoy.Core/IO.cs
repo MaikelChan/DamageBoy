@@ -115,6 +115,13 @@ class IO : IState
                 case 0x6B: return OCPD_OBPD;
                 case 0x70: return SVBK;
 
+                case 0x72: return FF72_Undocumented;
+                case 0x73: return FF73_Undocumented;
+                case 0x74: return FF74_Undocumented;
+                case 0x75: return FF75_Undocumented;
+                case 0x76: return PCM12;
+                case 0x77: return PCM34;
+
                 case 0xFF: return IE;
                 default:
                     Utils.Log(LogType.Warning, $"Read from IO Port 0x{index:X2} not implemented.");
@@ -183,6 +190,13 @@ class IO : IState
                 case 0x6A: OCPS_OBPI = value; break;
                 case 0x6B: OCPD_OBPD = value; break;
                 case 0x70: SVBK = value; break;
+
+                case 0x72: FF72_Undocumented = value; break;
+                case 0x73: FF73_Undocumented = value; break;
+                case 0x74: FF74_Undocumented = value; break;
+                case 0x75: FF75_Undocumented = value; break;
+                case 0x76: break;
+                case 0x77: break;
 
                 case 0xFF: IE = value; break;
                 default:
@@ -1267,6 +1281,55 @@ class IO : IState
             byte bank = (byte)(value & 0b0000_0111);
             wram.Bank = (byte)(bank == 0 ? 1 : bank);
         }
+    }
+
+    /// <summary>
+    /// FF72 — Bits 0–7 (CGB Mode only)
+    /// </summary>
+    byte FF72_Undocumented { get; set; }
+
+    /// <summary>
+    /// FF73 — Bits 0–7 (CGB Mode only)
+    /// </summary>
+    byte FF73_Undocumented { get; set; }
+
+    /// <summary>
+    /// FF74 — Bits 0–7 (CGB Mode only)
+    /// </summary>
+    byte FF74_Undocumented
+    {
+        get => (byte)(gameBoy.IsColorMode ? ff74 : 0xFF);
+        set
+        {
+            if (gameBoy.IsColorMode) ff74 = value;
+        }
+    }
+    byte ff74;
+
+    /// <summary>
+    /// FF75 — Bits 4–6 (CGB Mode only)
+    /// </summary>
+    byte FF75_Undocumented
+    {
+        get => (byte)(0b1000_1111 | ff75);
+        set => ff75 = (byte)(value & 0b0111_0000);
+    }
+    byte ff75;
+
+    /// <summary>
+    /// FF76 — PCM12 (CGB Mode only): Digital outputs 1 & 2 [read-only]
+    /// </summary>
+    byte PCM12
+    {
+        get => 0;
+    }
+
+    /// <summary>
+    /// FF77 — PCM34 (CGB Mode only): Digital outputs 3 & 4 [read-only]
+    /// </summary>
+    byte PCM34
+    {
+        get => 0;
     }
 
     bool IsGbcRegisterUnavailable(string registerName)

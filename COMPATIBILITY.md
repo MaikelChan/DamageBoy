@@ -285,5 +285,5 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | misc/boot_hwio-C.gb | :x: |
 | misc/boot_regs-A.gb | :x: |
 | misc/boot_regs-cgb.gb | :x: |
-| misc/bits/unused_hwio-C.gb | :x: |
+| misc/bits/unused_hwio-C.gb | :heavy_check_mark: |
 | misc/ppu/vblank_stat_intr-C.gb | :x: |
