@@ -136,7 +136,7 @@ class IO : IState
                 case 0x00: P1_JOYP = value; break;
                 case 0x01: SB = value; break;
                 case 0x02: SC = value; break;
-                case 0x04: DIV = 0; break;
+                case 0x04: DIV = value; break;
                 case 0x05: TIMA = value; break;
                 case 0x06: TMA = value; break;
                 case 0x07: TAC = value; break;
@@ -310,7 +310,7 @@ class IO : IState
     public byte DIV
     {
         get => timer.Divider;
-        set => timer.Divider = value;
+        set => timer.ResetDIV();
     }
 
     /// <summary>

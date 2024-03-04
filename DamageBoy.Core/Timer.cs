@@ -21,6 +21,8 @@ class Timer : IState
     bool timerHasOverflown;
     int timerOverflowWaitCycles;
 
+    const int DIV_FREQUENCY = 256;
+
     public Timer(InterruptHandler interruptHandler)
     {
         this.interruptHandler = interruptHandler;
@@ -31,7 +33,7 @@ class Timer : IState
         dividerClocksToWait -= 4;
         if (dividerClocksToWait <= 0)
         {
-            dividerClocksToWait = 256;
+            dividerClocksToWait = DIV_FREQUENCY;
             Divider++;
             //Utils.Log("Divider: " + io.DividerRegister);
         }
@@ -78,6 +80,12 @@ class Timer : IState
                 interruptHandler.RequestTimerOverflow = true;
             }
         }
+    }
+
+    public void ResetDIV()
+    {
+        Divider = 0;
+        dividerClocksToWait = DIV_FREQUENCY;
     }
 
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)

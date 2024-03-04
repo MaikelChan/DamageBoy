@@ -194,7 +194,7 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | acceptance/call_timing.gb | :x: (Doesn't even finish) |
 | acceptance/call_timing2.gb | :x: |
 | acceptance/di_timing-GS.gb | :heavy_check_mark: |
-| acceptance/div_timing.gb | :x: |
+| acceptance/div_timing.gb | :heavy_check_mark: |
 | acceptance/ei_sequence.gb | :x: |
 | acceptance/ei_timing.gb | :heavy_check_mark: |
 | acceptance/halt_ime0_ei.gb | :heavy_check_mark: |
