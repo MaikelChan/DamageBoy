@@ -278,7 +278,7 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | emulator-only/mbc5/rom_32Mb.gb | :heavy_check_mark: |
 | emulator-only/mbc5/rom_64Mb.gb | :heavy_check_mark: |
 | emulator-only/mbc5/rom_512kb.gb | :heavy_check_mark: |
-| manual-only/sprite_priority.gb | :x: |
+| manual-only/sprite_priority.gb | :heavy_check_mark: |
 | misc/boot_div-A.gb | :x: |
 | misc/boot_div-cgb0.gb | :x: |
 | misc/boot_div-cgbABCDE.gb | :x: |

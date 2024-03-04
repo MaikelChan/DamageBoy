@@ -1,5 +1,6 @@
 ﻿using DamageBoy.Core.State;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using static DamageBoy.Core.GameBoy;
@@ -17,8 +18,7 @@ class PPU : IDisposable, IState
     readonly FinishedVBlankDelegate finishedVBlankCallback;
 
     readonly ushort[][] lcdPixelBuffers;
-    readonly byte[] spriteIndicesInCurrentLine;
-    byte spritesAmountInCurrentLine;
+    readonly List<byte> spriteIndicesInCurrentLine;
 
     // LCD Control
 
@@ -173,7 +173,7 @@ class PPU : IDisposable, IState
             }
         }
 
-        spriteIndicesInCurrentLine = new byte[MAX_SPRITES_PER_LINE];
+        spriteIndicesInCurrentLine = new List<byte>(MAX_SPRITES_PER_LINE);
 
         DoOAMSearch();
     }
@@ -342,7 +342,7 @@ class PPU : IDisposable, IState
             interruptHandler.RequestLCDCSTAT = true;
         }
 
-        spritesAmountInCurrentLine = 0;
+        spriteIndicesInCurrentLine.Clear();
 
         byte spriteHeight = OBJSize ? SPRITE_MAX_HEIGHT : SPRITE_HEIGHT;
 
@@ -359,9 +359,20 @@ class PPU : IDisposable, IState
 
             // TODO: Check more conditions?
 
-            spriteIndicesInCurrentLine[spritesAmountInCurrentLine] = s;
-            spritesAmountInCurrentLine++;
-            if (spritesAmountInCurrentLine >= MAX_SPRITES_PER_LINE) break;
+            spriteIndicesInCurrentLine.Add(s);
+            if (spriteIndicesInCurrentLine.Count >= MAX_SPRITES_PER_LINE) break;
+        }
+
+        if (!gameBoy.IsColorMode)
+        {
+            // Sort by X coordinate on DMG. Overlapping sprites with smaller X will render on top.
+
+            spriteIndicesInCurrentLine.Sort((byte s1, byte s2) =>
+            {
+                int sprite1X = GetOAM((s1 * OAM_ENTRY_SIZE) + 1);
+                int sprite2X = GetOAM((s2 * OAM_ENTRY_SIZE) + 1);
+                return sprite1X.CompareTo(sprite2X);
+            });
         }
     }
 
@@ -487,7 +498,7 @@ class PPU : IDisposable, IState
         {
             byte spriteHeight = OBJSize ? SPRITE_MAX_HEIGHT : SPRITE_HEIGHT;
 
-            for (int s = spritesAmountInCurrentLine - 1; s >= 0; s--)
+            for (int s = spriteIndicesInCurrentLine.Count - 1; s >= 0; s--)
             {
                 byte spriteIndex = spriteIndicesInCurrentLine[s];
                 int spriteEntryAddress = spriteIndex * OAM_ENTRY_SIZE;
