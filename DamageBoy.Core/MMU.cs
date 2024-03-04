@@ -29,11 +29,7 @@ class MMU
     {
         get
         {
-            if (dma.IsBusy && index < IO.IO_PORTS_START_ADDRESS)
-            {
-                Utils.Log(LogType.Warning, $"Tried to read from 0x{index:X4} during DMA transfer.");
-                return 0xFF;
-            }
+            if (!dma.IsAllowingAccessToAddressFromCPU(index)) return 0xFF;
 
             if (gameBoy.IsColorMode)
             {
@@ -57,6 +53,12 @@ class MMU
             }
             else
             {
+                if (dma.IsBusy && index < IO.IO_PORTS_START_ADDRESS)
+                {
+                    Utils.Log(LogType.Warning, $"Tried to read from 0x{index:X4} during DMA transfer.");
+                    return 0xFF;
+                }
+
                 switch (index)
                 {
                     case >= GameBoy.DMG_BOOT_ROM_START_ADDRESS and < GameBoy.DMG_BOOT_ROM_END_ADDRESS: return io.BootROMDisabled ? cartridge[index] : bootRom[index];
@@ -77,11 +79,7 @@ class MMU
 
         set
         {
-            if (dma.IsBusy && index < IO.IO_PORTS_START_ADDRESS)
-            {
-                Utils.Log(LogType.Warning, $"Tried to write to 0x{index:X4} during DMA transfer.");
-                return;
-            }
+            if (!dma.IsAllowingAccessToAddressFromCPU(index)) return;
 
             if (gameBoy.IsColorMode)
             {

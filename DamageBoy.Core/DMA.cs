@@ -6,6 +6,7 @@ namespace DamageBoy.Core;
 
 class DMA : IState
 {
+    readonly GameBoy gameBoy;
     readonly Cartridge cartridge;
     readonly WRAM wram;
     readonly VRAM vram;
@@ -19,11 +20,38 @@ class DMA : IState
 
     public bool IsBusy => currentOffset < OAM.SIZE;
 
+    public bool IsAllowingAccessToAddressFromCPU(int address)
+    {
+        if (!IsBusy) return true;
+        if (address >= IO.IO_PORTS_START_ADDRESS) return true;
+
+        if (gameBoy.IsColorMode)
+        {
+            if ((address >= WRAM.START_ADDRESS && address < WRAM.END_ADDRESS) &&
+                ((sourceAddress >= Cartridge.ROM_BANK_START_ADDRESS && sourceAddress < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS) ||
+                (sourceAddress >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS && sourceAddress < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS)))
+            {
+                return true;
+            }
+
+            if (((address >= Cartridge.ROM_BANK_START_ADDRESS && address < Cartridge.SWITCHABLE_ROM_BANK_END_ADDRESS) ||
+                (address >= Cartridge.EXTERNAL_RAM_BANK_START_ADDRESS && address < Cartridge.EXTERNAL_RAM_BANK_END_ADDRESS)) &&
+                (sourceAddress >= WRAM.START_ADDRESS && sourceAddress < WRAM.END_ADDRESS))
+            {
+                return true;
+            }
+        }
+
+        Utils.Log(LogType.Warning, $"Tried to access 0x{address:X4} during DMA transfer.");
+        return false;
+    }
+
     ushort sourceAddress;
     int currentOffset;
 
-    public DMA(Cartridge cartridge, WRAM wram, VRAM vram, OAM oam)
+    public DMA(GameBoy gameBoy, Cartridge cartridge, WRAM wram, VRAM vram, OAM oam)
     {
+        this.gameBoy = gameBoy;
         this.cartridge = cartridge;
         this.wram = wram;
         this.vram = vram;
@@ -78,7 +106,10 @@ class DMA : IState
         // DMA transfer doesn't start right away.
         // Setting this to -3 gives enough delay to be able to pass Mooneye's oam_dma_timing test.
         // Probably this is a bit of a hack?
-        currentOffset = -3;
+
+        // Reverted to 0 as it would crash other tests like jp_timing
+
+        currentOffset = 0;
     }
 
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)

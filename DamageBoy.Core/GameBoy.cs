@@ -91,7 +91,7 @@ public class GameBoy
         oam = new OAM();
         interruptHandler = new InterruptHandler();
         serial = new Serial(interruptHandler);
-        dma = new DMA(cartridge, wram, vram, oam);
+        dma = new DMA(this, cartridge, wram, vram, oam);
         if (IsColorMode) hdma = new HDMA(cartridge, wram, vram);
         timer = new Timer(interruptHandler);
         apu = new APU(addToAudioBufferCallback);
