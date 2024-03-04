@@ -15,7 +15,7 @@ class Timer : IState
     public byte TimerCounter { get; set; }
     public byte TimerModulo { get; set; }
 
-    int dividerClocksToWait;
+    int dividerClocksToWait = DIV_FREQUENCY;// Should be 12 * 4 if loading without boot ROM
     int timerClocksToWait;
 
     bool timerHasOverflown;

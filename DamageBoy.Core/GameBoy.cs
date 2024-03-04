@@ -138,7 +138,8 @@ public class GameBoy
 
         // Timers
 
-        mmu[0xFF04] = 0xCE;
+        //mmu[0xFF04] = 0xAB;
+        timer.Divider = 0xAB;
         mmu[0xFF05] = 0x00;
         mmu[0xFF06] = 0x00;
         mmu[0xFF07] = 0xF8;
