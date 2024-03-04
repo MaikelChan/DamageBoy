@@ -31,7 +31,7 @@ class MMU
         {
             if (dma.IsBusy && index < IO.IO_PORTS_START_ADDRESS)
             {
-                Utils.Log(LogType.Warning, $"Tried to read from 0x{index:X4} during OAM transfer.");
+                Utils.Log(LogType.Warning, $"Tried to read from 0x{index:X4} during DMA transfer.");
                 return 0xFF;
             }
 
@@ -79,7 +79,7 @@ class MMU
         {
             if (dma.IsBusy && index < IO.IO_PORTS_START_ADDRESS)
             {
-                Utils.Log(LogType.Warning, $"Tried to write to 0x{index:X4} during OAM transfer.");
+                Utils.Log(LogType.Warning, $"Tried to write to 0x{index:X4} during DMA transfer.");
                 return;
             }
 
