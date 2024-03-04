@@ -43,8 +43,8 @@ All games have been tested with the GameBoy boot ROM enabled. Without it, they c
 | Contra - The Alien Wars | :heavy_check_mark: |
 | Daikaijuu Monogatari - The Miracle of the Zone | :large_blue_diamond: (It's missing the custom infrared functionality) |
 | Donkey Kong Land (U) [S][!] | :heavy_check_mark: |
-| Donkey Kong Land 2 | :x: (Crashes after title screen) |
-| Donkey Kong Land 3 | :x: (Crashes after title screen) |
+| Donkey Kong Land 2 | :heavy_check_mark: |
+| Donkey Kong Land 3 | :heavy_check_mark: |
 | Doraemon - Taiketsu Himitsudougu!! | :heavy_check_mark: |
 | Dr. Mario | :heavy_check_mark: |
 | Dragon's Lair - The Legend | :heavy_check_mark: |
@@ -214,7 +214,7 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | acceptance/rapid_di_ei.gb | :x: |
 | acceptance/ret_cc_timing.gb | :x: (Crashes) |
 | acceptance/ret_timing.gb | :x: (Crashes) |
-| acceptance/reti_intr_timing.gb | :x: |
+| acceptance/reti_intr_timing.gb | :heavy_check_mark: |
 | acceptance/reti_timing.gb | :x: (Crashes) |
 | acceptance/rst_timing.gb | :x: |
 | acceptance/bits/mem_oam.gb | :heavy_check_mark: |

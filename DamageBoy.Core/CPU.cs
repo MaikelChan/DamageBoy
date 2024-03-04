@@ -1046,7 +1046,7 @@ class CPU : IDisposable, IState
     void RETI()
     {
         RET();
-        interruptMasterEnablePendingCycles = 2;
+        interruptMasterEnablePendingCycles = 1;
     }
 
     /// <summary>
