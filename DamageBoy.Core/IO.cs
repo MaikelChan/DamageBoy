@@ -1194,7 +1194,8 @@ class IO : IState
         get
         {
             if (IsGbcRegisterUnavailable("BCPS/BGPI")) return 0xFF;
-            byte register = (byte)(ppu.ColorBgPaletteAutoIncrement ? 0x80 : 0x0);
+            byte register = 0b0100_0000;
+            register |= (byte)(ppu.ColorBgPaletteAutoIncrement ? 0x80 : 0x0);
             register |= (byte)(ppu.ColorBgPaletteAddress & 0b0011_1111);
             return register;
         }
@@ -1233,7 +1234,8 @@ class IO : IState
         get
         {
             if (IsGbcRegisterUnavailable("OCPS/OBPI")) return 0xFF;
-            byte register = (byte)(ppu.ColorObjPaletteAutoIncrement ? 0x80 : 0x0);
+            byte register = 0b0100_0000;
+            register |= (byte)(ppu.ColorObjPaletteAutoIncrement ? 0x80 : 0x0);
             register |= (byte)(ppu.ColorObjPaletteAddress & 0b0011_1111);
             return register;
         }
@@ -1272,7 +1274,7 @@ class IO : IState
         get
         {
             if (IsGbcRegisterUnavailable("SVBK")) return 0xFF;
-            return wram.Bank;
+            return (byte)(0b1111_1000 | wram.Bank);
         }
 
         set

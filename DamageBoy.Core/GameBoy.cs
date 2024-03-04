@@ -100,6 +100,8 @@ public class GameBoy
         mmu = new MMU(this, io, wram, hram, ppu, dma, bootRom, cartridge);
         cpu = new CPU(this, mmu, bootRom != null);
 
+        InitRegisters(bootRom);
+
         frameLimiterState = FrameLimiterStates.Limited;
 
         Thread thread = new Thread(MainLoop);
@@ -120,6 +122,104 @@ public class GameBoy
         if (EmulationState != EmulationStates.Running && EmulationState != EmulationStates.Paused) return;
         this.emulationStoppedCallback = emulationStoppedCallback;
         EmulationState = EmulationStates.Stopping;
+    }
+
+    void InitRegisters(byte[] bootRom)
+    {
+        if (bootRom != null) return;
+
+        // If there's no boot ROM, the emulator will initialize some stuff.
+        // If there is, the boot ROM itself will do the initialization.
+
+        // Serial
+
+        mmu[0xFF01] = 0x00;
+        mmu[0xFF02] = 0x7E;
+
+        // Timers
+
+        mmu[0xFF04] = 0xCE;
+        mmu[0xFF05] = 0x00;
+        mmu[0xFF06] = 0x00;
+        mmu[0xFF07] = 0xF8;
+
+        // Sound
+
+        mmu[0xFF26] = 0x80; // Need to enable audio before setting some other audio registers 
+
+        mmu[0xFF10] = 0x80;
+        mmu[0xFF11] = 0xBF;
+        mmu[0xFF12] = 0xF3;
+        mmu[0xFF13] = 0xFF;
+        //mmu[0xFF14] = 0xBF; // This passes Mooneye's boot_hwio-C test, but generates noise on boot
+
+        mmu[0xFF16] = 0x3F;
+        mmu[0xFF17] = 0x00;
+        mmu[0xFF18] = 0xFF;
+        //mmu[0xFF19] = 0xBF;
+
+        mmu[0xFF1A] = 0x7F;
+        mmu[0xFF1B] = 0xFF;
+        mmu[0xFF1C] = 0x9F;
+        mmu[0xFF1D] = 0xFF;
+        //mmu[0xFF1E] = 0xBF;
+
+        mmu[0xFF20] = 0xFF;
+        mmu[0xFF21] = 0x00;
+        mmu[0xFF22] = 0x00;
+        //mmu[0xFF23] = 0xBF;
+
+        mmu[0xFF24] = 0x77;
+        mmu[0xFF25] = 0xF3;
+
+        mmu[0xFF30] = 0x00;
+        mmu[0xFF31] = 0x00;
+        mmu[0xFF32] = 0x00;
+        mmu[0xFF33] = 0x00;
+        mmu[0xFF34] = 0x00;
+        mmu[0xFF35] = 0x00;
+        mmu[0xFF36] = 0x00;
+        mmu[0xFF37] = 0x00;
+        mmu[0xFF38] = 0x00;
+        mmu[0xFF39] = 0x00;
+        mmu[0xFF3A] = 0x00;
+        mmu[0xFF3B] = 0x00;
+        mmu[0xFF3C] = 0x00;
+        mmu[0xFF3D] = 0x00;
+        mmu[0xFF3E] = 0x00;
+        mmu[0xFF3F] = 0x00;
+
+        // LCD Registers
+
+        mmu[0xFF40] = 0x91;
+        mmu[0xFF41] = 0x81;
+        mmu[0xFF42] = 0x00;
+        mmu[0xFF43] = 0x00;
+        //mmu[0xFF44] = 0x99; // Setting this manually breaks the timings 
+        mmu[0xFF45] = 0x00;
+        //mmu[0xFF46] = 0x00; // Setting this manually breaks the timings 
+        mmu[0xFF47] = 0xFC;
+        mmu[0xFF48] = 0x00;
+        mmu[0xFF49] = 0x00;
+        mmu[0xFF4A] = 0x00;
+        mmu[0xFF4B] = 0x00;
+
+        // CGB
+
+        if (HardwareType == HardwareTypes.CGB)
+        {
+            mmu[0xFF68] = 0x88;
+            mmu[0xFF6A] = 0x90;
+            mmu[0xFF70] = 0x07;
+        }
+
+        // Interrupts
+
+        mmu[0xFF0F] = 0xE1;
+        mmu[0xFFFF] = 0x00;
+
+        // Disable the Boot ROM in the corresponding IO register
+        mmu[0xFF50] = 0x01;
     }
 
     void MainLoop()

@@ -165,6 +165,12 @@ class PPU : IDisposable, IState
         {
             colorBgPalette = new byte[COLOR_PALETTE_SIZE];
             colorObjPalette = new byte[COLOR_PALETTE_SIZE];
+
+            for (int i = 0; i < COLOR_PALETTE_SIZE; i++)
+            {
+                colorBgPalette[i] = 0xFF;
+                colorObjPalette[i] = 0xFF;
+            }
         }
 
         spriteIndicesInCurrentLine = new byte[MAX_SPRITES_PER_LINE];
