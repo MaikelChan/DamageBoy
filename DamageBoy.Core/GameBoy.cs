@@ -93,7 +93,7 @@ public class GameBoy
         serial = new Serial(interruptHandler);
         dma = new DMA(this, cartridge, wram, vram, oam);
         if (IsColorMode) hdma = new HDMA(cartridge, wram, vram);
-        timer = new Timer(interruptHandler);
+        timer = new Timer(this, interruptHandler);
         apu = new APU(addToAudioBufferCallback);
         ppu = new PPU(this, interruptHandler, vram, oam, dma, screenUpdateCallback, ProcessSaveState);
         io = new IO(this, wram, vram, ppu, dma, hdma, timer, apu, serial, interruptHandler);
@@ -139,7 +139,7 @@ public class GameBoy
         // Timers
 
         //mmu[0xFF04] = 0xAB;
-        timer.Divider = 0xAB;
+        //timer.Divider = 0xAB;
         mmu[0xFF05] = 0x00;
         mmu[0xFF06] = 0x00;
         mmu[0xFF07] = 0xF8;
