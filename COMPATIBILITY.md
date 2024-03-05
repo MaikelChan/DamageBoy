@@ -198,9 +198,9 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | acceptance/ei_sequence.gb | :x: |
 | acceptance/ei_timing.gb | :heavy_check_mark: |
 | acceptance/halt_ime0_ei.gb | :heavy_check_mark: |
-| acceptance/halt_ime0_nointr_timing.gb | :x: |
+| acceptance/halt_ime0_nointr_timing.gb | :heavy_check_mark: |
 | acceptance/halt_ime1_timing.gb | :heavy_check_mark: |
-| acceptance/halt_ime1_timing2-GS.gb | :x: |
+| acceptance/halt_ime1_timing2-GS.gb | :heavy_check_mark: |
 | acceptance/if_ie_registers.gb | :heavy_check_mark: |
 | acceptance/intr_timing.gb | :x: |
 | acceptance/jp_cc_timing.gb | :x: (Doesn't even finish) |
@@ -238,17 +238,17 @@ Here's some test ROMs made for testing features and issues of the hardware. Usef
 | acceptance/ppu/stat_lyc_onoff.gb | :x: |
 | acceptance/ppu/vblank_stat_intr-GS.gb | :x: |
 | acceptance/serial/boot_sclk_align-dmgABCmgb.gb | :x: |
-| acceptance/timer/div_write.gb | :x: |
+| acceptance/timer/div_write.gb | :heavy_check_mark: |
 | acceptance/timer/rapid_toggle.gb | :x: |
-| acceptance/timer/tim00.gb | :x: |
-| acceptance/timer/tim00_div_trigger.gb | :heavy_check_mark: |
-| acceptance/timer/tim01.gb | :x: |
+| acceptance/timer/tim00.gb | :heavy_check_mark: |
+| acceptance/timer/tim00_div_trigger.gb | :x: |
+| acceptance/timer/tim01.gb | :heavy_check_mark: |
 | acceptance/timer/tim01_div_trigger.gb | :x: |
-| acceptance/timer/tim10.gb | :x: |
+| acceptance/timer/tim10.gb | :heavy_check_mark: |
 | acceptance/timer/tim10_div_trigger.gb | :x: |
-| acceptance/timer/tim11.gb | :x: |
-| acceptance/timer/tim11_div_trigger.gb | :heavy_check_mark: |
-| acceptance/timer/tima_reload.gb | :x: |
+| acceptance/timer/tim11.gb | :heavy_check_mark: |
+| acceptance/timer/tim11_div_trigger.gb | :x: |
+| acceptance/timer/tima_reload.gb | :heavy_check_mark: |
 | acceptance/timer/tima_write_reloading.gb | :x: |
 | acceptance/timer/tma_write_reloading.gb | :x: |
 | emulator-only/mbc1/bits_bank1.gb | :heavy_check_mark: |

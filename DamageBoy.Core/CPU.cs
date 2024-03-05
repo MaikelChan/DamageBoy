@@ -7,7 +7,6 @@ namespace DamageBoy.Core;
 
 class CPU : IDisposable, IState
 {
-    readonly GameBoy gameBoy;
     readonly MMU mmu;
 
     int clocksToWait;
@@ -76,7 +75,6 @@ class CPU : IDisposable, IState
 
     public CPU(GameBoy gameBoy, MMU mmu, bool isThereBootRom)
     {
-        this.gameBoy = gameBoy;
         this.mmu = mmu;
 
         // If there's no boot ROM, the emulator will initialize some stuff.
@@ -2529,7 +2527,7 @@ class CPU : IDisposable, IState
         mmu[SP + 0] = (byte)((PC) & 0xFF);
 
         PC = offset;
-        clocksToWait = 24; // TODO: Don't know how many clocks. Is it the same as CALL?
+        clocksToWait = 24;
     }
 
     #endregion

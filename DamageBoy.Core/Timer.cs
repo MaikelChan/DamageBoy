@@ -15,7 +15,7 @@ class Timer : IState
     public byte TimerCounter { get; set; }
     public byte TimerModulo { get; set; }
 
-    int dividerClocksToWait = DIV_FREQUENCY;// Should be 12 * 4 if loading without boot ROM
+    int dividerClocksToWait;
     int timerClocksToWait;
 
     bool timerHasOverflown;
@@ -26,6 +26,9 @@ class Timer : IState
     public Timer(InterruptHandler interruptHandler)
     {
         this.interruptHandler = interruptHandler;
+
+        dividerClocksToWait = DIV_FREQUENCY; // Should be 12 * 4 if loading without boot ROM
+        timerClocksToWait = GetTimerClocks();
     }
 
     public void Update()
@@ -35,7 +38,7 @@ class Timer : IState
         {
             dividerClocksToWait = DIV_FREQUENCY;
             Divider++;
-            //Utils.Log("Divider: " + io.DividerRegister);
+            //Utils.Log($"Divider Increase: {Divider}");
         }
 
         if (TimerEnable)
@@ -43,22 +46,7 @@ class Timer : IState
             timerClocksToWait -= 4;
             if (timerClocksToWait <= 0)
             {
-                switch (TimerClockSpeed)
-                {
-                    default:
-                    case TimerClockSpeeds.Hz4096:
-                        timerClocksToWait = CPU.CPU_CLOCKS / 4096;
-                        break;
-                    case TimerClockSpeeds.Hz262144:
-                        timerClocksToWait = CPU.CPU_CLOCKS / 262144;
-                        break;
-                    case TimerClockSpeeds.Hz65536:
-                        timerClocksToWait = CPU.CPU_CLOCKS / 65536;
-                        break;
-                    case TimerClockSpeeds.Hz16384:
-                        timerClocksToWait = CPU.CPU_CLOCKS / 16384;
-                        break;
-                }
+                timerClocksToWait = GetTimerClocks();
 
                 TimerCounter++;
                 if (TimerCounter == 0)
@@ -86,6 +74,24 @@ class Timer : IState
     {
         Divider = 0;
         dividerClocksToWait = DIV_FREQUENCY;
+
+        timerClocksToWait = GetTimerClocks();
+    }
+
+    int GetTimerClocks()
+    {
+        switch (TimerClockSpeed)
+        {
+            default:
+            case TimerClockSpeeds.Hz4096:
+                return timerClocksToWait = CPU.CPU_CLOCKS / 4096;
+            case TimerClockSpeeds.Hz262144:
+                return timerClocksToWait = CPU.CPU_CLOCKS / 262144;
+            case TimerClockSpeeds.Hz65536:
+                return timerClocksToWait = CPU.CPU_CLOCKS / 65536;
+            case TimerClockSpeeds.Hz16384:
+                return timerClocksToWait = CPU.CPU_CLOCKS / 16384;
+        }
     }
 
     public void SaveOrLoadState(Stream stream, BinaryWriter bw, BinaryReader br, bool save)
